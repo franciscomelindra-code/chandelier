@@ -10,6 +10,8 @@ import { UsersPanel } from '../features/admin/UsersPanel';
 import { OrgUnitsPanel } from '../features/admin/OrgUnitsPanel';
 import { RolesPanel } from '../features/admin/RolesPanel';
 import { AuditPanel } from '../features/admin/AuditPanel';
+import { RegistryPage } from '../features/ai-systems/RegistryPage';
+import { SystemPage } from '../features/ai-systems/SystemPage';
 
 function RequireAuth() {
   const { me, loading } = useAuth();
@@ -45,14 +47,8 @@ export const router = createBrowserRouter([
               'Widgets cliquables ouvrant la liste filtrée',
             ]),
           },
-          {
-            path: '/systemes',
-            element: planned('Systèmes d’IA', 'S2–S3', [
-              'Registre : création, modification, consultation, archivage motivé',
-              'Recherche plein texte, filtres combinés, pagination serveur, vues sauvegardées',
-              'Fiche en 12 étapes avec sauvegarde progressive et complétude',
-            ]),
-          },
+          { path: '/systemes', element: <RegistryPage /> },
+          { path: '/systemes/:id', element: <SystemPage /> },
           {
             path: '/modeles',
             element: planned('Modèles d’IA', 'S4', [

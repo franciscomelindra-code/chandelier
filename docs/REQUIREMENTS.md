@@ -9,12 +9,12 @@ Slice = tranche verticale du plan (`IMPLEMENTATION_PLAN.md`). Le statut est tenu
 
 | ID | Réf. CDC | Exigence | Slice | Critère d'acceptation | Statut |
 |---|---|---|---|---|---|
-| F-001 | §2.1, §5.2 | Registre central des SIA persisté en BDD | S2 | Un SIA créé via l'UI est relu après redémarrage des conteneurs | À faire |
-| F-002 | §5.2 | Champs minimum du registre (UUID, référence, nom, description, finalité, unité, propriétaire, resp. métier, statut 9 valeurs, dates, fournisseurs, rôles AI Act, niveau de risque, justification, valeur, tags, prochaine revue, complétude, conformité) | S2/S3 | Chaque champ est saisissable, persisté, visible dans la fiche | À faire |
-| F-003 | §5.2 | Vue table + vue cartes, tri, filtres combinés, recherche plein texte, pagination serveur | S2 | Filtres reflétés dans l'URL ; pagination côté API (`page`, `pageSize`, `total`) | À faire |
-| F-004 | §5.2, §5.14 | Colonnes personnalisables, vues sauvegardées personnelles et partagées | S2 | Une vue sauvegardée restaure filtres + colonnes | À faire |
-| F-005 | §5.2 | Actions de masse : assigner propriétaire, unité, tags, statut, lancer revue, exporter, archiver | S2/S7 | Opération transactionnelle, journalisée par objet, refusée si droit manquant sur un seul objet | À faire |
-| F-006 | §5.3 | Création : fiche vierge | S2 | — | À faire |
+| F-001 | §2.1, §5.2 | Registre central des SIA persisté en BDD | S2 | Un SIA créé via l'UI est relu après redémarrage des conteneurs | Fait (S2) — persistance après redémarrage Docker à valider |
+| F-002 | §5.2 | Champs minimum du registre (UUID, référence, nom, description, finalité, unité, propriétaire, resp. métier, statut 9 valeurs, dates, fournisseurs, rôles AI Act, niveau de risque, justification, valeur, tags, prochaine revue, complétude, conformité) | S2/S3 | Chaque champ est saisissable, persisté, visible dans la fiche | Partiel (S2) — fournisseurs en S4, niveau de risque issu de S5 |
+| F-003 | §5.2 | Vue table + vue cartes, tri, filtres combinés, recherche plein texte, pagination serveur | S2 | Filtres reflétés dans l'URL ; pagination côté API (`page`, `pageSize`, `total`) | Fait (S2) |
+| F-004 | §5.2, §5.14 | Colonnes personnalisables, vues sauvegardées personnelles et partagées | S2 | Une vue sauvegardée restaure filtres + colonnes | Fait (S2) |
+| F-005 | §5.2 | Actions de masse : assigner propriétaire, unité, tags, statut, lancer revue, exporter, archiver | S2/S7 | Opération transactionnelle, journalisée par objet, refusée si droit manquant sur un seul objet | Partiel (S2) — tout sauf « lancer revue » (S7) |
+| F-006 | §5.3 | Création : fiche vierge | S2 | — | Fait (S2) |
 | F-007 | §5.3 | Création : à partir d'un modèle interne (gabarit) | S3 | Gabarit administrable ; la copie ne reprend ni historique ni validations | À faire |
 | F-008 | §5.3, §10 | Création : assistant IA, préremplissage sourcé, statut « À vérifier » | S10 | Aucune valeur IA n'est écrite dans les champs validés sans action humaine | À faire |
 | F-009 | §5.3 | Wizard 12 sections (Général → Récapitulatif) avec sauvegarde progressive | S3 | Chaque section s'enregistre indépendamment ; quitter puis revenir conserve la saisie | À faire |
@@ -24,10 +24,10 @@ Slice = tranche verticale du plan (`IMPLEMENTATION_PLAN.md`). Le statut est tenu
 | F-013 | §5.3 ét.5 | Actifs (applications, API, serveurs, SaaS, bases, appareils, infra) réutilisables | S3 | Un actif existant peut être relié sans ressaisie | À faire |
 | F-014 | §5.3 ét.6 | Liaison traitements RGPD ; synchronisation sélective sans écrasement silencieux | S3/S9 | Toute synchro affiche un diff et requiert confirmation champ par champ | À faire |
 | F-015 | §5.3 ét.7 | Données : sources, datasets, origine, données perso, cat. particulières, pénales, synthétiques, usage (entraînement/fine-tuning/RAG/inférence), qualité, représentativité, licence, conservation, localisation, transferts, destinataires | S3 | — | À faire |
-| F-016 | §5.3 ét.8 | Personnes concernées : catégories, mineurs, salariés, candidats, clients, destinataires, vulnérables, volume, conséquences | S3 | — | À faire |
-| F-017 | §5.3 ét.10 | Valeur ajoutée Faible/Moyen/Élevé + bénéfices, KPI, gains | S3 | — | À faire |
+| F-016 | §5.3 ét.8 | Personnes concernées : catégories, mineurs, salariés, candidats, clients, destinataires, vulnérables, volume, conséquences | S3 | — | Partiel (S2) — synthèse ; catégories détaillées en S3 |
+| F-017 | §5.3 ét.10 | Valeur ajoutée Faible/Moyen/Élevé + bénéfices, KPI, gains | S3 | — | Partiel (S2) — niveau + justification ; KPI détaillés en S3 |
 | F-018 | §5.3 ét.11 | Documentation rattachée à la fiche | S7 | — | À faire |
-| F-019 | §5.3 ét.12 | Récapitulatif consolidé imprimable | S3/S7 | Impression navigateur propre (CSS print) | À faire |
+| F-019 | §5.3 ét.12 | Récapitulatif consolidé imprimable | S3/S7 | Impression navigateur propre (CSS print) | Partiel (S2) — impression navigateur de la fiche |
 | F-020 | §5.4 | Questionnaire décisionnel AI Act versionné | S5 | Le référentiel est une donnée (JSON importé en BDD), pas du code d'écran | À faire |
 | F-021 | §5.4.1 | Définition de SIA (art. 3(1)) et exclusions (art. 2) | S5 | — | À faire |
 | F-022 | §5.4.2 | Pratiques interdites (art. 5) | S5 | Toute réponse « Oui » produit « Potentiellement interdit — validation juridique requise » | À faire |
@@ -51,10 +51,10 @@ Slice = tranche verticale du plan (`IMPLEMENTATION_PLAN.md`). Le statut est tenu
 | F-040 | §5.10, §13 | Revalidation / revue déclenchée par modification substantielle (finalité, modèle, version, dataset, fournisseur, autonomie, population) | S7 | Modifier le modèle d'un SIA validé crée une revue exceptionnelle | À faire |
 | F-041 | §5.10 | Workflow configurable | Hors MVP (S7 partiel) | Hypothèse H-07 | À faire |
 | F-042 | §5.11 | Journal d'audit immuable (qui, quoi, ancienne/nouvelle valeur, quand, origine, justification) | S1→S7 | UPDATE/DELETE sur `audit_event` rejetés par trigger PostgreSQL | Fait (S1) |
-| F-043 | §5.11 | Comparaison et restauration de versions, export du journal | S7 | — | À faire |
+| F-043 | §5.11 | Comparaison et restauration de versions, export du journal | S7 | — | Partiel (S2) — historique par SIA + instantanés ; diff/restauration en S7 |
 | F-044 | §5.12 | Import CSV (XLSX, JSON) avec mapping, aperçu, validation, rapport d'erreurs, transaction | S10 (CSV en S2 si possible) | Un fichier avec 1 ligne invalide n'importe rien et retourne le rapport | À faire |
 | F-045 | §5.12 | Champs de compatibilité Label, Ref, Description, State, RiskLevel… TransparencyNoticeHtml | S10 | — | À faire |
-| F-046 | §5.12 | Export registre CSV/XLSX/JSON ; fiche PDF/DOCX/MD/HTML ; notice ; FRIA ; rapport d'audit ; ZIP des preuves | S2 (CSV/JSON), S10 | — | À faire |
+| F-046 | §5.12 | Export registre CSV/XLSX/JSON ; fiche PDF/DOCX/MD/HTML ; notice ; FRIA ; rapport d'audit ; ZIP des preuves | S2 (CSV/JSON), S10 | — | Partiel (S2) — registre CSV (en-têtes §5.12) et JSON |
 | F-047 | §5.13 | Trust Center opt-in par fiche, champs publiables, validation juridique | Hors MVP (phase 3) | — | Hors MVP |
 | F-048 | §5.1 | Dashboard : total, statuts, risques, unités, interdits, haut risque, FRIA, notices manquantes, évaluations en retard, actions, valeur, matrice risque×valeur, complétude, évolution | S8 | Chaque valeur est calculée par requête ; aucun chiffre en dur | À faire |
 | F-049 | §5.1 | Chaque widget cliquable ouvre la liste filtrée | S8 | — | À faire |
@@ -74,7 +74,7 @@ Slice = tranche verticale du plan (`IMPLEMENTATION_PLAN.md`). Le statut est tenu
 |---|---|---|---|---|---|
 | A-001 | §4, ajout 6 | Rôles : SUPER_ADMIN, DPO, LEGAL, AI_GOVERNANCE, RSSI, IT, SYSTEM_OWNER, CONTRIBUTOR, REVIEWER, AUDITOR, READER | S1 | Rôles seedés, matrice dans `SECURITY.md` | Fait (S1) |
 | A-002 | §4 | RBAC extensible (rôles en BDD, permissions nommées) | S1 | — | Fait (S1) |
-| A-003 | §4 | Droits par unité organisationnelle (avec descendants), entité, direction, fiche | S1/S2 | Un SYSTEM_OWNER d'une unité ne voit pas les SIA d'une unité sœur hors périmètre | Partiel (S1) |
+| A-003 | §4 | Droits par unité organisationnelle (avec descendants), entité, direction, fiche | S1/S2 | Un SYSTEM_OWNER d'une unité ne voit pas les SIA d'une unité sœur hors périmètre | Fait (S2) |
 | A-004 | §9 | Contrôle d'accès objet côté serveur | S1→ | Tests d'intégration 403 par rôle | Fait (S1) |
 | A-005 | §4 | Lecteur/Auditeur : lecture + export, aucune écriture | S1→ | Tests 403 sur toutes les routes d'écriture | Fait (S1) |
 

@@ -1,4 +1,6 @@
 import type { PrismaClient } from '@prisma/client';
+import { computeCompleteness } from '@chandelier/shared';
+import { recordAudit } from '../audit/audit.js';
 
 /**
  * Jeu de démonstration MANIFESTEMENT FICTIF (CDC §18). Aucune donnée réelle de GLS France.
@@ -16,6 +18,36 @@ const DEMO_UNITS = [
     parent: 'DEMO-ENTITE',
   },
   { code: 'DEMO-EQ-DATA', name: '[DEMO] Équipe data (fictive)', type: 'TEAM', parent: 'DEMO-DIR-SI' },
+] as const;
+
+/** SIA fictifs prévus par le CDC §18. Aucun propriétaire : à affecter par l'administrateur. */
+const DEMO_SYSTEMS = [
+  {
+    reference: 'SIA-DEMO-001',
+    name: '[DEMO] Assistant documentaire interne',
+    unit: 'DEMO-DIR-SI',
+    purpose: 'Exemple fictif : aider les équipes à retrouver des procédures internes dans une base documentaire.',
+    description:
+      'Donnée de démonstration. Assistant conversationnel fictif interrogeant une base de documents internes (RAG).',
+    useCases: 'Recherche documentaire ; résumé de procédures.',
+    status: 'PILOT',
+    aiActRoles: ['DEPLOYER'],
+    valueLevel: 'MEDIUM',
+    autonomyLevel: 'ASSISTIVE',
+  },
+  {
+    reference: 'SIA-DEMO-002',
+    name: '[DEMO] Prévision fictive de volumes logistiques',
+    unit: 'DEMO-DIR-OPS',
+    purpose: 'Exemple fictif : estimer des volumes de colis à J+7 pour dimensionner des ressources.',
+    description:
+      'Donnée de démonstration. Modèle de prévision de séries temporelles sur des volumes agrégés, sans données personnelles.',
+    useCases: 'Prévision de charge ; planification.',
+    status: 'DRAFT',
+    aiActRoles: ['DEPLOYER'],
+    valueLevel: 'HIGH',
+    autonomyLevel: 'HUMAN_IN_THE_LOOP',
+  },
 ] as const;
 
 export async function seedDemo(prisma: PrismaClient): Promise<void> {
@@ -36,6 +68,36 @@ export async function seedDemo(prisma: PrismaClient): Promise<void> {
           isDemo: true,
         },
       });
+    }
+    for (const s of DEMO_SYSTEMS) {
+      if (await tx.aiSystem.findUnique({ where: { reference: s.reference } })) continue;
+      const unit = await tx.organizationUnit.findUniqueOrThrow({ where: { code: s.unit } });
+      const { unit: _u, aiActRoles, ...data } = s;
+      const created = await tx.aiSystem.create({
+        data: {
+          ...data,
+          aiActRoles: [...aiActRoles],
+          orgUnitId: unit.id,
+          countries: ['FR'],
+          processesPersonalData: s.reference === 'SIA-DEMO-002' ? 'NO' : 'UNKNOWN',
+          isDemo: true,
+        },
+      });
+      await tx.aiSystem.update({
+        where: { id: created.id },
+        data: { completeness: computeCompleteness(created).percent },
+      });
+      await recordAudit(
+        tx,
+        { id: null, label: 'système (jeu de démonstration)', origin: 'SYSTEM' },
+        {
+          action: 'create',
+          entityType: 'AiSystem',
+          entityId: created.id,
+          aiSystemId: created.id,
+          changes: { reference: { old: null, new: created.reference }, isDemo: { old: null, new: true } },
+        },
+      );
     }
   });
 }

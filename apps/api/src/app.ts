@@ -23,6 +23,8 @@ import { userRoutes } from './modules/users.js';
 import { orgUnitRoutes } from './modules/org-units.js';
 import { roleRoutes } from './modules/roles.js';
 import { auditRoutes } from './modules/audit.js';
+import { aiSystemRoutes } from './modules/ai-systems/routes.js';
+import { savedViewRoutes, tagRoutes } from './modules/tags.js';
 
 export interface AppDeps {
   config: AppConfig;
@@ -171,6 +173,9 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
       await v1.register(orgUnitRoutes, { prefix: '/org-units' });
       await v1.register(roleRoutes, { prefix: '/roles' });
       await v1.register(auditRoutes, { prefix: '/audit-events' });
+      await v1.register(aiSystemRoutes, { prefix: '/ai-systems' });
+      await v1.register(tagRoutes, { prefix: '/tags' });
+      await v1.register(savedViewRoutes, { prefix: '/saved-views' });
     },
     { prefix: '/api/v1' },
   );

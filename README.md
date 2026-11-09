@@ -2,7 +2,7 @@
 
 Application de gouvernance et de pilotage des systèmes d'intelligence artificielle (SIA) de GLS France : registre, référentiel des modèles, qualification AI Act (règlement (UE) 2024/1689), risques, FRIA, articulation RGPD, preuves et traçabilité.
 
-> **État : tranche S1 (socle) livrée.** Authentification, utilisateurs, unités organisationnelles, RBAC avec périmètres, journal d'audit immuable, API OpenAPI, Docker et CI. Les modules métier (registre, qualification, risques…) arrivent par tranches : voir [Fonctionnalités](#fonctionnalités) et [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md). Les écrans non livrés affichent « Fonctionnalité non implémentée ».
+> **État : tranches S1 (socle) et S2 (registre des SIA) livrées.** Authentification, utilisateurs, unités organisationnelles, RBAC avec périmètres, journal d'audit immuable, registre des SIA (recherche plein texte, filtres, vues, actions de masse, export, archivage motivé), API OpenAPI, Docker et CI. Les modules métier (registre, qualification, risques…) arrivent par tranches : voir [Fonctionnalités](#fonctionnalités) et [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md). Les écrans non livrés affichent « Fonctionnalité non implémentée ».
 
 Le dépôt ne contient **aucune donnée réelle de GLS France** ni aucun secret. Le seul jeu de données facultatif est marqué `[DEMO]`.
 
@@ -129,9 +129,17 @@ docs            Architecture, données, AI Act, sécurité, déploiement…
 - API REST versionnée, OpenAPI 3.1 générée depuis les schémas de validation, `/health`, `/ready`.
 - Docker multi-stage non-root, Caddy (CSP stricte), réseau interne pour PostgreSQL, secrets générés, CI GitHub Actions.
 
+### Implémentées et testées (S2)
+
+- Registre : création de fiche vierge (référence automatique), consultation, modification partielle avec verrou optimiste, archivage et restauration motivés.
+- Recherche plein texte en français (préfixes, référence), filtres combinés reflétés dans l'URL, sous-unités incluses, tri et pagination serveur, vue tableau ou cartes, colonnes au choix, vues sauvegardées personnelles ou partagées.
+- Contrôle d'accès par périmètre (404 hors périmètre), par propriétaire (`SYSTEM_OWNER`) et par section affectée (`CONTRIBUTOR`).
+- Actions de masse transactionnelles (propriétaire, unité, statut, tags, archivage) refusées en bloc si un seul SIA n'est pas autorisé.
+- Export CSV (en-têtes de compatibilité du cahier des charges) et JSON, journalisés ; historique par SIA ; complétude calculée côté serveur.
+
 ### Restant à développer
 
-Voir [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) (statut par exigence) : registre des SIA (S2), fiche 12 étapes (S3), modèles et fournisseurs (S4), moteur AI Act (S5), risques et actions (S6), documents, versions et validations (S7), tableau de bord (S8), FRIA/DPIA/notices (S9), assistant IA, import/export, rapports, Entra ID (S10), Trust Center et intégrations Microsoft 365 (phase 3).
+Voir [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) (statut par exigence) : fiche 12 étapes (S3), modèles et fournisseurs (S4), moteur AI Act (S5), risques et actions (S6), documents, versions et validations (S7), tableau de bord (S8), FRIA/DPIA/notices (S9), assistant IA, import/export, rapports, Entra ID (S10), Trust Center et intégrations Microsoft 365 (phase 3).
 
 ## Licence
 

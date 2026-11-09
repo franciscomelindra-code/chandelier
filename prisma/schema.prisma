@@ -561,6 +561,10 @@ model AiSystem {
   archivedAt            DateTime?
   archivedById          String?          @db.Uuid
   archiveReason         String?
+  /// Statut restauré lors d'une désarchivage.
+  statusBeforeArchive   AiSystemStatus?
+  /// Colonne générée PostgreSQL (recherche plein texte, français) — voir migration s2_registry.
+  search                Unsupported("tsvector")?
   /// Verrou optimiste : incrémenté à chaque modification.
   version               Int              @default(1)
   /// Version validée verrouillée (S7).
@@ -599,6 +603,7 @@ model AiSystem {
   @@index([valueLevel])
   @@index([nextReviewDate])
   @@index([archivedAt])
+  @@index([search], type: Gin)
   @@map("ai_system")
 }
 

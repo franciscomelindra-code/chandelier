@@ -59,6 +59,87 @@ export interface Role {
   assignmentCount: number;
 }
 
+export interface TagRef {
+  id: string;
+  label: string;
+  color: string | null;
+}
+
+export interface Tag extends TagRef {
+  usage: number;
+}
+
+export interface AiSystemListItem {
+  id: string;
+  reference: string;
+  name: string;
+  purpose: string;
+  status: string;
+  orgUnit: { id: string; name: string };
+  owner: { id: string; displayName: string } | null;
+  businessOwner: { id: string; displayName: string } | null;
+  aiActRoles: string[];
+  riskCategory: string;
+  valueLevel: string;
+  complianceStatus: string;
+  completeness: number;
+  nextReviewDate: string | null;
+  tags: TagRef[];
+  vendors: string[];
+  isDemo: boolean;
+  archivedAt: string | null;
+  updatedAt: string;
+  canUpdate: boolean;
+  canArchive: boolean;
+}
+
+export interface CompletenessCheck {
+  key: string;
+  label: string;
+  section: string;
+  ok: boolean;
+}
+
+export interface AiSystemDetail extends Omit<AiSystemListItem, 'owner' | 'businessOwner'> {
+  owner: { id: string; displayName: string; email: string } | null;
+  businessOwner: { id: string; displayName: string; email: string } | null;
+  description: string;
+  objectives: string;
+  useCases: string;
+  functioning: string;
+  scope: string;
+  operationalContext: string;
+  countries: string[];
+  targetPopulations: string;
+  autonomyLevel: string;
+  firstDeploymentDate: string | null;
+  productionDate: string | null;
+  plannedRetirementDate: string | null;
+  actualRetirementDate: string | null;
+  processesPersonalData: string;
+  includesMinors: string;
+  includesVulnerable: string;
+  affectedVolumeEstimate: string;
+  potentialConsequences: string;
+  valueJustification: string;
+  riskJustification: string;
+  archiveReason: string | null;
+  version: number;
+  createdAt: string;
+  completenessChecks: CompletenessCheck[];
+  permissions: { updatableSections: string[]; canArchive: boolean; canExport: boolean };
+}
+
+export interface SavedView {
+  id: string;
+  name: string;
+  scope: string;
+  state: { query: string; columns: string[]; layout: 'table' | 'cards' };
+  isShared: boolean;
+  ownerName: string;
+  mine: boolean;
+}
+
 export interface AuditEvent {
   id: string;
   occurredAt: string;

@@ -25,4 +25,19 @@
 | GET | `/api/v1/roles` | `user:read` |
 | GET | `/api/v1/audit-events`, `/api/v1/audit-events/export.csv` | `audit:read` |
 
+## Routes livrées (S2 — registre)
+
+| Méthode | Route | Permission / contrôle |
+|---|---|---|
+| GET | `/api/v1/ai-systems` | `aiSystem:read`, limité au périmètre. Paramètres : `q` (plein texte français + préfixes + référence), `status`, `risk`, `value`, `role`, `compliance` (listes séparées par des virgules), `orgUnitId` (sous-unités incluses), `ownerId`, `tagId`, `personalData`, `reviewBefore`, `archived` (`exclude`/`include`/`only`), `demo`, `sort`, `dir`, `page`, `pageSize` |
+| GET | `/api/v1/ai-systems/export?format=csv\|json` | `aiSystem:export`, mêmes filtres ; CSV avec en-têtes de compatibilité §5.12 ; export journalisé |
+| GET | `/api/v1/ai-systems/:id` | lecture dans le périmètre, sinon **404** (pas de fuite d’existence) |
+| GET | `/api/v1/ai-systems/:id/history` | lecture du SIA |
+| POST | `/api/v1/ai-systems` | `aiSystem:create` sur l’unité cible ; référence `SIA-0001…` automatique |
+| PATCH | `/api/v1/ai-systems/:id` | `version` obligatoire (409 `VERSION_CONFLICT`) ; contrôle `aiSystem:update` **par section** (`own`, `assigned`) ; SIA archivé → 409 |
+| POST | `/api/v1/ai-systems/:id/archive`, `/restore` | `aiSystem:archive`, justification ≥ 10 caractères |
+| POST | `/api/v1/ai-systems/bulk` | `assignOwner`, `setOrgUnit`, `setStatus`, `addTags`, `removeTags`, `archive` — **tout ou rien** (403 avec la liste des références refusées) |
+| GET, POST | `/api/v1/tags` | session ; création si `aiSystem:create` ou `aiSystem:update` |
+| GET, POST, DELETE | `/api/v1/saved-views` | vues personnelles ; partagées visibles de tous (le contenu reste filtré par périmètre) ; suppression par le propriétaire seulement |
+
 Webhooks et intégrations Microsoft 365 : non implémentés (phase 3).

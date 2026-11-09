@@ -12,7 +12,7 @@ interface NavItem {
 
 export const NAV: NavItem[] = [
   { to: '/tableau-de-bord', label: 'Tableau de bord', live: false },
-  { to: '/systemes', label: 'Systèmes d’IA', permission: 'aiSystem:read', live: false },
+  { to: '/systemes', label: 'Systèmes d’IA', permission: 'aiSystem:read', live: true },
   { to: '/modeles', label: 'Modèles d’IA', permission: 'aiSystem:read', live: false },
   { to: '/evaluations', label: 'Évaluations', permission: 'aiSystem:read', live: false },
   { to: '/risques', label: 'Risques', permission: 'aiSystem:read', live: false },
@@ -28,7 +28,7 @@ export function Layout() {
   const navigate = useNavigate();
   if (!me) return null;
   return (
-    <div className="min-h-screen md:grid md:grid-cols-[260px_1fr]">
+    <div className="min-h-screen md:grid md:grid-cols-[260px_minmax(0,1fr)]">
       <a
         href="#contenu"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded focus:bg-white focus:p-2"
@@ -86,7 +86,7 @@ export function Layout() {
           </button>
         </div>
       </aside>
-      <main id="contenu" className="mx-auto w-full max-w-[1200px] px-4 py-8 md:px-10">
+      <main id="contenu" className="mx-auto w-full min-w-0 max-w-[1200px] px-4 py-8 md:px-10">
         <Outlet />
       </main>
     </div>
