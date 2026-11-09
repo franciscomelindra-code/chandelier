@@ -15,19 +15,19 @@ Slice = tranche verticale du plan (`IMPLEMENTATION_PLAN.md`). Le statut est tenu
 | F-004 | §5.2, §5.14 | Colonnes personnalisables, vues sauvegardées personnelles et partagées | S2 | Une vue sauvegardée restaure filtres + colonnes | Fait (S2) |
 | F-005 | §5.2 | Actions de masse : assigner propriétaire, unité, tags, statut, lancer revue, exporter, archiver | S2/S7 | Opération transactionnelle, journalisée par objet, refusée si droit manquant sur un seul objet | Partiel (S2) — tout sauf « lancer revue » (S7) |
 | F-006 | §5.3 | Création : fiche vierge | S2 | — | Fait (S2) |
-| F-007 | §5.3 | Création : à partir d'un modèle interne (gabarit) | S3 | Gabarit administrable ; la copie ne reprend ni historique ni validations | À faire |
+| F-007 | §5.3 | Création : à partir d'un modèle interne (gabarit) | S3 | Gabarit administrable ; la copie ne reprend ni historique ni validations | Fait (S3) |
 | F-008 | §5.3, §10 | Création : assistant IA, préremplissage sourcé, statut « À vérifier » | S10 | Aucune valeur IA n'est écrite dans les champs validés sans action humaine | À faire |
-| F-009 | §5.3 | Wizard 12 sections (Général → Récapitulatif) avec sauvegarde progressive | S3 | Chaque section s'enregistre indépendamment ; quitter puis revenir conserve la saisie | À faire |
-| F-010 | §5.3 ét.2 | Responsabilités : propriétaire, sponsor, resp. métier, DSI, RSSI, DPO/juridique, fournisseur, intégrateur, rôles AI Act, RACI facultatif | S3 | — | À faire |
+| F-009 | §5.3 | Wizard 12 sections (Général → Récapitulatif) avec sauvegarde progressive | S3 | Chaque section s'enregistre indépendamment ; quitter puis revenir conserve la saisie | Fait (S3) — étapes 3, 9, 11 renvoient explicitement à S4, S5, S7 |
+| F-010 | §5.3 ét.2 | Responsabilités : propriétaire, sponsor, resp. métier, DSI, RSSI, DPO/juridique, fournisseur, intégrateur, rôles AI Act, RACI facultatif | S3 | — | Fait (S3) |
 | F-011 | §5.3 ét.3, §5.7 | Liaison N-N SIA ↔ modèles avec « description de l'utilisation » propre à la relation | S4 | Un modèle lié à 2 SIA affiche 2 descriptions distinctes | À faire |
-| F-012 | §5.3 ét.4 | Parties prenantes internes/externes | S3 | — | À faire |
-| F-013 | §5.3 ét.5 | Actifs (applications, API, serveurs, SaaS, bases, appareils, infra) réutilisables | S3 | Un actif existant peut être relié sans ressaisie | À faire |
-| F-014 | §5.3 ét.6 | Liaison traitements RGPD ; synchronisation sélective sans écrasement silencieux | S3/S9 | Toute synchro affiche un diff et requiert confirmation champ par champ | À faire |
-| F-015 | §5.3 ét.7 | Données : sources, datasets, origine, données perso, cat. particulières, pénales, synthétiques, usage (entraînement/fine-tuning/RAG/inférence), qualité, représentativité, licence, conservation, localisation, transferts, destinataires | S3 | — | À faire |
-| F-016 | §5.3 ét.8 | Personnes concernées : catégories, mineurs, salariés, candidats, clients, destinataires, vulnérables, volume, conséquences | S3 | — | Partiel (S2) — synthèse ; catégories détaillées en S3 |
-| F-017 | §5.3 ét.10 | Valeur ajoutée Faible/Moyen/Élevé + bénéfices, KPI, gains | S3 | — | Partiel (S2) — niveau + justification ; KPI détaillés en S3 |
+| F-012 | §5.3 ét.4 | Parties prenantes internes/externes | S3 | — | Fait (S3) |
+| F-013 | §5.3 ét.5 | Actifs (applications, API, serveurs, SaaS, bases, appareils, infra) réutilisables | S3 | Un actif existant peut être relié sans ressaisie | Fait (S3) |
+| F-014 | §5.3 ét.6 | Liaison traitements RGPD ; synchronisation sélective sans écrasement silencieux | S3/S9 | Toute synchro affiche un diff et requiert confirmation champ par champ | Partiel (S3) — liaison faite ; synchronisation sélective en S9 |
+| F-015 | §5.3 ét.7 | Données : sources, datasets, origine, données perso, cat. particulières, pénales, synthétiques, usage (entraînement/fine-tuning/RAG/inférence), qualité, représentativité, licence, conservation, localisation, transferts, destinataires | S3 | — | Fait (S3) |
+| F-016 | §5.3 ét.8 | Personnes concernées : catégories, mineurs, salariés, candidats, clients, destinataires, vulnérables, volume, conséquences | S3 | — | Fait (S3) |
+| F-017 | §5.3 ét.10 | Valeur ajoutée Faible/Moyen/Élevé + bénéfices, KPI, gains | S3 | — | Fait (S3) — matrice de portefeuille en S8 |
 | F-018 | §5.3 ét.11 | Documentation rattachée à la fiche | S7 | — | À faire |
-| F-019 | §5.3 ét.12 | Récapitulatif consolidé imprimable | S3/S7 | Impression navigateur propre (CSS print) | Partiel (S2) — impression navigateur de la fiche |
+| F-019 | §5.3 ét.12 | Récapitulatif consolidé imprimable | S3/S7 | Impression navigateur propre (CSS print) | Fait (S3) — récapitulatif imprimable ; obligations/documents/validations après S5/S7 |
 | F-020 | §5.4 | Questionnaire décisionnel AI Act versionné | S5 | Le référentiel est une donnée (JSON importé en BDD), pas du code d'écran | À faire |
 | F-021 | §5.4.1 | Définition de SIA (art. 3(1)) et exclusions (art. 2) | S5 | — | À faire |
 | F-022 | §5.4.2 | Pratiques interdites (art. 5) | S5 | Toute réponse « Oui » produit « Potentiellement interdit — validation juridique requise » | À faire |
@@ -45,7 +45,7 @@ Slice = tranche verticale du plan (`IMPLEMENTATION_PLAN.md`). Le statut est tenu
 | F-034 | §5.8 | Export notice MD, HTML, PDF, DOCX + ajout automatique aux pièces | S9/S10 | — | À faire |
 | F-035 | §5.9 | Registre des risques par SIA (13 catégories), scénario, cause, événement, conséquence, vraisemblance, gravité, scores inhérent/résiduel, mesures, propriétaire, traitement, échéance, preuve | S6 | — | À faire |
 | F-036 | §5.9 | Méthodologie de cotation paramétrable par l'administrateur | S6 | Changement de méthodologie versionné ; anciens scores conservés avec leur version | À faire |
-| F-037 | §5.10 | Affectation de sections à un contributeur | S7 | Le contributeur ne peut modifier que les sections affectées (contrôle API) | À faire |
+| F-037 | §5.10 | Affectation de sections à un contributeur | S7 | Le contributeur ne peut modifier que les sections affectées (contrôle API) | Partiel (S3) — affectation et contrôle serveur faits ; notifications en S7 |
 | F-038 | §5.10 | Commentaires internes, mentions, notifications in-app | S7 | — | À faire |
 | F-039 | §5.10 | Validation par domaine (métier, DPO, RSSI, juridique, DSI), verrouillage de version validée | S7 | Une version validée n'est plus modifiable ; toute modification crée une nouvelle version | À faire |
 | F-040 | §5.10, §13 | Revalidation / revue déclenchée par modification substantielle (finalité, modèle, version, dataset, fournisseur, autonomie, population) | S7 | Modifier le modèle d'un SIA validé crée une revue exceptionnelle | À faire |

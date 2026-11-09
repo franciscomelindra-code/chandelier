@@ -127,7 +127,114 @@ export interface AiSystemDetail extends Omit<AiSystemListItem, 'owner' | 'busine
   version: number;
   createdAt: string;
   completenessChecks: CompletenessCheck[];
+  valueDetails: Record<string, string>;
+  raciEnabled: boolean;
+  stakeholders: {
+    id: string;
+    function: string;
+    responsibility: string;
+    access: string;
+    raci: string | null;
+    stakeholder: { id: string; name: string; kind: string; organization: string; contact: string };
+  }[];
+  assets: {
+    dependency: string;
+    asset: { id: string; name: string; type: string; criticality: string | null; location: string };
+  }[];
+  processing: {
+    notes: string;
+    processingActivity: { id: string; reference: string; name: string; legalBasis: string; dpiaRequired: string };
+  }[];
+  datasets: {
+    usages: string[];
+    notes: string;
+    dataset: {
+      id: string;
+      name: string;
+      origin: string;
+      containsPersonalData: string;
+      containsSpecialCategories: string;
+      containsCriminalData: string;
+      isSynthetic: boolean;
+      transfersOutsideEu: string;
+    };
+  }[];
+  dataCategories: { id: string; label: string; isSpecial: boolean; isCriminal: boolean }[];
+  dataSubjects: { id: string; label: string; isVulnerable: boolean; volumeEstimate: string; consequences: string }[];
   permissions: { updatableSections: string[]; canArchive: boolean; canExport: boolean };
+}
+
+export interface Stakeholder {
+  id: string;
+  kind: string;
+  name: string;
+  organization: string;
+  contact: string;
+  userId: string | null;
+  usage: number;
+}
+export interface Asset {
+  id: string;
+  name: string;
+  type: string;
+  description: string;
+  location: string;
+  criticality: string | null;
+  usage: number;
+}
+export interface ProcessingActivity {
+  id: string;
+  reference: string;
+  name: string;
+  purpose: string;
+  legalBasis: string;
+  gdprRole: string;
+  dpiaRequired: string;
+  retention: string;
+  externalRef: string;
+  dataCategoryIds: string[];
+  dataSubjectIds: string[];
+  usage: number;
+}
+export interface Dataset {
+  id: string;
+  name: string;
+  description: string;
+  origin: string;
+  dataType: string;
+  containsPersonalData: string;
+  containsSpecialCategories: string;
+  containsCriminalData: string;
+  isSynthetic: boolean;
+  provenance: string;
+  license: string;
+  qualityNotes: string;
+  representativenessNotes: string;
+  retention: string;
+  storageLocation: string;
+  transfersOutsideEu: string;
+  recipients: string;
+  usage: number;
+}
+export interface RefCategory {
+  id: string;
+  key: string;
+  label: string;
+  isSpecial?: boolean;
+  isCriminal?: boolean;
+  isVulnerable?: boolean;
+}
+export interface SystemTemplate {
+  id: string;
+  name: string;
+  description: string;
+  fields: string[];
+}
+export interface Assignment {
+  id: string;
+  section: string;
+  dueDate: string | null;
+  user: { id: string; displayName: string };
 }
 
 export interface SavedView {

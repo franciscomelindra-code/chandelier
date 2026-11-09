@@ -18,7 +18,7 @@ export const NAV: NavItem[] = [
   { to: '/risques', label: 'Risques', permission: 'aiSystem:read', live: false },
   { to: '/actions', label: 'Actions', permission: 'aiSystem:read', live: false },
   { to: '/documentation', label: 'Documentation', permission: 'aiSystem:read', live: false },
-  { to: '/referentiels', label: 'Référentiels', live: false },
+  { to: '/referentiels', label: 'Référentiels', live: true },
   { to: '/rapports', label: 'Rapports', permission: 'report:read', live: false },
   { to: '/administration', label: 'Administration', permission: 'user:read', live: true },
 ];

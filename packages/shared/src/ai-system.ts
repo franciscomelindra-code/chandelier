@@ -108,6 +108,7 @@ export const FIELD_SECTION: Record<string, SectionKey> = {
   potentialConsequences: 'subjects',
   valueLevel: 'value',
   valueJustification: 'value',
+  valueDetails: 'value',
 };
 
 // ── Schémas de saisie ────────────────────────────────────────────────────────
@@ -130,6 +131,8 @@ export const aiSystemCreateSchema = z.strictObject({
   description: text(8000).default(''),
   ownerId: uuid.nullable().optional(),
   businessOwnerId: uuid.nullable().optional(),
+  /** Création à partir d'un gabarit interne (CDC §5.3, mode 2). */
+  templateId: uuid.optional(),
 });
 
 export const aiSystemUpdateSchema = z.strictObject({
@@ -163,6 +166,20 @@ export const aiSystemUpdateSchema = z.strictObject({
   potentialConsequences: text(4000).optional(),
   valueLevel: z.enum(VALUE_LEVELS).optional(),
   valueJustification: text(4000).optional(),
+  valueDetails: z
+    .strictObject({
+      benefits: text(4000),
+      kpis: text(2000),
+      estimatedGains: text(2000),
+      quality: text(2000),
+      productivity: text(2000),
+      experience: text(2000),
+      safety: text(2000),
+      avoidedCosts: text(2000),
+    })
+    .partial()
+    .optional(),
+  raciEnabled: z.boolean().optional(),
   tagIds: z.array(uuid).max(50).optional(),
 });
 
@@ -280,6 +297,19 @@ export interface CompletenessInput {
   nextReviewDate: Date | string | null;
   productionDate: Date | string | null;
   firstDeploymentDate: Date | string | null;
+  valueDetails?: unknown;
+  /** Liens des sections relationnelles (S3) ; absent = critères non évalués. */
+  relations?: CompletenessRelations;
+}
+
+export interface CompletenessRelations {
+  functions: string[];
+  stakeholders: number;
+  assets: number;
+  processing: number;
+  datasets: number;
+  dataCategories: number;
+  dataSubjects: number;
 }
 
 export interface CompletenessCheck {
@@ -343,6 +373,45 @@ export function computeCompleteness(s: CompletenessInput): { percent: number; ch
       ok: filled(s.valueJustification, 10),
     },
   ];
+  // Critères des sections relationnelles (S3) : évalués seulement quand les liens sont fournis.
+  const r = s.relations;
+  if (r) {
+    const personal = s.processesPersonalData === 'YES';
+    const benefits = (s.valueDetails as { benefits?: string } | null | undefined)?.benefits;
+    checks.push(
+      {
+        key: 'dpoLegal',
+        label: 'Interlocuteur DPO / Juridique désigné',
+        section: 'responsibility',
+        ok: r.functions.includes('DPO_LEGAL'),
+      },
+      { key: 'itLead', label: 'Référent DSI désigné', section: 'responsibility', ok: r.functions.includes('IT_LEAD') },
+      { key: 'stakeholders', label: 'Au moins une partie prenante', section: 'stakeholders', ok: r.stakeholders > 0 },
+      { key: 'assets', label: 'Au moins un actif / dépendance', section: 'assets', ok: r.assets > 0 },
+      {
+        key: 'processing',
+        label: personal
+          ? 'Traitement(s) RGPD lié(s) (données personnelles déclarées)'
+          : 'Traitements RGPD : sans objet tant qu’aucune donnée personnelle n’est déclarée',
+        section: 'processing',
+        ok: personal ? r.processing > 0 : s.processesPersonalData === 'NO',
+      },
+      { key: 'datasets', label: 'Au moins une source de données (dataset)', section: 'data', ok: r.datasets > 0 },
+      {
+        key: 'dataCategories',
+        label: 'Catégories de données personnelles',
+        section: 'data',
+        ok: personal ? r.dataCategories > 0 : s.processesPersonalData === 'NO',
+      },
+      {
+        key: 'dataSubjects',
+        label: 'Catégories de personnes concernées',
+        section: 'subjects',
+        ok: personal ? r.dataSubjects > 0 : s.processesPersonalData === 'NO',
+      },
+      { key: 'benefits', label: 'Bénéfices attendus décrits', section: 'value', ok: filled(benefits, 10) },
+    );
+  }
   const percent = Math.round((checks.filter((c) => c.ok).length / checks.length) * 100);
   return { percent, checks };
 }

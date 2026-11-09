@@ -25,6 +25,8 @@ import { roleRoutes } from './modules/roles.js';
 import { auditRoutes } from './modules/audit.js';
 import { aiSystemRoutes } from './modules/ai-systems/routes.js';
 import { savedViewRoutes, tagRoutes } from './modules/tags.js';
+import { aiSystemLinkRoutes } from './modules/ai-systems/links.js';
+import { catalogRoutes } from './modules/catalog.js';
 
 export interface AppDeps {
   config: AppConfig;
@@ -174,6 +176,8 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
       await v1.register(roleRoutes, { prefix: '/roles' });
       await v1.register(auditRoutes, { prefix: '/audit-events' });
       await v1.register(aiSystemRoutes, { prefix: '/ai-systems' });
+      await v1.register(aiSystemLinkRoutes, { prefix: '/ai-systems' });
+      await v1.register(catalogRoutes);
       await v1.register(tagRoutes, { prefix: '/tags' });
       await v1.register(savedViewRoutes, { prefix: '/saved-views' });
     },

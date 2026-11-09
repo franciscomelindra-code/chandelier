@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { AI_SYSTEM_STATUSES } from '@chandelier/shared';
 import {
   COMPAT_EXPORT_HEADERS,
+  TEMPLATE_FIELDS,
   RISK_CATEGORY_META,
   VALUE_LEVEL_META,
   aiSystemCreateSchema,
@@ -23,8 +24,8 @@ import {
   TRACKED_FIELDS,
   assignedSections,
   buildListWhere,
-  completenessOf,
   loadVisible,
+  refreshCompleteness,
   nextReference,
   orderBy,
   sectionOfField,
@@ -52,13 +53,6 @@ async function assertTags(tx: Tx, ids: string[]) {
   if (!ids.length) return;
   const n = await tx.tag.count({ where: { id: { in: ids } } });
   if (n !== new Set(ids).size) throw badRequest('Tag inconnu');
-}
-
-/** Recalcule la complétude stockée après une écriture. */
-async function refreshCompleteness(tx: Tx, id: string) {
-  const s = await tx.aiSystem.findUniqueOrThrow({ where: { id } });
-  const { percent } = completenessOf(s);
-  if (percent !== s.completeness) await tx.aiSystem.update({ where: { id }, data: { completeness: percent } });
 }
 
 async function reload(tx: Tx, id: string): Promise<SystemRow> {
@@ -284,12 +278,21 @@ export const aiSystemRoutes: FastifyPluginAsyncZod = async (app) => {
         const reference = input.reference ?? (await nextReference(tx));
         if (await tx.aiSystem.findUnique({ where: { reference } }))
           throw conflict(`Référence déjà utilisée : ${reference}`);
+        // Création à partir d'un gabarit interne : seuls les champs autorisés sont recopiés.
+        let fromTemplate: Record<string, unknown> = {};
+        if (input.templateId) {
+          const tpl = await tx.systemTemplate.findUnique({ where: { id: input.templateId } });
+          if (!tpl || !tpl.isActive) throw badRequest('Gabarit inconnu ou désactivé');
+          const data = (tpl.data ?? {}) as Record<string, unknown>;
+          fromTemplate = Object.fromEntries(TEMPLATE_FIELDS.filter((f) => f in data).map((f) => [f, data[f]]));
+        }
         const s = await tx.aiSystem.create({
           data: {
+            ...(fromTemplate as Prisma.AiSystemUncheckedCreateInput),
             reference,
             name: input.name,
-            purpose: input.purpose,
-            description: input.description,
+            purpose: input.purpose || (fromTemplate.purpose as string | undefined) || '',
+            description: input.description || (fromTemplate.description as string | undefined) || '',
             orgUnitId: unit.id,
             ownerId,
             businessOwnerId: input.businessOwnerId ?? null,
@@ -305,6 +308,7 @@ export const aiSystemRoutes: FastifyPluginAsyncZod = async (app) => {
           entityType: 'AiSystem',
           entityId: s.id,
           aiSystemId: s.id,
+          justification: input.templateId ? `Créé à partir du gabarit ${input.templateId}` : null,
           changes: diff(null, s, [
             'reference',
             'name',
@@ -375,6 +379,10 @@ export const aiSystemRoutes: FastifyPluginAsyncZod = async (app) => {
           plannedRetirementDate: dateOrNull(fields.plannedRetirementDate),
           actualRetirementDate: dateOrNull(fields.actualRetirementDate),
           nextReviewDate: dateOrNull(fields.nextReviewDate),
+          // Détails de valeur : fusion avec l'existant (sauvegarde partielle).
+          valueDetails: fields.valueDetails
+            ? ({ ...((before.valueDetails as object | null) ?? {}), ...fields.valueDetails } as Prisma.InputJsonValue)
+            : undefined,
           version: { increment: 1 },
           updatedById: ctx.user.id,
         };

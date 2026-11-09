@@ -23,4 +23,13 @@ export function useTags() {
   return useQuery({ queryKey: ['tags'], queryFn: () => get<{ items: Tag[] }>('/api/v1/tags'), staleTime: 30_000 });
 }
 
+/** Référentiel générique (parties prenantes, actifs, traitements, datasets, catégories, gabarits). */
+export function useCatalog<T>(path: string) {
+  return useQuery({
+    queryKey: ['catalog', path],
+    queryFn: () => get<{ items: T[] }>(`/api/v1/${path}`),
+    staleTime: 15_000,
+  });
+}
+
 export const indent = (depth: number) => '  '.repeat(depth);

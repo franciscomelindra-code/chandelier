@@ -3,6 +3,7 @@ import {
   SECTIONS,
   computeCompleteness,
   type AiSystemListQuery,
+  type CompletenessRelations,
   type SectionKey,
 } from '@chandelier/shared';
 import type { Prisma } from '@prisma/client';
@@ -18,9 +19,54 @@ export const systemInclude = {
   businessOwner: { select: { id: true, displayName: true, email: true } },
   tags: { include: { tag: true } },
   vendors: { include: { vendor: { select: { id: true, name: true } } } },
+  stakeholders: { include: { stakeholder: true }, orderBy: { function: 'asc' } },
+  assets: { include: { asset: true } },
+  processing: { include: { processingActivity: true } },
+  datasets: { include: { dataset: true } },
+  dataCategories: { include: { dataCategory: true } },
+  dataSubjects: { include: { dataSubject: true } },
 } satisfies Prisma.AiSystemInclude;
 
 export type SystemRow = Prisma.AiSystemGetPayload<{ include: typeof systemInclude }>;
+
+export function relationsOf(s: SystemRow): CompletenessRelations {
+  return {
+    functions: [...new Set(s.stakeholders.map((x) => x.function))],
+    stakeholders: s.stakeholders.length,
+    assets: s.assets.length,
+    processing: s.processing.length,
+    datasets: s.datasets.length,
+    dataCategories: s.dataCategories.length,
+    dataSubjects: s.dataSubjects.length,
+  };
+}
+
+/**
+ * Recalcul de la complétude de tous les SIA (au démarrage) : nécessaire quand les critères
+ * évoluent avec une nouvelle tranche. Champ dérivé : ni version, ni journal.
+ */
+export async function recomputeAllCompleteness(prisma: PrismaClient): Promise<number> {
+  let changed = 0;
+  const ids = await prisma.aiSystem.findMany({ select: { id: true } });
+  for (const { id } of ids) {
+    const s = await prisma.aiSystem.findUniqueOrThrow({ where: { id }, include: systemInclude });
+    const { percent } = computeCompleteness({ ...s, relations: relationsOf(s) });
+    if (percent !== s.completeness) {
+      await prisma.aiSystem.update({ where: { id }, data: { completeness: percent } });
+      changed++;
+    }
+  }
+  return changed;
+}
+
+/** Recalcule et stocke la complétude (critères de toutes les sections disponibles). */
+export async function refreshCompleteness(tx: Prisma.TransactionClient, id: string): Promise<SystemRow> {
+  const s = await tx.aiSystem.findUniqueOrThrow({ where: { id }, include: systemInclude });
+  const { percent } = computeCompleteness({ ...s, relations: relationsOf(s) });
+  if (percent === s.completeness) return s;
+  await tx.aiSystem.update({ where: { id }, data: { completeness: percent } });
+  return { ...s, completeness: percent };
+}
 
 /** Champs suivis dans le journal et l'historique de versions. */
 export const TRACKED_FIELDS = [
@@ -53,6 +99,8 @@ export const TRACKED_FIELDS = [
   'potentialConsequences',
   'valueLevel',
   'valueJustification',
+  'valueDetails',
+  'raciEnabled',
   'archivedAt',
   'archiveReason',
 ] as const;
@@ -177,13 +225,37 @@ export function completenessOf(s: Parameters<typeof computeCompleteness>[0]) {
 
 /** Instantané versionné (comparaison / restauration en S7). */
 export async function snapshot(tx: Prisma.TransactionClient, s: SystemRow, actorId: string, reason: string) {
-  const { orgUnit: _o, owner: _ow, businessOwner: _b, tags, vendors: _v, ...row } = s;
+  const {
+    orgUnit: _o,
+    owner: _ow,
+    businessOwner: _b,
+    tags,
+    vendors,
+    stakeholders,
+    assets,
+    processing,
+    datasets,
+    dataCategories,
+    dataSubjects,
+    ...row
+  } = s;
+  // Les liens sont figés par identifiant + attributs propres à la relation.
+  const links = {
+    tagIds: tags.map((t) => t.tagId),
+    vendors: vendors.map((v) => ({ vendorId: v.vendorId, relation: v.relation })),
+    stakeholders: stakeholders.map(({ stakeholder: _s, ...l }) => l),
+    assets: assets.map(({ asset: _a, ...l }) => l),
+    processing: processing.map(({ processingActivity: _p, ...l }) => l),
+    datasets: datasets.map(({ dataset: _d, ...l }) => l),
+    dataCategoryIds: dataCategories.map((c) => c.dataCategoryId),
+    dataSubjects: dataSubjects.map(({ dataSubject: _d, ...l }) => l),
+  };
   await tx.entityVersion.create({
     data: {
       entityType: 'AiSystem',
       entityId: s.id,
       version: s.version,
-      snapshot: { ...row, tagIds: tags.map((t) => t.tagId) } as unknown as Prisma.InputJsonValue,
+      snapshot: { ...row, ...links } as unknown as Prisma.InputJsonValue,
       reason,
       createdById: actorId,
     },
@@ -255,7 +327,70 @@ export function serializeDetail(ctx: AccessContext, s: SystemRow, sections: stri
     archiveReason: s.archiveReason,
     version: s.version,
     createdAt: s.createdAt.toISOString(),
-    completenessChecks: completenessOf(s).checks,
+    completenessChecks: completenessOf({ ...s, relations: relationsOf(s) }).checks,
+    valueDetails: s.valueDetails,
+    raciEnabled: s.raciEnabled,
+    stakeholders: s.stakeholders.map((l) => ({
+      id: l.id,
+      function: l.function,
+      responsibility: l.responsibility,
+      access: l.access,
+      raci: l.raci,
+      stakeholder: {
+        id: l.stakeholder.id,
+        name: l.stakeholder.name,
+        kind: l.stakeholder.kind,
+        organization: l.stakeholder.organization,
+        contact: l.stakeholder.contact,
+      },
+    })),
+    assets: s.assets.map((l) => ({
+      dependency: l.dependency,
+      asset: {
+        id: l.asset.id,
+        name: l.asset.name,
+        type: l.asset.type,
+        criticality: l.asset.criticality,
+        location: l.asset.location,
+      },
+    })),
+    processing: s.processing.map((l) => ({
+      notes: l.notes,
+      processingActivity: {
+        id: l.processingActivity.id,
+        reference: l.processingActivity.reference,
+        name: l.processingActivity.name,
+        legalBasis: l.processingActivity.legalBasis,
+        dpiaRequired: l.processingActivity.dpiaRequired,
+      },
+    })),
+    datasets: s.datasets.map((l) => ({
+      usages: l.usages,
+      notes: l.notes,
+      dataset: {
+        id: l.dataset.id,
+        name: l.dataset.name,
+        origin: l.dataset.origin,
+        containsPersonalData: l.dataset.containsPersonalData,
+        containsSpecialCategories: l.dataset.containsSpecialCategories,
+        containsCriminalData: l.dataset.containsCriminalData,
+        isSynthetic: l.dataset.isSynthetic,
+        transfersOutsideEu: l.dataset.transfersOutsideEu,
+      },
+    })),
+    dataCategories: s.dataCategories.map((c) => ({
+      id: c.dataCategory.id,
+      label: c.dataCategory.label,
+      isSpecial: c.dataCategory.isSpecial,
+      isCriminal: c.dataCategory.isCriminal,
+    })),
+    dataSubjects: s.dataSubjects.map((c) => ({
+      id: c.dataSubject.id,
+      label: c.dataSubject.label,
+      isVulnerable: c.dataSubject.isVulnerable,
+      volumeEstimate: c.volumeEstimate,
+      consequences: c.consequences,
+    })),
     permissions: {
       updatableSections: sectionsAllowed,
       canArchive: can(ctx, 'aiSystem:archive', targetOf(s, sections)),

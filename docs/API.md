@@ -40,4 +40,23 @@
 | GET, POST | `/api/v1/tags` | session ; création si `aiSystem:create` ou `aiSystem:update` |
 | GET, POST, DELETE | `/api/v1/saved-views` | vues personnelles ; partagées visibles de tous (le contenu reste filtré par périmètre) ; suppression par le propriétaire seulement |
 
+## Routes livrées (S3 — fiche en 12 étapes et référentiels)
+
+Chaque route de section vérifie la visibilité du SIA, l’absence d’archivage et le droit `aiSystem:update` **sur la section concernée**, puis incrémente la version, recalcule la complétude, crée un instantané et journalise. Elle renvoie la fiche à jour.
+
+| Méthode | Route | Section |
+|---|---|---|
+| POST / PATCH / DELETE | `/api/v1/ai-systems/:id/stakeholders[/:linkId]` | `responsibility` (sponsor, DSI, RSSI, DPO/juridique, fournisseur, intégrateur, resp. métier) ou `stakeholders` (autres) |
+| POST / DELETE | `/api/v1/ai-systems/:id/assets[/:assetId]` | `assets` |
+| POST / DELETE | `/api/v1/ai-systems/:id/processing[/:processingActivityId]` | `processing` |
+| POST / DELETE | `/api/v1/ai-systems/:id/datasets[/:datasetId]` | `data` (usages obligatoires) |
+| PUT | `/api/v1/ai-systems/:id/data-categories` | `data` |
+| PUT | `/api/v1/ai-systems/:id/data-subjects` | `subjects` |
+| GET / POST / DELETE | `/api/v1/ai-systems/:id/assignments[/:assignmentId]` | lecture : lecteurs du SIA ; écriture : droit sur `responsibility` hors simple affectation |
+| PATCH | `/api/v1/ai-systems/:id` | accepte aussi `valueDetails` (fusion partielle) et `raciEnabled` |
+| POST | `/api/v1/ai-systems` | accepte `templateId` (création depuis un gabarit) |
+
+Référentiels (lecture : session ; écriture : `catalog:manage` ; suppression refusée si rattaché à un SIA — 409) :
+`/api/v1/stakeholders`, `/api/v1/assets`, `/api/v1/datasets`, `/api/v1/processing-activities` (GET, POST, PATCH `/:id`, DELETE `/:id`) ; `/api/v1/data-categories`, `/api/v1/data-subject-categories` (GET) ; `/api/v1/system-templates` (GET, POST depuis un SIA, POST `/:id/deactivate`).
+
 Webhooks et intégrations Microsoft 365 : non implémentés (phase 3).

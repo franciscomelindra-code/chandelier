@@ -2,7 +2,7 @@
 
 Application de gouvernance et de pilotage des systèmes d'intelligence artificielle (SIA) de GLS France : registre, référentiel des modèles, qualification AI Act (règlement (UE) 2024/1689), risques, FRIA, articulation RGPD, preuves et traçabilité.
 
-> **État : tranches S1 (socle) et S2 (registre des SIA) livrées.** Authentification, utilisateurs, unités organisationnelles, RBAC avec périmètres, journal d'audit immuable, registre des SIA (recherche plein texte, filtres, vues, actions de masse, export, archivage motivé), API OpenAPI, Docker et CI. Les modules métier (registre, qualification, risques…) arrivent par tranches : voir [Fonctionnalités](#fonctionnalités) et [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md). Les écrans non livrés affichent « Fonctionnalité non implémentée ».
+> **État : tranches S1 (socle), S2 (registre des SIA) et S3 (fiche en 12 étapes, référentiels) livrées.** Authentification, utilisateurs, unités organisationnelles, RBAC avec périmètres, journal d'audit immuable, registre des SIA (recherche plein texte, filtres, vues, actions de masse, export, archivage motivé), API OpenAPI, Docker et CI. Les modules métier (registre, qualification, risques…) arrivent par tranches : voir [Fonctionnalités](#fonctionnalités) et [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md). Les écrans non livrés affichent « Fonctionnalité non implémentée ».
 
 Le dépôt ne contient **aucune donnée réelle de GLS France** ni aucun secret. Le seul jeu de données facultatif est marqué `[DEMO]`.
 
@@ -137,9 +137,16 @@ docs            Architecture, données, AI Act, sécurité, déploiement…
 - Actions de masse transactionnelles (propriétaire, unité, statut, tags, archivage) refusées en bloc si un seul SIA n'est pas autorisé.
 - Export CSV (en-têtes de compatibilité du cahier des charges) et JSON, journalisés ; historique par SIA ; complétude calculée côté serveur.
 
+### Implémentées et testées (S3)
+
+- Fiche en 12 étapes, sauvegarde indépendante par étape, complétude par étape, récapitulatif imprimable.
+- Responsabilités et parties prenantes (RACI facultatif), actifs, traitements RGPD, jeux de données et usages, catégories de données et de personnes, valeur ajoutée détaillée.
+- Référentiels partagés (parties prenantes, actifs, traitements, datasets, catégories, gabarits) et création à partir d'un gabarit.
+- Affectation de sections aux contributeurs avec contrôle serveur.
+
 ### Restant à développer
 
-Voir [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) (statut par exigence) : fiche 12 étapes (S3), modèles et fournisseurs (S4), moteur AI Act (S5), risques et actions (S6), documents, versions et validations (S7), tableau de bord (S8), FRIA/DPIA/notices (S9), assistant IA, import/export, rapports, Entra ID (S10), Trust Center et intégrations Microsoft 365 (phase 3).
+Voir [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) (statut par exigence) : modèles et fournisseurs (S4), moteur AI Act (S5), risques et actions (S6), documents, versions et validations (S7), tableau de bord (S8), FRIA/DPIA/notices (S9), assistant IA, import/export, rapports, Entra ID (S10), Trust Center et intégrations Microsoft 365 (phase 3).
 
 ## Licence
 

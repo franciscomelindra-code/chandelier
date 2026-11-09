@@ -12,6 +12,7 @@ import { RolesPanel } from '../features/admin/RolesPanel';
 import { AuditPanel } from '../features/admin/AuditPanel';
 import { RegistryPage } from '../features/ai-systems/RegistryPage';
 import { SystemPage } from '../features/ai-systems/SystemPage';
+import { ReferentialsPage } from '../features/referentials/ReferentialsPage';
 
 function RequireAuth() {
   const { me, loading } = useAuth();
@@ -87,11 +88,8 @@ export const router = createBrowserRouter([
             ]),
           },
           {
-            path: '/referentiels',
-            element: planned('Référentiels', 'S5', [
-              'Référentiel AI Act versionné (questions, règles, obligations) — voir docs/AI_ACT_RULES.md',
-              'Catégories de données et de personnes concernées (déjà en base, écran à venir)',
-            ]),
+            path: '/referentiels/*',
+            element: <ReferentialsPage />,
           },
           {
             path: '/rapports',

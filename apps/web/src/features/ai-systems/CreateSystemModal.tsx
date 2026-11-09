@@ -2,8 +2,8 @@ import { useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { errorMessage, post } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
-import { indent, useActiveUsers, useOrgUnits } from '../../lib/queries';
-import type { AiSystemDetail } from '../../lib/types';
+import { indent, useActiveUsers, useCatalog, useOrgUnits } from '../../lib/queries';
+import type { AiSystemDetail, SystemTemplate } from '../../lib/types';
 import { Alert, Button, Modal, SelectField, TextField } from '../../components/ui';
 
 /** Création d'une fiche vierge (statut Brouillon). Les autres modes de création arrivent en S3 / S10. */
@@ -17,6 +17,8 @@ export function CreateSystemModal({ onClose, onCreated }: { onClose: () => void;
   const [purpose, setPurpose] = useState('');
   const [ownerId, setOwnerId] = useState(me?.user.id ?? '');
   const [businessOwnerId, setBusinessOwnerId] = useState('');
+  const [templateId, setTemplateId] = useState('');
+  const templates = useCatalog<SystemTemplate>('system-templates');
   const [error, setError] = useState<string | null>(null);
   const create = useMutation({
     mutationFn: () =>
@@ -26,6 +28,7 @@ export function CreateSystemModal({ onClose, onCreated }: { onClose: () => void;
         purpose,
         ownerId: ownerId || null,
         businessOwnerId: businessOwnerId || null,
+        ...(templateId ? { templateId } : {}),
       }),
     onSuccess: async (s) => {
       await qc.invalidateQueries({ queryKey: ['ai-systems'] });
@@ -64,6 +67,19 @@ export function CreateSystemModal({ onClose, onCreated }: { onClose: () => void;
             <option key={u.id} value={u.id}>
               {indent(u.depth)}
               {u.name}
+            </option>
+          ))}
+        </SelectField>
+        <SelectField
+          label="Mode de création"
+          hint="Un gabarit recopie les champs descriptifs (finalité, cas d’usage, rôles AI Act…), jamais l’historique ni les liens. Création assistée par IA : fonctionnalité non implémentée (S10)."
+          value={templateId}
+          onChange={(e) => setTemplateId(e.target.value)}
+        >
+          <option value="">Fiche vierge</option>
+          {templates.data?.items.map((t) => (
+            <option key={t.id} value={t.id}>
+              Gabarit : {t.name}
             </option>
           ))}
         </SelectField>

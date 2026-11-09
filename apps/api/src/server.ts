@@ -5,6 +5,7 @@ import { seedBase } from './seed/base.js';
 import { seedDemo } from './seed/demo.js';
 import { bootstrapAdmin } from './bootstrap.js';
 import { purgeExpiredSessions } from './auth/session.js';
+import { recomputeAllCompleteness } from './modules/ai-systems/service.js';
 
 async function main() {
   const config = loadConfig();
@@ -21,6 +22,8 @@ async function main() {
     await seedDemo(prisma);
     app.log.warn('Jeu de démonstration FICTIF chargé (SEED_DEMO=true)');
   }
+  const recomputed = await recomputeAllCompleteness(prisma);
+  if (recomputed) app.log.info(`Complétude recalculée pour ${recomputed} SIA (critères mis à jour)`);
   const admin = await bootstrapAdmin(prisma, config);
   if (admin.created) {
     app.log.warn(

@@ -2,6 +2,23 @@
 
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versionnement sémantique.
 
+## [0.3.0] — 2026-11-10 — Slice S3 : fiche en 12 étapes
+
+### Ajouté
+- Fiche SIA en 12 étapes avec navigation latérale, état de complétude par étape et sauvegarde indépendante de chaque étape (verrou optimiste conservé).
+- Responsabilités (fonctions clés, RACI facultatif), parties prenantes, actifs, traitements RGPD, jeux de données (usages entraînement / fine-tuning / RAG / inférence…), catégories de données (art. 9 / 10 signalés), personnes concernées (volume, conséquences), valeur ajoutée détaillée et position valeur × risque.
+- Affectation de sections à des contributeurs (contrôle serveur).
+- Référentiels partagés : parties prenantes, actifs, traitements RGPD, jeux de données, catégories RGPD, gabarits ; suppression refusée si rattaché.
+- Création à partir d’un gabarit interne (champs descriptifs uniquement).
+- Complétude étendue aux sections relationnelles, recalculée au démarrage quand les critères évoluent.
+- Récapitulatif imprimable (synthèse, alertes, responsables, périmètre, échéances).
+- Instantanés de version incluant les liens.
+- 8 tests d’intégration supplémentaires (72 au total).
+
+### Explicitement non livré
+- Étapes 3 (modèles, S4), 9 (classification, S5), 11 (documentation, S7) : écrans « Fonctionnalité non implémentée ».
+- Synchronisation sélective avec un registre RGPD externe (S9).
+
 ## [0.2.0] — 2026-11-10 — Slice S2 : registre des SIA
 
 ### Ajouté
