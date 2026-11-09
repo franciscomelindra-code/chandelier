@@ -1,0 +1,40 @@
+# Dépendances et builds
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+.vite/
+
+# Secrets — ne JAMAIS committer
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+secrets/
+**/cloudflared/*.json
+**/credentials*.json
+
+# Données locales et sauvegardes
+.local/
+backups/
+*.dump
+*.sql.gz
+data/
+uploads/
+
+# Outils / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.log
+npm-debug.log*
+playwright-report/
+test-results/

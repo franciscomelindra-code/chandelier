@@ -1,0 +1,16 @@
+# Surcharge de développement (facultative) :
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+# - expose PostgreSQL sur 127.0.0.1:5432 pour les outils locaux (jamais sur le réseau) ;
+# - journaux détaillés ; jeu de démonstration FICTIF chargé.
+services:
+  postgres:
+    ports:
+      - '127.0.0.1:${POSTGRES_DEV_PORT:-5432}:5432'
+    networks: [backend, devdb]
+  api:
+    environment:
+      LOG_LEVEL: debug
+      SEED_DEMO: 'true'
+
+networks:
+  devdb: {}

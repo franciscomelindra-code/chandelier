@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: chandelier_test
+          POSTGRES_USER: chandelier
+          POSTGRES_PASSWORD: ci-only-not-a-secret
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U chandelier -d chandelier_test"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      CHECKPOINT_DISABLE: '1'
+      # Base éphémère du conteneur de service CI, détruite à la fin du job.
+      DATABASE_URL: postgresql://chandelier:ci-only-not-a-secret@localhost:5432/chandelier_test
+      DATABASE_URL_TEST: postgresql://chandelier:ci-only-not-a-secret@localhost:5432/chandelier_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Installation
+        run: npm ci --no-audit
+      - name: Prisma — validation et client
+        run: npx prisma validate && npx prisma generate
+      - name: Lint
+        run: npm run lint
+      - name: Format
+        run: npm run format:check
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Tests (unitaires + intégration PostgreSQL)
+        run: npm test
+      - name: Migrations — application sur base vierge et absence de dérive
+        run: |
+          npx prisma migrate reset --force --skip-seed
+          npx prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma \
+            --shadow-database-url "$DATABASE_URL" --exit-code
+      - name: Build
+        run: npm run build
+  secrets-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Recherche de secrets dans tout l'historique (gitleaks)
+        run: docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.24.2 detect --source /repo --no-banner --redact

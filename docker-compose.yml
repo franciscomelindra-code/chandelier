@@ -1,0 +1,129 @@
+# Chandelier — démarrage :  cp .env.example .env && docker compose up -d --build
+# Fonctionne avec Docker Compose standard (Docker Desktop, Docker Engine) et OrbStack.
+name: chandelier
+
+x-hardening: &hardening
+  security_opt:
+    - no-new-privileges:true
+  restart: unless-stopped
+
+services:
+  # Génère les secrets manquants (une seule fois) puis s'arrête.
+  secrets-init:
+    image: postgres:17-alpine
+    entrypoint: ['/bin/sh', '/secrets-init.sh']
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}
+      SESSION_SECRET: ${SESSION_SECRET:-}
+    volumes:
+      - ./docker/secrets-init.sh:/secrets-init.sh:ro
+      - secrets:/run/chandelier-secrets
+    network_mode: none
+    restart: 'no'
+
+  postgres:
+    <<: *hardening
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-chandelier}
+      POSTGRES_USER: ${POSTGRES_USER:-chandelier}
+      POSTGRES_PASSWORD_FILE: /run/chandelier-secrets/postgres_password
+      POSTGRES_INITDB_ARGS: '--encoding=UTF8 --locale=C --auth-host=scram-sha-256'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - secrets:/run/chandelier-secrets:ro
+    networks: [backend]
+    # Aucun port publié : PostgreSQL n'est joignable que par l'API, sur le réseau interne.
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    depends_on:
+      secrets-init:
+        condition: service_completed_successfully
+
+  api:
+    <<: *hardening
+    build:
+      context: .
+      target: api
+    image: chandelier-api:local
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      APP_URL: ${APP_URL:-http://localhost:8080}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      TRUST_PROXY: 'true'
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-chandelier}
+      POSTGRES_USER: ${POSTGRES_USER:-chandelier}
+      SECRETS_DIR: /run/chandelier-secrets
+      SESSION_IDLE_MINUTES: ${SESSION_IDLE_MINUTES:-30}
+      SESSION_ABSOLUTE_HOURS: ${SESSION_ABSOLUTE_HOURS:-10}
+      COOKIE_SECURE: ${COOKIE_SECURE:-auto}
+      AUTH_MODE: ${AUTH_MODE:-local}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      BOOTSTRAP_ADMIN_NAME: ${BOOTSTRAP_ADMIN_NAME:-}
+      SEED_DEMO: ${SEED_DEMO:-false}
+      LLM_PROVIDER: ${LLM_PROVIDER:-disabled}
+      REMOTE_ACCESS_MODE: ${REMOTE_ACCESS_MODE:-disabled}
+    volumes:
+      - secrets:/run/chandelier-secrets
+      - documents:/data/documents
+    read_only: true
+    tmpfs:
+      - /tmp
+    networks: [backend, frontend]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    <<: *hardening
+    build:
+      context: .
+      target: web
+    image: chandelier-web:local
+    ports:
+      # 127.0.0.1 par défaut : non accessible depuis le réseau. Voir docs/REMOTE_ACCESS.md.
+      - '${WEB_BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-8080}:8080'
+    networks: [frontend]
+    read_only: true
+    tmpfs:
+      - /tmp
+    depends_on:
+      api:
+        condition: service_healthy
+    labels:
+      # Facultatif (OrbStack uniquement, ignoré ailleurs) : https://chandelier.local
+      dev.orbstack.domains: ${ORBSTACK_DOMAIN:-chandelier.local}
+      dev.orbstack.http-port: '8080'
+
+  # Facultatif : publication via Cloudflare Tunnel + Access (docs/REMOTE_ACCESS.md, mode 3).
+  # Activé uniquement par :  docker compose --profile cloudflare up -d
+  cloudflared:
+    <<: *hardening
+    profiles: [cloudflare]
+    image: cloudflare/cloudflared:latest
+    command: ['tunnel', '--no-autoupdate', 'run']
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    networks: [frontend]
+    depends_on:
+      web:
+        condition: service_healthy
+
+networks:
+  frontend: {}
+  backend:
+    # Réseau sans accès extérieur : PostgreSQL n'a ni entrée ni sortie Internet.
+    internal: true
+
+volumes:
+  pgdata:
+    name: chandelier_pgdata
+  secrets:
+    name: chandelier_secrets
+  documents:
+    name: chandelier_documents

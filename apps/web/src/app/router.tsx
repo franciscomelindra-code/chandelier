@@ -1,0 +1,123 @@
+import { createBrowserRouter, Navigate, Outlet, useLocation } from 'react-router';
+import { useAuth } from '../lib/auth';
+import { Spinner } from '../components/ui';
+import { NotImplemented } from '../components/NotImplemented';
+import { Layout } from './Layout';
+import { LoginPage } from '../features/auth/LoginPage';
+import { ChangePasswordPage } from '../features/auth/ChangePasswordPage';
+import { AdminPage } from '../features/admin/AdminPage';
+import { UsersPanel } from '../features/admin/UsersPanel';
+import { OrgUnitsPanel } from '../features/admin/OrgUnitsPanel';
+import { RolesPanel } from '../features/admin/RolesPanel';
+import { AuditPanel } from '../features/admin/AuditPanel';
+
+function RequireAuth() {
+  const { me, loading } = useAuth();
+  const location = useLocation();
+  if (loading) return <Spinner />;
+  if (!me) return <Navigate to="/connexion" replace state={{ from: location.pathname }} />;
+  if (me.user.mustChangePassword && location.pathname !== '/mot-de-passe') {
+    return <Navigate to="/mot-de-passe" replace />;
+  }
+  return <Outlet />;
+}
+
+const planned = (title: string, slice: string, scope: string[]) => (
+  <NotImplemented title={title} slice={slice} scope={scope} />
+);
+
+export const router = createBrowserRouter([
+  { path: '/connexion', element: <LoginPage /> },
+  {
+    element: <RequireAuth />,
+    children: [
+      { path: '/mot-de-passe', element: <ChangePasswordPage /> },
+      {
+        element: <Layout />,
+        children: [
+          { index: true, element: <Navigate to="/tableau-de-bord" replace /> },
+          {
+            path: '/tableau-de-bord',
+            element: planned('Tableau de bord', 'S8', [
+              'KPI calculés depuis les données (aucune valeur en dur)',
+              'SIA par statut, niveau de risque, unité, valeur ajoutée',
+              'Matrice risque × valeur, FRIA, notices manquantes, échéances',
+              'Widgets cliquables ouvrant la liste filtrée',
+            ]),
+          },
+          {
+            path: '/systemes',
+            element: planned('Systèmes d’IA', 'S2–S3', [
+              'Registre : création, modification, consultation, archivage motivé',
+              'Recherche plein texte, filtres combinés, pagination serveur, vues sauvegardées',
+              'Fiche en 12 étapes avec sauvegarde progressive et complétude',
+            ]),
+          },
+          {
+            path: '/modeles',
+            element: planned('Modèles d’IA', 'S4', [
+              'Référentiel des modèles et fournisseurs',
+              'Liaison N-N avec les SIA et description de l’utilisation propre à chaque lien',
+            ]),
+          },
+          {
+            path: '/evaluations',
+            element: planned('Évaluations', 'S5', [
+              'Questionnaire AI Act versionné (définition, rôles, art. 5, art. 6 / annexe III, art. 50, FRIA)',
+              'Résultat explicable, surcharge juriste motivée et historisée',
+              'Génération des obligations applicables',
+            ]),
+          },
+          {
+            path: '/risques',
+            element: planned('Risques', 'S6', [
+              'Registre des risques par SIA',
+              'Méthodologie paramétrable, risques inhérent et résiduel',
+              'Mesures',
+            ]),
+          },
+          {
+            path: '/actions',
+            element: planned('Actions', 'S6', [
+              'Plans d’action, échéances, responsables',
+              'Rattachement aux risques et obligations',
+            ]),
+          },
+          {
+            path: '/documentation',
+            element: planned('Documentation', 'S7 / S9', [
+              'Pièces justificatives versionnées',
+              'FRIA, DPIA, notices de transparence',
+            ]),
+          },
+          {
+            path: '/referentiels',
+            element: planned('Référentiels', 'S5', [
+              'Référentiel AI Act versionné (questions, règles, obligations) — voir docs/AI_ACT_RULES.md',
+              'Catégories de données et de personnes concernées (déjà en base, écran à venir)',
+            ]),
+          },
+          {
+            path: '/rapports',
+            element: planned('Rapports', 'S10', ['11 rapports standards', 'Exports CSV, XLSX, PDF, DOCX']),
+          },
+          {
+            path: '/administration',
+            element: <AdminPage />,
+            children: [
+              { index: true, element: <Navigate to="utilisateurs" replace /> },
+              { path: 'utilisateurs', element: <UsersPanel /> },
+              { path: 'unites', element: <OrgUnitsPanel /> },
+              { path: 'roles', element: <RolesPanel /> },
+              { path: 'journal', element: <AuditPanel /> },
+            ],
+          },
+          {
+            path: '*',
+            element: planned('Page introuvable', '—', ['Cette adresse ne correspond à aucun écran.']),
+          },
+        ],
+      },
+    ],
+  },
+]);

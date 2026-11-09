@@ -1,0 +1,83 @@
+@import 'tailwindcss';
+
+/*
+ * Thème Chandelier — fondé sur le GLS France Design System
+ * (bleu #061AB1 dominant, jaune #FFD100 en accent uniquement, police Hanken Grotesk
+ * auto-hébergée en substitution de la police propriétaire GLS).
+ * Tonalités sémantiques demandées : vert / jaune / orange / rouge / gris / bleu.
+ */
+@theme {
+  --font-sans: 'Hanken Grotesk Variable', Verdana, system-ui, -apple-system, sans-serif;
+
+  --color-gls-blue: #061ab1;
+  --color-gls-blue-600: #0517a0;
+  --color-gls-blue-700: #04137f;
+  --color-gls-blue-050: #e7e9f7;
+  --color-gls-yellow: #ffd100;
+  --color-gls-cyan: #00cbf4;
+  --color-gls-orange: #ff8700;
+  --color-ink: #14171f;
+
+  --color-grey-50: #f5f6fa;
+  --color-grey-100: #eceef4;
+  --color-grey-200: #dcdfea;
+  --color-grey-300: #c3c8d8;
+  --color-grey-400: #9aa1b8;
+  --color-grey-500: #6b7288;
+  --color-grey-600: #454b5e;
+  --color-grey-700: #2c3140;
+
+  /* Tonalités (fond / texte) — contrastes ≥ 4.5:1 */
+  --color-tone-green-bg: #e1f3e9;
+  --color-tone-green-fg: #12703f;
+  --color-tone-yellow-bg: #fff6cc;
+  --color-tone-yellow-fg: #6e5b00;
+  --color-tone-orange-bg: #ffebd1;
+  --color-tone-orange-fg: #8a4a00;
+  --color-tone-red-bg: #fbe0e3;
+  --color-tone-red-fg: #a31d2a;
+  --color-tone-gray-bg: #eceef4;
+  --color-tone-gray-fg: #2c3140;
+  --color-tone-blue-bg: #e7e9f7;
+  --color-tone-blue-fg: #061ab1;
+
+  --radius-card: 20px;
+  --shadow-card: 0 4px 12px rgba(6, 26, 177, 0.08), 0 2px 4px rgba(6, 26, 177, 0.06);
+  --shadow-pop: 0 12px 32px rgba(6, 26, 177, 0.12), 0 4px 8px rgba(6, 26, 177, 0.06);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+  body {
+    @apply bg-grey-50 text-ink font-sans antialiased;
+    line-height: 1.55;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply text-gls-blue font-bold tracking-tight;
+  }
+  :focus-visible {
+    outline: 3px solid rgb(0 203 244 / 0.7);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white;
+  }
+}

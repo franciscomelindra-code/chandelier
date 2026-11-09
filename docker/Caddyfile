@@ -1,0 +1,58 @@
+# Chandelier — service "web" : sert la SPA et relaie /api vers le service "api" (réseau Docker interne).
+# Le TLS est assuré en amont selon le mode d'accès (OrbStack, Tailscale Serve, Cloudflare) :
+# Caddy écoute en HTTP sur 8080, uniquement publié sur l'adresse WEB_BIND_ADDRESS (127.0.0.1 par défaut).
+{
+	admin off
+	auto_https off
+	persist_config off
+	servers {
+		# En-têtes X-Forwarded-* acceptés uniquement depuis les réseaux privés (tailscale serve, cloudflared).
+		trusted_proxies static private_ranges
+	}
+}
+
+:8080 {
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+		Cross-Origin-Opener-Policy "same-origin"
+		Cross-Origin-Resource-Policy "same-origin"
+		-Server
+	}
+
+	handle /healthz {
+		respond "ok" 200
+	}
+
+	# API (et supervision) : en-têtes CSP propres à l'API (helmet).
+	@api path /api/* /health /ready
+	handle @api {
+		request_body {
+			max_size 30MB
+		}
+		reverse_proxy api:3000 {
+			header_up X-Request-Id {http.request.uuid}
+		}
+	}
+
+	# Application monopage.
+	handle {
+		root * /srv
+		header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		@html path / /index.html
+		header @html Cache-Control "no-store"
+		try_files {path} /index.html
+		file_server
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}
