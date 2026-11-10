@@ -157,4 +157,21 @@ Référentiels (lecture : session ; écriture : `catalog:manage` ; suppression r
 | GET / PUT | `/api/v1/settings/notice` | mentions par défaut (organisation, contact) ; modification `settings:manage` |
 | GET | `/api/v1/compliance-portfolio` | FRIA, DPIA et notices des SIA du périmètre |
 
-Webhooks et intégrations Microsoft 365 : non implémentés (phase 3).
+## Routes livrées (S10 — rapports, import, assistant IA, Entra ID)
+
+| Méthode | Route | Contrôle |
+|---|---|---|
+| GET | `/api/v1/reports` ; `/api/v1/reports/:key?format=xlsx\|csv\|json&demo=include\|exclude` | `report:read` ; périmètre ; journalisé |
+| GET | `/api/v1/ai-systems/:id/sheet?format=md\|html` | `aiSystem:export` ; HTML échappé |
+| GET | `/api/v1/ai-systems/:id/audit-dossier` | `aiSystem:export` **et** `audit:read` sur le SIA ; ZIP + manifeste SHA-256 |
+| POST | `/api/v1/imports/ai-systems/preview` (multipart, CSV ou JSON, 2 Mo, 2 000 lignes) | `import:run` ; aperçu conservé 24 h au plus |
+| POST | `/api/v1/imports/:id/validate` \| `commit` `{ mapping, defaultOrgUnitId }` | `import:run` + `aiSystem:create` sur chaque unité ; commit tout ou rien (400 + rapport) |
+| GET | `/api/v1/imports` | imports de l’utilisateur |
+| GET | `/api/v1/assistant/status` | état du fournisseur |
+| POST | `/api/v1/ai-systems/:id/assistant/extract` `{ text }` ; `…/assistant/risks` | `assistant:use` + droit de modifier ce qui serait proposé ; 20 appels / heure ; 503 si désactivé |
+| GET | `/api/v1/ai-systems/:id/assistant/suggestions` | propositions et décisions |
+| POST | `/api/v1/assistant/suggestions/:id/decide` `{ decision }` | rejet, ou acceptation (un risque proposé est créé non coté ; une valeur de champ est appliquée par l’utilisateur via `PATCH /ai-systems/:id`) |
+| GET | `/api/v1/auth/oidc/login` → IdP ; `/api/v1/auth/oidc/callback` | public ; PKCE, state, nonce, signature JWKS, audience ; comptes pré-provisionnés |
+| GET | `/api/v1/auth/session` (non authentifié) | `{ authenticated: false, sso, localLogin }` |
+
+Webhooks et intégrations Microsoft 365 (Graph, SharePoint, Teams, Power Automate) : non implémentés (phase 3). L’API REST documentée sur `/api/docs` est le point d’intégration prévu.

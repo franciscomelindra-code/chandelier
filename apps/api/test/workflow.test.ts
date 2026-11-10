@@ -325,3 +325,28 @@ describe('revues, commentaires, rappels, versions', () => {
     expect((await req(gov, 'GET', `/ai-systems/${s.id}`)).json().name).toBe(v1.name);
   });
 });
+
+describe('action de masse « Lancer une revue »', () => {
+  it('crée une revue à l’échéance demandée sur chaque SIA, tout ou rien', async () => {
+    const a = await newSystem();
+    const b = await newSystem();
+    const r = await req(gov, 'POST', '/ai-systems/bulk', {
+      action: 'startReview',
+      ids: [a.id, b.id],
+      dueDate: '2027-03-31',
+      reviewerId: reviewer.user.id,
+    });
+    expect(r.statusCode, r.body).toBe(200);
+    for (const s of [a, b]) {
+      const reviews = (await req(gov, 'GET', `/ai-systems/${s.id}/reviews`)).json();
+      expect(reviews.items[0].dueDate).toBe('2027-03-31');
+      expect(reviews.items[0].reviewer.id).toBe(reviewer.user.id);
+    }
+    const denied = await req(owner.session, 'POST', '/ai-systems/bulk', {
+      action: 'startReview',
+      ids: [a.id],
+      dueDate: '2027-03-31',
+    });
+    expect(denied.statusCode).toBe(403);
+  });
+});

@@ -2,7 +2,7 @@
 
 Application de gouvernance et de pilotage des systèmes d'intelligence artificielle (SIA) de GLS France : registre, référentiel des modèles, qualification AI Act (règlement (UE) 2024/1689), risques, FRIA, articulation RGPD, preuves et traçabilité.
 
-> **État : tranches S1 (socle), S2 (registre des SIA), S3 (fiche en 12 étapes, référentiels), S4 (modèles d'IA, fournisseurs), S5 (moteur de qualification AI Act), S6 (risques, mesures, plans d'action) S7 (documents, validations, revues, collaboration) S8 (tableau de bord) et S9 (FRIA, DPIA, notices) livrées.** Authentification, utilisateurs, unités organisationnelles, RBAC avec périmètres, journal d'audit immuable, registre des SIA (recherche plein texte, filtres, vues, actions de masse, export, archivage motivé), API OpenAPI, Docker et CI. Les modules métier (registre, qualification, risques…) arrivent par tranches : voir [Fonctionnalités](#fonctionnalités) et [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md). Les écrans non livrés affichent « Fonctionnalité non implémentée ».
+> **État : les dix tranches S1 à S10 sont livrées** (socle, registre, fiche en 12 étapes, modèles, qualification AI Act, risques et actions, documents et validations, tableau de bord, FRIA / DPIA / notices, rapports, import, assistant IA, Entra ID). Ce qui reste non implémenté est listé dans [Restant à développer](#restant-à-développer) ; les écrans concernés affichent « Fonctionnalité non implémentée ».
 
 Le dépôt ne contient **aucune donnée réelle de GLS France** ni aucun secret. Le seul jeu de données facultatif est marqué `[DEMO]`.
 
@@ -177,10 +177,22 @@ docs            Architecture, données, AI Act, sécurité, déploiement…
 - FRIA versionnée selon l'art. 27, réutilisant les thèmes d'une DPIA, validée à quatre yeux.
 - Notices de transparence générées depuis la fiche (sans IA), validées, ajoutées aux pièces, exportables en Markdown et HTML.
 
+### Implémentées et testées (S10)
+
+- 10 rapports standards (XLSX, CSV, JSON), fiche SIA (Markdown, HTML) et dossier d'audit ZIP avec manifeste SHA-256.
+- Import CSV / JSON du registre : mapping proposé, aperçu, rapport d'erreurs, import tout ou rien.
+- Assistant IA désactivé par défaut (fournisseur Anthropic via le SDK officiel) : propositions toujours « À vérifier », données minimisées, usage journalisé.
+- Connexion Microsoft Entra ID (OIDC) pour des comptes pré-provisionnés.
+
 ### Restant à développer
 
-Voir [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) (statut par exigence) : assistant IA, import/export, rapports, Entra ID (S10), Trust Center et intégrations Microsoft 365 (phase 3).
+Honnêtement, à ce stade :
 
+- **Non implémenté** : exports et rapports PDF / DOCX ; import XLSX ; préremplissage IA dès la création d'une fiche et extraction depuis un PDF ; analyse antivirus des pièces ; stockage S3 / Azure Blob ; notifications par e-mail / Teams ; webhooks ; intégrations Microsoft 365 ; Trust Center (phase 3) ; mapping des groupes Entra ID vers les rôles.
+- **Jamais exécuté sur le poste de développement** : docker compose (Docker indisponible ; couvert par la CI docker-build.yml), connexion à un tenant Entra ID réel, appel réel au fournisseur d'IA.
+- **À valider par la Direction juridique** : référentiel AI Act v1.0.0 (projet), grille de cotation par défaut, mentions des notices.
+
+Détail par exigence : [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md).
 ## Licence
 
 Usage interne. Voir [LICENSE](LICENSE). Les logos GLS sont la propriété de leur titulaire et ne sont utilisés que pour l'identification interne de l'application.

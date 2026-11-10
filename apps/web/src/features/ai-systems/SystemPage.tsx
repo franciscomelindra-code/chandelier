@@ -27,6 +27,7 @@ import { SystemActions, SystemRisks } from '../risks/RisksPage';
 import { ValidationTab } from '../workflow/ValidationTab';
 import { CommentsTab } from '../workflow/CommentsTab';
 import { VersionsPanel } from '../workflow/VersionsPanel';
+import { AssistantPanel } from '../assistant/AssistantPanel';
 
 /** Étapes dont le contenu dépend d'une tranche ultérieure. */
 const PLANNED: Partial<Record<SectionKey, string>> = {};
@@ -238,6 +239,12 @@ export function SystemPage() {
             >
               Imprimer le récapitulatif
             </Button>
+            <a
+              className="inline-flex items-center rounded-full px-4 py-2 text-[0.95rem] font-bold text-gls-blue hover:bg-gls-blue-050"
+              href={`/api/v1/ai-systems/${s.id}/sheet?format=html`}
+            >
+              Exporter la fiche
+            </a>
             {s.permissions.canArchive && !archived && (
               <Button variant="danger" onClick={() => (setReasonError(null), setReasonFor('archive'))}>
                 Archiver
@@ -287,7 +294,10 @@ export function SystemPage() {
       </nav>
 
       {tab === 'risques' ? (
-        <SystemRisks systemId={s.id} />
+        <div className="space-y-4">
+          <SystemRisks systemId={s.id} />
+          {!archived && s.permissions.updatableSections.length > 0 && <AssistantPanel s={s} mode="risks" />}
+        </div>
       ) : tab === 'actions' ? (
         <SystemActions systemId={s.id} />
       ) : tab === 'validation' ? (

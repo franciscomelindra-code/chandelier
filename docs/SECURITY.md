@@ -82,11 +82,19 @@ Règles complémentaires (S7) :
 - **Commentaires** : nouvelle permission `comment:write` (tous les rôles sauf READER et AUDITOR) ; une mention n’est acceptée que si la personne mentionnée peut lire le SIA (pas de fuite par notification).
 - **Notices (S9)** : rendu à l’écran par un analyseur Markdown restreint sans HTML (aucun `dangerouslySetInnerHTML`) ; export HTML entièrement échappé avec CSP `default-src 'none'; sandbox` ; liens DPIA externes limités à http(s), ouverts côté navigateur en `noopener noreferrer`, jamais appelés par le serveur (pas de SSRF).
 - **FRIA et notices** : validation par une autre personne que le dernier rédacteur.
+
+Règles complémentaires (S10) :
+
+- **Entra ID (OIDC)** : flux « authorization code » avec PKCE (S256), `state` et `nonce` dans un cookie de transaction signé (HMAC), 10 minutes, `SameSite=Lax` limité au chemin `/api/v1/auth/oidc` ; jeton d’identité vérifié (signature JWKS, émetteur, audience, expiration, nonce) ; émetteur fixé par la configuration (pas de SSRF) ; comptes pré-provisionnés uniquement, liés à l’`oid` ; un compte local homonyme n’est jamais connecté par SSO ; échecs journalisés. Connexion locale refusée en mode OIDC sauf secours explicite.
+- **Assistant IA** : désactivé par défaut ; clé uniquement côté serveur (variable ou fichier secret), jamais dans le frontend ; données minimisées (aucun nom ni e-mail de personne) ; texte collé limité à 20 000 caractères, avec avertissement ; limitation à 20 appels par heure ; journal d’usage sans contenu (volumes seulement, origine `ASSISTANT`) ; réponses validées par schéma côté serveur ; propositions « À vérifier », jamais appliquées sans action humaine.
+- **Import** : 2 Mo et 2 000 lignes au plus, CSV / JSON uniquement, contrôle de création par unité, transaction tout ou rien ; HTML importé converti en texte brut ; lignes source supprimées après import (ou au bout de 24 h pour un aperçu abandonné).
+- **Exports** : CSV avec neutralisation des formules ; XLSX à cellules texte (aucune formule) ; dossier d’audit réservé aux détenteurs de `audit:read`.
 - **Restauration de version** : `aiSystem:update` sans qualificatif de section (propriétaire ou gouvernance) ; un contributeur ne peut pas restaurer.
 
 ## 4. Points de vigilance connus
 
-- Le mode `AUTH_MODE=oidc` n'est pas encore implémenté (S10/phase 3) : la valeur est refusée au démarrage avec un message explicite.
+- Le mode `AUTH_MODE=oidc` (S10) n'a été testé qu'avec un fournisseur d'identité simulé : à valider sur le tenant Entra ID avant la mise en service.
+- L'assistant IA n'a jamais été appelé réellement : son activation requiert une validation DPO / RSSI.
 - L'antivirus n'est pas actif par défaut.
 - Le chiffrement au repos dépend de l'hôte (FileVault sur macOS recommandé, volumes Docker sur disque chiffré).
 - Les sauvegardes `backups/*.dump` contiennent l'intégralité du registre : à stocker chiffrées (voir `BACKUP_RESTORE.md`).

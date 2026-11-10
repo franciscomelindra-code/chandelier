@@ -9,6 +9,7 @@ import { loadConfig } from '../src/config.js';
 import { seedBase } from '../src/seed/base.js';
 import { importFrameworks } from '../src/referentials/loader.js';
 import { hashPassword } from '../src/auth/password.js';
+import type { LlmProvider } from '../src/assistant/provider.js';
 
 const envFile = resolve(import.meta.dirname, '../../../.env');
 if (existsSync(envFile)) process.loadEnvFile(envFile);
@@ -22,7 +23,7 @@ export interface TestCtx {
   close: () => Promise<void>;
 }
 
-export async function setupApp(): Promise<TestCtx> {
+export async function setupApp(opts: { llm?: LlmProvider } = {}): Promise<TestCtx> {
   const url = process.env.DATABASE_URL_TEST!;
   const config = loadConfig({
     ...process.env,
@@ -37,7 +38,7 @@ export async function setupApp(): Promise<TestCtx> {
   const prisma = new PrismaClient({ datasources: { db: { url } } });
   await seedBase(prisma);
   await importFrameworks(prisma);
-  const app = await buildApp({ config, prisma });
+  const app = await buildApp({ config, prisma, ...(opts.llm ? { llm: opts.llm } : {}) });
   await app.ready();
   return {
     app,

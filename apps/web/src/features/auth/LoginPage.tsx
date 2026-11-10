@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router';
-import { errorMessage, post } from '../../lib/api';
+import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
+import { errorMessage, get, post } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import { Alert, Button, TextField } from '../../components/ui';
 
@@ -12,6 +13,13 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [sp] = useSearchParams();
+  const options = useQuery({
+    queryKey: ['auth-options'],
+    queryFn: () => get<{ authenticated: boolean; sso?: boolean; localLogin?: boolean }>('/api/v1/auth/session'),
+  });
+  const sso = !!options.data?.sso;
+  const localLogin = options.data?.localLogin !== false;
 
   if (me) return <Navigate to="/" replace />;
 
@@ -50,28 +58,53 @@ export function LoginPage() {
         <form onSubmit={submit} className="w-full max-w-sm space-y-5" noValidate>
           <h2 className="text-2xl">Connexion</h2>
           {error && <Alert tone="red">{error}</Alert>}
-          <TextField
-            label="Adresse e-mail"
-            type="email"
-            autoComplete="username"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <TextField
-            label="Mot de passe"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <Button type="submit" className="w-full" disabled={busy || !email || !password}>
-            {busy ? 'Connexion…' : 'Se connecter'}
-          </Button>
-          <p className="text-xs text-grey-500">
-            L’authentification Microsoft Entra ID (SSO) n’est pas encore activée sur cette instance.
-          </p>
+          {sp.get('erreur') === 'sso' && (
+            <Alert tone="red" title="Connexion Microsoft Entra ID refusée">
+              Votre compte n’est pas habilité dans Chandelier ou la connexion a expiré. Contactez l’administrateur.
+            </Alert>
+          )}
+          {sso && (
+            <a
+              href="/api/v1/auth/oidc/login"
+              className="flex w-full items-center justify-center rounded-full border-2 border-gls-blue bg-gls-blue px-5 py-2.5 font-bold text-white hover:bg-gls-blue-600"
+            >
+              Se connecter avec Microsoft Entra ID
+            </a>
+          )}
+          {localLogin && (
+            <>
+              {sso && <p className="text-center text-xs text-grey-500">ou, compte de secours local :</p>}
+              <TextField
+                label="Adresse e-mail"
+                type="email"
+                autoComplete="username"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <TextField
+                label="Mot de passe"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <Button
+                type="submit"
+                className="w-full"
+                variant={sso ? 'secondary' : 'primary'}
+                disabled={busy || !email || !password}
+              >
+                {busy ? 'Connexion…' : 'Se connecter'}
+              </Button>
+            </>
+          )}
+          {!sso && (
+            <p className="text-xs text-grey-500">
+              Authentification Microsoft Entra ID non configurée sur cette instance.
+            </p>
+          )}
         </form>
       </section>
     </div>

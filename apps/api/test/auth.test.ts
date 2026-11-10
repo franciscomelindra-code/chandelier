@@ -18,7 +18,8 @@ describe('authentification', () => {
   it('/auth/session renvoie 200 non authentifié, sans donnée', async () => {
     const res = await ctx.app.inject({ method: 'GET', url: '/api/v1/auth/session' });
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ authenticated: false });
+    // Uniquement les options de connexion (S10), aucune donnée.
+    expect(res.json()).toEqual({ authenticated: false, sso: false, localLogin: true });
   });
 
   it('health et ready sont publics', async () => {

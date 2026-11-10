@@ -20,7 +20,7 @@ export const NAV: NavItem[] = [
   { to: '/actions', label: 'Actions', permission: 'aiSystem:read', live: true },
   { to: '/documentation', label: 'Documentation', permission: 'aiSystem:read', live: true },
   { to: '/referentiels', label: 'Référentiels', live: true },
-  { to: '/rapports', label: 'Rapports', permission: 'report:read', live: false },
+  { to: '/rapports', label: 'Rapports', permission: 'report:read', live: true },
   { to: '/administration', label: 'Administration', permission: 'user:read', live: true },
 ];
 

@@ -179,16 +179,18 @@ export const userRoutes: FastifyPluginAsyncZod = async (app) => {
     {
       schema: {
         tags: ['Utilisateurs'],
-        summary: 'Créer un utilisateur local (mot de passe temporaire renvoyé une seule fois)',
+        summary:
+          'Créer un utilisateur (local : mot de passe temporaire renvoyé une seule fois ; OIDC : sans mot de passe)',
         body: userCreateSchema,
-        response: { 201: z.object({ user: userOut, temporaryPassword: z.string() }) },
+        response: { 201: z.object({ user: userOut, temporaryPassword: z.string().nullable() }) },
       },
     },
     async (request, reply) => {
       const ctx = requirePermission(request, 'user:manage');
       const input = request.body;
-      const temporaryPassword = generatePassword();
-      const passwordHash = await hashPassword(temporaryPassword);
+      const isLocal = input.authProvider === 'LOCAL';
+      const temporaryPassword = isLocal ? generatePassword() : null;
+      const passwordHash = temporaryPassword ? await hashPassword(temporaryPassword) : null;
       const created = await prisma.$transaction(async (tx) => {
         if (input.orgUnitId) {
           const unit = await tx.organizationUnit.findUnique({ where: { id: input.orgUnitId } });
@@ -200,7 +202,8 @@ export const userRoutes: FastifyPluginAsyncZod = async (app) => {
             displayName: input.displayName,
             orgUnitId: input.orgUnitId ?? null,
             passwordHash,
-            mustChangePassword: true,
+            authProvider: input.authProvider,
+            mustChangePassword: isLocal,
             createdById: ctx.user.id,
             updatedById: ctx.user.id,
           },
@@ -213,6 +216,7 @@ export const userRoutes: FastifyPluginAsyncZod = async (app) => {
           changes: {
             email: { old: null, new: user.email },
             displayName: { old: null, new: user.displayName },
+            authProvider: { old: null, new: user.authProvider },
             orgUnitId: { old: null, new: user.orgUnitId },
             roles: { old: [], new: rolesSummary(input.roles) },
           },

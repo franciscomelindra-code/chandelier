@@ -6,6 +6,7 @@ import { AppError, badRequest, unauthorized } from '../errors.js';
 import { actorOf, requireAuth } from '../http.js';
 import { getDummyHash, hashPassword, verifyPassword } from '../auth/password.js';
 import { cookieName, createSession } from '../auth/session.js';
+import { oidcClient } from '../auth/oidc.js';
 import { listPermissions } from '../rbac/access.js';
 
 const MAX_FAILED = 5;
@@ -42,6 +43,8 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request, reply) => {
+      if (config.AUTH_MODE === 'oidc' && !config.AUTH_LOCAL_FALLBACK)
+        throw new AppError(403, 'LOCAL_LOGIN_DISABLED', 'Connexion locale désactivée : utilisez Microsoft Entra ID');
       const { email, password } = request.body;
       const user = await prisma.user.findUnique({ where: { email } });
       const actorBase = { origin: 'USER' as const, requestId: request.id, ip: request.ip };
@@ -162,7 +165,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         security: [],
         response: {
           200: z.union([
-            z.object({ authenticated: z.literal(false) }),
+            z.object({ authenticated: z.literal(false), sso: z.boolean(), localLogin: z.boolean() }),
             meResponse.extend({ authenticated: z.literal(true) }),
           ]),
         },
@@ -171,7 +174,12 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
     async (request) => {
       const ctx = request.auth;
       const session = request.authSession;
-      if (!ctx || !session) return { authenticated: false as const };
+      if (!ctx || !session)
+        return {
+          authenticated: false as const,
+          sso: !!config.oidc,
+          localLogin: config.AUTH_MODE === 'local' || !!config.AUTH_LOCAL_FALLBACK,
+        };
       return {
         authenticated: true as const,
         user: ctx.user,
@@ -218,6 +226,115 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         });
       });
       return reply.status(204).send(null);
+    },
+  );
+
+  // ── Microsoft Entra ID (OIDC) ──
+  const oidc = config.oidc ? oidcClient(config.oidc, config.SESSION_SECRET) : null;
+  const OIDC_COOKIE = config.cookieSecure ? '__Secure-chandelier_oidc' : 'chandelier_oidc';
+  const appRoot = config.APP_URL.replace(/\/+$/, '');
+
+  app.get(
+    '/oidc/login',
+    {
+      config: { public: true, rateLimit: { max: 30, timeWindow: '1 minute' } },
+      schema: {
+        tags: ['Authentification'],
+        summary: 'Redirection vers Microsoft Entra ID (AUTH_MODE=oidc)',
+        security: [],
+      },
+    },
+    async (_request, reply) => {
+      if (!oidc) throw new AppError(404, 'NOT_FOUND', 'Authentification OIDC non configurée');
+      const { url, cookie } = await oidc.authorizationUrl();
+      // SameSite=Lax : le retour de l'IdP est une navigation de premier niveau intersite.
+      reply.setCookie(OIDC_COOKIE, cookie, {
+        httpOnly: true,
+        secure: config.cookieSecure,
+        sameSite: 'lax',
+        path: '/api/v1/auth/oidc',
+        maxAge: 600,
+      });
+      return reply.redirect(url, 302);
+    },
+  );
+
+  app.get(
+    '/oidc/callback',
+    {
+      config: { public: true, rateLimit: { max: 30, timeWindow: '1 minute' } },
+      schema: {
+        tags: ['Authentification'],
+        summary:
+          'Retour de Microsoft Entra ID : vérification du jeton et ouverture de session (comptes pré-provisionnés)',
+        security: [],
+        querystring: z.object({
+          code: z.string().max(4000).optional(),
+          state: z.string().max(200).optional(),
+          error: z.string().max(200).optional(),
+        }),
+      },
+    },
+    async (request, reply) => {
+      if (!oidc) throw new AppError(404, 'NOT_FOUND', 'Authentification OIDC non configurée');
+      const actorBase = { origin: 'USER' as const, requestId: request.id, ip: request.ip };
+      const fail = async (reason: string, label = 'SSO') => {
+        await prisma.$transaction((tx) =>
+          recordAudit(
+            tx,
+            { ...actorBase, id: null, label },
+            { action: 'login_failed', entityType: 'User', justification: reason },
+          ),
+        );
+        reply.clearCookie(OIDC_COOKIE, { path: '/api/v1/auth/oidc' });
+        return reply.redirect(`${appRoot}/connexion?erreur=sso`, 302);
+      };
+      const { code, state, error } = request.query;
+      if (error || !code || !state) return fail(`Retour IdP : ${error ?? 'paramètres manquants'}`);
+      const tx0 = oidc.readTransaction(request.cookies[OIDC_COOKIE], state);
+      if (!tx0) return fail('Transaction OIDC absente, expirée ou state invalide');
+      let claims;
+      try {
+        claims = await oidc.exchange(code, tx0.verifier, tx0.nonce);
+      } catch (e) {
+        return fail(e instanceof Error ? e.message.slice(0, 200) : 'Échange OIDC en échec');
+      }
+      const subject = typeof claims.oid === 'string' ? claims.oid : claims.sub;
+      const email = String(claims.email ?? claims.preferred_username ?? '').toLowerCase();
+      if (!subject) return fail('Jeton sans identifiant');
+      // Comptes pré-provisionnés uniquement : identifiant IdP déjà lié, ou compte OIDC non encore lié de même e-mail.
+      let user = await prisma.user.findUnique({ where: { externalId: subject } });
+      if (!user && email) {
+        const candidate = await prisma.user.findUnique({ where: { email } });
+        if (candidate && candidate.authProvider === 'OIDC' && !candidate.externalId) {
+          user = await prisma.user.update({ where: { id: candidate.id }, data: { externalId: subject } });
+        }
+      }
+      if (!user || !user.isActive || user.authProvider !== 'OIDC')
+        return fail('Compte non provisionné, désactivé ou non OIDC', email || subject);
+      const label = `${user.displayName} <${user.email}>`;
+      await prisma.$transaction(async (tx) => {
+        await tx.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date(), mustChangePassword: false } });
+        await recordAudit(
+          tx,
+          { ...actorBase, id: user.id, label },
+          { action: 'login_sso', entityType: 'User', entityId: user.id },
+        );
+      });
+      const { token } = await createSession(prisma, config, user.id, {
+        ip: request.ip,
+        userAgent: request.headers['user-agent'],
+      });
+      reply.clearCookie(OIDC_COOKIE, { path: '/api/v1/auth/oidc' });
+      reply.setCookie(cookieName(config), token, {
+        httpOnly: true,
+        secure: config.cookieSecure,
+        // Lax : la première requête suit la redirection depuis l'IdP ; la protection CSRF reste assurée par l'en-tête X-CSRF-Token.
+        sameSite: 'lax',
+        path: '/',
+        maxAge: config.SESSION_ABSOLUTE_HOURS * 3600,
+      });
+      return reply.redirect(`${appRoot}/`, 302);
     },
   );
 };

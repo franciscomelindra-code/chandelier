@@ -2,6 +2,23 @@
 
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versionnement sémantique.
 
+## [0.10.0] — 2026-11-10 — Slice S10 : rapports, import, assistant IA, Entra ID
+
+### Ajouté
+- 10 rapports standards (registre, portefeuille par risque, haut risque, potentiellement interdits, FRIA, conformité par obligation, risques ouverts, actions échues, matrice valeur / risque, revue annuelle) en XLSX, CSV et JSON, générés sur le périmètre et journalisés ; générateurs ZIP / XLSX internes (aucune dépendance).
+- Fiche SIA en Markdown / HTML ; dossier d’audit ZIP (fiche, qualification, obligations, risques, actions, journal, notice et FRIA validées, pièces, manifeste SHA-256) réservé aux détenteurs de `audit:read`.
+- Import du registre CSV / JSON : mapping proposé (champs de compatibilité), aperçu, validation, rapport d’erreurs, import transactionnel tout ou rien ; niveau de risque source conservé à titre informatif, jamais comme qualification.
+- Assistant IA : abstraction de fournisseur, fournisseur Anthropic (SDK officiel, sortie JSON structurée, repli serveur sur refus), désactivé par défaut ; extraction de champs depuis un texte fourni et propositions de risques, toujours « À vérifier », données minimisées, usage journalisé sans contenu.
+- Authentification Microsoft Entra ID (OIDC, PKCE) pour comptes pré-provisionnés ; création de comptes SSO sans mot de passe ; connexion locale désactivée en mode OIDC sauf secours explicite.
+- Interface : page Rapports (rapports, dossier d’audit, import guidé), assistant à l’étape 1 et dans l’onglet Risques, export de la fiche, bouton Entra ID à la connexion.
+- 3 tests unitaires et 9 tests d’intégration (dont un fournisseur OIDC simulé et un fournisseur LLM simulé) ; 178 tests au total.
+
+### Corrigé
+- Action de masse « Lancer une revue » (S7) : l’échéance n’était pas enregistrée (date invalide) ; test ajouté.
+
+### Explicitement non livré
+- Rapports et exports PDF / DOCX ; import XLSX ; webhooks ; intégrations Microsoft 365 ; Trust Center.
+
 ## [0.9.0] — 2026-11-10 — Slice S9 : FRIA, DPIA, notices de transparence
 
 ### Ajouté

@@ -615,7 +615,7 @@ export const aiSystemRoutes: FastifyPluginAsyncZod = async (app) => {
                   aiSystemId: r.id,
                   kind: 'PERIODIC',
                   trigger: 'MANUAL',
-                  dueDate: new Date(`T00:00:00Z`),
+                  dueDate: new Date(`${input.dueDate}T00:00:00Z`),
                   reviewerId: input.reviewerId,
                   createdById: ctx.user.id,
                 },

@@ -35,10 +35,16 @@ import { documentRoutes } from './modules/documents.js';
 import { workflowRoutes } from './modules/workflow.js';
 import { dashboardRoutes } from './modules/dashboard.js';
 import { complianceRoutes } from './modules/compliance.js';
+import { reportRoutes } from './modules/reports.js';
+import { importRoutes } from './modules/imports.js';
+import { assistantRoutes } from './modules/assistant.js';
+import { anthropicProvider, disabledProvider, type LlmProvider } from './assistant/provider.js';
 
 export interface AppDeps {
   config: AppConfig;
   prisma: PrismaClient;
+  /** Fournisseur LLM ; déduit de la configuration si absent (injecté dans les tests). */
+  llm?: LlmProvider;
 }
 
 declare module 'fastify' {
@@ -51,6 +57,10 @@ const UNSAFE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
 export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   const { config, prisma } = deps;
+  deps.llm ??=
+    config.LLM_PROVIDER === 'anthropic' && config.ANTHROPIC_API_KEY
+      ? anthropicProvider(config.ANTHROPIC_API_KEY, config.ANTHROPIC_MODEL)
+      : disabledProvider;
   const app = Fastify({
     logger:
       config.NODE_ENV === 'test'
@@ -197,6 +207,9 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
       await v1.register(workflowRoutes);
       await v1.register(dashboardRoutes);
       await v1.register(complianceRoutes);
+      await v1.register(reportRoutes);
+      await v1.register(importRoutes);
+      await v1.register(assistantRoutes);
       await v1.register(tagRoutes, { prefix: '/tags' });
       await v1.register(savedViewRoutes, { prefix: '/saved-views' });
     },

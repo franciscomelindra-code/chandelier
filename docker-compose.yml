@@ -63,10 +63,19 @@ services:
       SESSION_ABSOLUTE_HOURS: ${SESSION_ABSOLUTE_HOURS:-10}
       COOKIE_SECURE: ${COOKIE_SECURE:-auto}
       AUTH_MODE: ${AUTH_MODE:-local}
+      AUTH_LOCAL_FALLBACK: ${AUTH_LOCAL_FALLBACK:-false}
+      ENTRA_TENANT_ID: ${ENTRA_TENANT_ID:-}
+      ENTRA_CLIENT_ID: ${ENTRA_CLIENT_ID:-}
+      ENTRA_REDIRECT_URI: ${ENTRA_REDIRECT_URI:-}
+      OIDC_ISSUER: ${OIDC_ISSUER:-}
+      # Secrets : de préférence en fichiers dans le volume des secrets (entra_client_secret, anthropic_api_key).
+      ENTRA_CLIENT_SECRET: ${ENTRA_CLIENT_SECRET:-}
       BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
       BOOTSTRAP_ADMIN_NAME: ${BOOTSTRAP_ADMIN_NAME:-}
       SEED_DEMO: ${SEED_DEMO:-false}
       LLM_PROVIDER: ${LLM_PROVIDER:-disabled}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       REMOTE_ACCESS_MODE: ${REMOTE_ACCESS_MODE:-disabled}
       STORAGE_DIR: /data/documents
       UPLOAD_MAX_MB: ${UPLOAD_MAX_MB:-25}

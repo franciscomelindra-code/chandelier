@@ -33,6 +33,8 @@ export const roleAssignmentInputSchema = z.strictObject({
 export const userCreateSchema = z.strictObject({
   email: emailSchema,
   displayName,
+  /** LOCAL : mot de passe temporaire ; OIDC : connexion Microsoft Entra ID uniquement, sans mot de passe. */
+  authProvider: z.enum(['LOCAL', 'OIDC']).default('LOCAL'),
   orgUnitId: uuid.nullable().optional(),
   roles: z.array(roleAssignmentInputSchema).max(20).default([]),
 });

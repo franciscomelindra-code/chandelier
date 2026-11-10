@@ -49,8 +49,34 @@ Si une migration échoue, l'API **ne démarre pas** (le conteneur redémarre en 
 
 Toutes les variables sont documentées dans `.env.example`. Les secrets ne doivent jamais être committés ; `.gitignore` exclut `.env`, `*.pem`, `*.key`, `backups/`, etc.
 
-## 6. Ce qui a été vérifié et ce qui ne l'a pas été
+## 6. Microsoft Entra ID (SSO, OIDC)
 
-- Vérifié sur le poste de développement Windows (sans Docker) : build, lint, typecheck, 39 tests (dont intégration sur PostgreSQL 17 réelle), parcours navigateur (connexion, changement de mot de passe imposé, unités, journal, OpenAPI).
+1. Dans Entra ID, inscrire une application web : URI de redirection `https://<votre-hôte>/api/v1/auth/oidc/callback` (ou `ENTRA_REDIRECT_URI`), créer un secret client, autorisations `openid profile email`.
+2. Déposer le secret dans le volume des secrets (aucun secret dans Git) :
+
+   ```bash
+   docker compose run --rm --entrypoint sh api -c 'umask 077; cat > /run/chandelier-secrets/entra_client_secret'
+   ```
+
+   (coller le secret, puis Ctrl+D). À défaut, `ENTRA_CLIENT_SECRET` dans `.env` (jamais versionné). Ces commandes n'ont pas été exécutées (Docker indisponible sur le poste de développement) : vérifier les droits d'écriture sur le volume lors du premier essai.
+3. Dans `.env` : `AUTH_MODE=oidc`, `ENTRA_TENANT_ID`, `ENTRA_CLIENT_ID`, et `APP_URL` en https. Redémarrer : `docker compose up -d`.
+4. Créer les comptes dans Administration › Utilisateurs avec le mode « Microsoft Entra ID (SSO) » et l'adresse du compte Entra : **aucun compte n'est créé automatiquement**. Les rôles se gèrent dans Chandelier.
+5. La connexion locale est alors désactivée ; `AUTH_LOCAL_FALLBACK=true` conserve un compte de secours local (à réserver au super administrateur, mot de passe robuste).
+
+La MFA et l'accès conditionnel relèvent d'Entra ID. **Vérifié uniquement avec un fournisseur OIDC simulé dans les tests** (PKCE, state, nonce, signature, audience, comptes non provisionnés refusés) : à valider sur le tenant GLS France.
+
+## 7. Assistant IA (désactivé par défaut)
+
+L'activation transmet des données au fournisseur (API Anthropic) : **elle requiert une validation préalable DPO / RSSI** (contrat, localisation, conservation). Puis :
+
+```bash
+docker compose run --rm --entrypoint sh api -c 'umask 077; cat > /run/chandelier-secrets/anthropic_api_key'
+```
+
+et dans `.env` : `LLM_PROVIDER=anthropic` (modèle `ANTHROPIC_MODEL`, par défaut `claude-opus-5-5`). Les appels utilisent le SDK officiel avec repli serveur en cas de refus (`fallbacks: "default"`). **Jamais appelé réellement pendant le développement** (tests avec un fournisseur simulé).
+
+## 8. Ce qui a été vérifié et ce qui ne l'a pas été
+
+- Vérifié sur le poste de développement Windows (sans Docker) : build, lint, typecheck, tests unitaires et d'intégration sur PostgreSQL 17 réelle (178 à la tranche S10), parcours navigateur de chaque tranche.
 - Simulé localement : installation des dépendances de production de l'image API.
 - **Non exécuté à ce jour** : `docker compose build/up` (Docker indisponible sur le poste de développement). Le workflow `docker-build.yml` exécute ce scénario en CI (build amd64 + arm64, démarrage, santé, persistance après `down`/`up`). À valider sur le Mac OrbStack avant tout usage.

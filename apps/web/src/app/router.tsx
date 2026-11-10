@@ -24,6 +24,7 @@ import { NoticeSettingsPanel } from '../features/admin/NoticeSettingsPanel';
 import { DocumentationPage } from '../features/documents/DocumentationPage';
 import { NotificationsPage } from '../features/workflow/NotificationsPage';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
+import { ReportsPage } from '../features/reports/ReportsPage';
 
 function RequireAuth() {
   const { me, loading } = useAuth();
@@ -65,10 +66,7 @@ export const router = createBrowserRouter([
             path: '/referentiels/*',
             element: <ReferentialsPage />,
           },
-          {
-            path: '/rapports',
-            element: planned('Rapports', 'S10', ['11 rapports standards', 'Exports CSV, XLSX, PDF, DOCX']),
-          },
+          { path: '/rapports', element: <ReportsPage /> },
           {
             path: '/administration',
             element: <AdminPage />,

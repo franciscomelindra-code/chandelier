@@ -138,6 +138,7 @@ function UserForm({
   const [email, setEmail] = useState(user?.email ?? '');
   const [displayName, setDisplayName] = useState(user?.displayName ?? '');
   const [orgUnitId, setOrgUnitId] = useState(user?.orgUnitId ?? '');
+  const [authProvider, setAuthProvider] = useState<'LOCAL' | 'OIDC'>('LOCAL');
   const [roles, setRoles] = useState<RoleRow[]>(
     user?.roles?.map((r) => ({
       roleKey: r.roleKey as RoleKey,
@@ -152,13 +153,14 @@ function UserForm({
         await patch(`/api/v1/users/${user.id}`, { displayName, orgUnitId: orgUnitId || null, roles });
         return undefined;
       }
-      const res = await post<{ user: User; temporaryPassword: string }>('/api/v1/users', {
+      const res = await post<{ user: User; temporaryPassword: string | null }>('/api/v1/users', {
         email,
         displayName,
+        authProvider,
         orgUnitId: orgUnitId || null,
         roles,
       });
-      return { email: res.user.email, password: res.temporaryPassword };
+      return res.temporaryPassword ? { email: res.user.email, password: res.temporaryPassword } : undefined;
     },
     onSuccess: async (pw) => {
       await qc.invalidateQueries({ queryKey: ['users'] });
@@ -183,6 +185,21 @@ function UserForm({
         onChange={(e) => setEmail(e.target.value)}
       />
       <TextField label="Nom affiché" required value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+      {!user && (
+        <SelectField
+          label="Mode de connexion"
+          value={authProvider}
+          onChange={(e) => setAuthProvider(e.target.value as 'LOCAL' | 'OIDC')}
+          hint={
+            authProvider === 'OIDC'
+              ? 'Connexion par Microsoft Entra ID uniquement (adresse identique à celle du compte Entra), sans mot de passe.'
+              : 'Mot de passe temporaire affiché une seule fois, à changer à la première connexion.'
+          }
+        >
+          <option value="LOCAL">Compte local</option>
+          <option value="OIDC">Microsoft Entra ID (SSO)</option>
+        </SelectField>
+      )}
       <SelectField label="Unité de rattachement" value={orgUnitId} onChange={(e) => setOrgUnitId(e.target.value)}>
         <option value="">— Aucune —</option>
         {units.map((u) => (
