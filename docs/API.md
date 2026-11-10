@@ -106,4 +106,32 @@ Référentiels (lecture : session ; écriture : `catalog:manage` ; suppression r
 | POST | `/api/v1/actions` | `action:manage` (qualificatif `own`) ; `aiSystemId` obligatoire ; risque / obligation / mesure du même SIA (400 sinon) ; référence `ACT-####` |
 | PATCH | `/api/v1/actions/:id` | `action:manage`, ou responsable de l’action limité à `status` / `closureComment` ; annulation motivée |
 
+## Routes livrées (S7 — documents, validations, revues, collaboration)
+
+| Méthode | Route | Contrôle |
+|---|---|---|
+| GET | `/api/v1/documents?q&type&aiSystemId&archived&page&pageSize` | documents des SIA du périmètre et des modèles |
+| GET / POST | `/api/v1/ai-systems/:id/documents` | dépôt `document:upload` (qualificatifs `own`, `assigned` = section « documentation ») ; multipart : champs `title`, `type`, `description` **puis** `file` |
+| GET / POST | `/api/v1/ai-models/:id/documents` | dépôt `catalog:manage` |
+| POST | `/api/v1/documents/:id/versions` | nouvelle version (champ `changeNote` puis `file`) |
+| GET / PATCH | `/api/v1/documents/:id` | détail (versions, preuves) ; métadonnées |
+| GET | `/api/v1/documents/:id/versions/:no/download` | pièce jointe, `nosniff`, CSP `sandbox`, journalisé ; bloqué si `INFECTED` |
+| POST | `/api/v1/documents/:id/archive` | motif ≥ 10 |
+| POST / DELETE | `/api/v1/obligations/:id/evidence[/:documentId]`, `/api/v1/risks/:id/evidence[/:documentId]` | document du **même SIA** ; `obligation:update` / `risk:manage` |
+| GET | `/api/v1/ai-systems/:id/approvals` | état (`VALIDATED`, `PENDING`, `REJECTED`, `MODIFIED_SINCE_VALIDATION`, `NOT_REQUESTED`), `canDecide` par demande |
+| POST | `/api/v1/ai-systems/:id/validation-requests` | `aiSystem:update` (propriétaire ou gouvernance) ; `{ domains, approvers?, comment? }` |
+| POST | `/api/v1/approvals/:id/decide` | `approval:decide` + habilitation du domaine ; demandeur ≠ décideur ; 409 si la fiche a changé ; motif ≥ 10 en cas de rejet |
+| GET | `/api/v1/approvals` | validations en attente que l’utilisateur peut décider |
+| GET / POST | `/api/v1/ai-systems/:id/reviews` | création `review:manage` |
+| GET | `/api/v1/reviews?overdue&mine` | revues ouvertes du périmètre |
+| PATCH | `/api/v1/reviews/:id` | `review:manage`, ou réviseur limité à statut / notes |
+| POST | `/api/v1/reviews/:id/complete` | réviseur ou `review:manage` ; conclusion ≥ 10 ; recalcul de la prochaine revue |
+| GET / PUT | `/api/v1/settings/review-intervals` | lecture ; modification `settings:manage` |
+| GET / POST | `/api/v1/ai-systems/:id/comments` | écriture `comment:write` ; mentions limitées aux personnes ayant accès au SIA |
+| POST | `/api/v1/comments/:id/resolve` | `comment:write` |
+| GET | `/api/v1/notifications?unread` ; POST `/api/v1/notifications/read` | notifications de l’utilisateur connecté |
+| GET | `/api/v1/ai-systems/:id/versions`, `/versions/compare?from&to` | instantanés et différences (champs et liens) |
+| POST | `/api/v1/ai-systems/:id/versions/:v/restore` | `aiSystem:update` (sans qualificatif de section) ; motif ≥ 10 ; champs uniquement |
+| POST | `/api/v1/ai-systems/bulk` `{ action: "startReview", ids, dueDate, reviewerId? }` | `review:manage` sur chaque SIA, tout ou rien |
+
 Webhooks et intégrations Microsoft 365 : non implémentés (phase 3).

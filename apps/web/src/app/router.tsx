@@ -19,6 +19,9 @@ import { RisksPage } from '../features/risks/RisksPage';
 import { RiskPage } from '../features/risks/RiskPage';
 import { ActionsPage } from '../features/actions/ActionsPage';
 import { MethodologyPanel } from '../features/admin/MethodologyPanel';
+import { ReviewSettingsPanel } from '../features/admin/ReviewSettingsPanel';
+import { DocumentationPage } from '../features/documents/DocumentationPage';
+import { NotificationsPage } from '../features/workflow/NotificationsPage';
 
 function RequireAuth() {
   const { me, loading } = useAuth();
@@ -62,13 +65,8 @@ export const router = createBrowserRouter([
           { path: '/risques', element: <RisksPage /> },
           { path: '/risques/:id', element: <RiskPage /> },
           { path: '/actions', element: <ActionsPage /> },
-          {
-            path: '/documentation',
-            element: planned('Documentation', 'S7 / S9', [
-              'Pièces justificatives versionnées',
-              'FRIA, DPIA, notices de transparence',
-            ]),
-          },
+          { path: '/documentation/*', element: <DocumentationPage /> },
+          { path: '/notifications', element: <NotificationsPage /> },
           {
             path: '/referentiels/*',
             element: <ReferentialsPage />,
@@ -87,6 +85,7 @@ export const router = createBrowserRouter([
               { path: 'roles', element: <RolesPanel /> },
               { path: 'journal', element: <AuditPanel /> },
               { path: 'methodologie', element: <MethodologyPanel /> },
+              { path: 'revues', element: <ReviewSettingsPanel /> },
             ],
           },
           {

@@ -1,5 +1,6 @@
 import clsx from 'clsx';
-import { NavLink, Outlet, useNavigate } from 'react-router';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router';
+import { useUnreadCount } from '../features/workflow/NotificationsPage';
 import { useAuth } from '../lib/auth';
 
 interface NavItem {
@@ -17,7 +18,7 @@ export const NAV: NavItem[] = [
   { to: '/evaluations', label: 'Évaluations', permission: 'aiSystem:read', live: true },
   { to: '/risques', label: 'Risques', permission: 'aiSystem:read', live: true },
   { to: '/actions', label: 'Actions', permission: 'aiSystem:read', live: true },
-  { to: '/documentation', label: 'Documentation', permission: 'aiSystem:read', live: false },
+  { to: '/documentation', label: 'Documentation', permission: 'aiSystem:read', live: true },
   { to: '/referentiels', label: 'Référentiels', live: true },
   { to: '/rapports', label: 'Rapports', permission: 'report:read', live: false },
   { to: '/administration', label: 'Administration', permission: 'user:read', live: true },
@@ -26,6 +27,7 @@ export const NAV: NavItem[] = [
 export function Layout() {
   const { me, can, logout } = useAuth();
   const navigate = useNavigate();
+  const unread = useUnreadCount();
   if (!me) return null;
   return (
     <div className="min-h-screen md:grid md:grid-cols-[260px_minmax(0,1fr)]">
@@ -74,6 +76,17 @@ export function Layout() {
         <div className="border-t border-white/15 px-6 py-4 text-sm">
           <p className="font-semibold">{me.user.displayName}</p>
           <p className="truncate text-white/70">{me.user.email}</p>
+          <Link to="/notifications" className="mt-2 flex items-center gap-2 font-semibold hover:underline">
+            Notifications
+            {!!unread.data && (
+              <span
+                className="rounded-full bg-gls-yellow px-2 text-xs font-bold text-gls-blue"
+                aria-label={` non lue(s)`}
+              >
+                {unread.data}
+              </span>
+            )}
+          </Link>
           <button
             type="button"
             className="mt-2 font-bold text-gls-yellow hover:underline"

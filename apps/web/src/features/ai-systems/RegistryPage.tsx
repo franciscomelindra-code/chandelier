@@ -203,13 +203,14 @@ function MultiFilter({
 }
 
 // ── Barre d'actions de masse ────────────────────────────────────────────────
-type BulkAction = 'assignOwner' | 'setOrgUnit' | 'setStatus' | 'addTags' | 'removeTags' | 'archive';
+type BulkAction = 'assignOwner' | 'setOrgUnit' | 'setStatus' | 'addTags' | 'removeTags' | 'startReview' | 'archive';
 const BULK_LABELS: Record<BulkAction, string> = {
   assignOwner: 'Assigner un propriétaire',
   setOrgUnit: 'Changer d’unité',
   setStatus: 'Changer de statut',
   addTags: 'Ajouter un tag',
   removeTags: 'Retirer un tag',
+  startReview: 'Lancer une revue',
   archive: 'Archiver',
 };
 
@@ -228,6 +229,7 @@ function BulkModal({
   const users = useActiveUsers();
   const tags = useTags();
   const [value, setValue] = useState('');
+  const [reviewer, setReviewer] = useState('');
   const [error, setError] = useState<string | null>(null);
   const run = useMutation({
     mutationFn: () => {
@@ -237,6 +239,10 @@ function BulkModal({
       if (action === 'setStatus') body.status = value;
       if (action === 'addTags' || action === 'removeTags') body.tagIds = [value];
       if (action === 'archive') body.reason = value;
+      if (action === 'startReview') {
+        body.dueDate = value;
+        body.reviewerId = reviewer || null;
+      }
       return post('/api/v1/ai-systems/bulk', body);
     },
     onSuccess: onDone,
@@ -311,6 +317,25 @@ function BulkModal({
               </option>
             ))}
           </SelectField>
+        )}
+        {action === 'startReview' && (
+          <>
+            <TextField
+              label="Échéance de la revue"
+              type="date"
+              required
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+            />
+            <SelectField label="Réviseur (facultatif)" value={reviewer} onChange={(e) => setReviewer(e.target.value)}>
+              <option value="">Propriétaire de chaque SIA</option>
+              {users.data?.items.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.displayName}
+                </option>
+              ))}
+            </SelectField>
+          </>
         )}
         {action === 'archive' && (
           <TextField

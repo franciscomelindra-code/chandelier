@@ -33,6 +33,7 @@ const riskInclude = {
   aiSystem: { select: { id: true, reference: true, name: true, isDemo: true, archivedAt: true } },
   measures: { include: { measure: true }, orderBy: { createdAt: 'asc' } },
   actions: { select: { id: true, reference: true, title: true, status: true, dueDate: true, assigneeId: true } },
+  evidences: { include: { document: { select: { id: true, title: true, type: true, archivedAt: true } } } },
 } satisfies Prisma.RiskInclude;
 type RiskRow = Prisma.RiskGetPayload<{ include: typeof riskInclude }>;
 
@@ -125,6 +126,7 @@ function serializeRisk(r: RiskRow, names: Map<string, string>, perms?: { canMana
       assignee: a.assigneeId ? (names.get(a.assigneeId) ?? null) : null,
     })),
     openActions: r.actions.filter((a) => isOpenAction(a.status)).length,
+    evidences: r.evidences.map((e) => ({ ...e.document, archivedAt: e.document.archivedAt?.toISOString() ?? null })),
     warnings: warnings.map((code) => ({ code, message: RISK_WARNINGS[code] })),
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),

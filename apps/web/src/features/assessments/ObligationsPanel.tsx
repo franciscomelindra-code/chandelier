@@ -9,6 +9,7 @@ import { Alert, Badge, Button, Card, EmptyState, SelectField, Spinner, TextField
 import { ComplianceBadge } from '../ai-systems/badges';
 import type { ObligationView } from './types';
 import { NewActionModal } from '../actions/ActionForm';
+import { EvidencePicker } from '../documents/DocumentsPanel';
 
 function ObligationRow({
   o,
@@ -77,9 +78,20 @@ function ObligationRow({
             )}
           </div>
           <p className="mt-1 text-xs text-grey-500">
-            Règles : {o.sourceRuleIds.join(', ')} · référentiel v{o.frameworkVersion} · preuves : fonctionnalité non
-            implémentée (S7)
+            Règles : {o.sourceRuleIds.join(', ')} · référentiel v{o.frameworkVersion} · {o.evidences.length} preuve(s)
           </p>
+          <details className="mt-1 text-xs">
+            <summary className="cursor-pointer text-gls-blue">Preuves</summary>
+            <div className="mt-1">
+              <EvidencePicker
+                systemId={systemId}
+                targetPath={`obligations/${o.id}`}
+                evidences={o.evidences}
+                editable={editable}
+                onChange={() => void qc.invalidateQueries({ queryKey: ['obligations', systemId] })}
+              />
+            </div>
+          </details>
           {o.comment && <p className="mt-1 whitespace-pre-line text-xs text-grey-700">{o.comment}</p>}
         </div>
         <div className="flex gap-1">

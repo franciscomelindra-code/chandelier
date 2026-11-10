@@ -13,6 +13,7 @@ import { badRequest, conflict, forbidden, notFound } from '../errors.js';
 import { actorOf, requirePermission } from '../http.js';
 import { can, type AccessContext } from '../rbac/access.js';
 import { loadVisible, scopeWhere, targetOf, type SystemRow } from './ai-systems/service.js';
+import { notify } from './notify.js';
 import { dayOf, namesFor, nextSeqReference, requireActiveUser, toDate, today, type Db } from './common.js';
 
 const id = z.uuid();
@@ -280,6 +281,17 @@ export const actionRoutes: FastifyPluginAsyncZod = async (app) => {
             obligationId: { old: null, new: a.obligationId },
           },
         });
+        await notify(
+          tx,
+          [a.assigneeId],
+          {
+            type: 'action',
+            title: `Action ${a.reference} vous est attribuée — ${system.reference}`,
+            body: a.title,
+            link: `/systemes/${system.id}?onglet=actions`,
+          },
+          ctx.user.id,
+        );
         return a.id;
       });
       return reply.status(201).send(await out(prisma, ctx, created));
@@ -345,6 +357,18 @@ export const actionRoutes: FastifyPluginAsyncZod = async (app) => {
           justification: status === 'CANCELLED' && a.status !== 'CANCELLED' ? comment : null,
           changes,
         });
+        if (b.assigneeId && b.assigneeId !== a.assigneeId)
+          await notify(
+            tx,
+            [b.assigneeId],
+            {
+              type: 'action',
+              title: `Action ${a.reference} vous est attribuée — ${system.reference}`,
+              body: updated.title,
+              link: `/systemes/${system.id}?onglet=actions`,
+            },
+            ctx.user.id,
+          );
       });
       return out(prisma, ctx, request.params.aid);
     },

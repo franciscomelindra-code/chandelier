@@ -254,6 +254,13 @@ export const bulkSchema = z.discriminatedUnion('action', [
     ids: z.array(uuid).min(1).max(200),
     reason: z.string().trim().min(10).max(2000),
   }),
+  /** Lancer une revue périodique (S7) : review:manage requis sur chaque SIA. */
+  z.strictObject({
+    action: z.literal('startReview'),
+    ids: z.array(uuid).min(1).max(200),
+    dueDate: z.iso.date(),
+    reviewerId: uuid.nullable().default(null),
+  }),
 ]);
 export type BulkInput = z.infer<typeof bulkSchema>;
 

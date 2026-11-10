@@ -37,6 +37,25 @@ export async function api<T>(method: Method, url: string, body?: unknown): Promi
   return data as T;
 }
 
+/** Envoi multipart : champs d'abord, fichier en dernier (ordre exigé par l'API). */
+export async function upload<T>(url: string, fields: Record<string, string>, file: File): Promise<T> {
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(fields)) fd.append(k, v);
+  fd.append('file', file, file.name);
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { Accept: 'application/json', ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}) },
+    credentials: 'same-origin',
+    body: fd,
+  });
+  const data: unknown = res.headers.get('content-type')?.includes('application/json') ? await res.json() : null;
+  if (!res.ok) {
+    const err = (data as { error?: { code?: string; message?: string; details?: unknown } } | null)?.error;
+    throw new ApiError(res.status, err?.code ?? 'HTTP_ERROR', err?.message ?? `Erreur ${res.status}`, err?.details);
+  }
+  return data as T;
+}
+
 export const get = <T>(url: string) => api<T>('GET', url);
 export const post = <T>(url: string, body?: unknown) => api<T>('POST', url, body ?? {});
 export const patch = <T>(url: string, body: unknown) => api<T>('PATCH', url, body);

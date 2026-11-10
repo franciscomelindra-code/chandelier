@@ -68,6 +68,8 @@ services:
       SEED_DEMO: ${SEED_DEMO:-false}
       LLM_PROVIDER: ${LLM_PROVIDER:-disabled}
       REMOTE_ACCESS_MODE: ${REMOTE_ACCESS_MODE:-disabled}
+      STORAGE_DIR: /data/documents
+      UPLOAD_MAX_MB: ${UPLOAD_MAX_MB:-25}
     volumes:
       - secrets:/run/chandelier-secrets
       - documents:/data/documents

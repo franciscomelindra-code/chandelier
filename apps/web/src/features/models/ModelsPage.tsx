@@ -29,6 +29,7 @@ import {
 import { CatalogForm, opts, type FieldDef } from '../referentials/ReferentialsPage';
 import { triLabel } from '../ai-systems/wizard/form';
 import { StatusBadge } from '../ai-systems/badges';
+import { DocumentsPanel } from '../documents/DocumentsPanel';
 
 const typeLabel = (t: string) => MODEL_TYPE_LABELS[t as keyof typeof MODEL_TYPE_LABELS] ?? t;
 const accessLabel = (t: string | null) => (t ? (MODEL_ACCESS_LABELS[t as keyof typeof MODEL_ACCESS_LABELS] ?? t) : '—');
@@ -376,6 +377,9 @@ export function ModelPage() {
             </p>
           )}
         </Card>
+      </div>
+      <div className="mt-4">
+        <DocumentsPanel ownerPath={`ai-models/${m.id}`} title="Documents du modèle" />
       </div>
       {editing && (
         <ModelEditor

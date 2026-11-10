@@ -11,6 +11,7 @@ export function AdminPage() {
     { to: 'roles', label: 'Rôles et permissions', show: can('user:read') },
     { to: 'journal', label: 'Journal d’audit', show: can('audit:read') },
     { to: 'methodologie', label: 'Méthodologie de risque', show: true },
+    { to: 'revues', label: 'Périodicité des revues', show: true },
   ].filter((t) => t.show);
   return (
     <>

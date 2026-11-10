@@ -6,6 +6,8 @@ export type Db = PrismaClient | Tx;
 
 /** Date du jour (UTC) au format AAAA-MM-JJ. */
 export const today = () => new Date().toISOString().slice(0, 10);
+export const addDays = (day: string, n: number) =>
+  new Date(Date.parse(`${day}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 export const dayOf = (d: Date | null | undefined) => (d ? d.toISOString().slice(0, 10) : null);
 export const toDate = (d: string | null | undefined) =>
   d === undefined ? undefined : d ? new Date(`${d}T00:00:00Z`) : null;

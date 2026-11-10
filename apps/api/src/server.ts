@@ -7,6 +7,7 @@ import { bootstrapAdmin } from './bootstrap.js';
 import { purgeExpiredSessions } from './auth/session.js';
 import { recomputeAllCompleteness } from './modules/ai-systems/service.js';
 import { importFrameworks } from './referentials/loader.js';
+import { runReminders } from './modules/notify.js';
 
 async function main() {
   const config = loadConfig();
@@ -42,9 +43,19 @@ async function main() {
   );
   purge.unref();
 
+  // Rappels d'échéance 90/60/30/7 jours (idempotents) : au démarrage puis toutes les 6 heures.
+  const remindNow = () =>
+    void runReminders(prisma)
+      .then((n) => n && app.log.info(`Rappels d'échéance créés : ${n}`))
+      .catch((err) => app.log.error({ err }, 'Rappels'));
+  remindNow();
+  const reminders = setInterval(remindNow, 6 * 60 * 60_000);
+  reminders.unref();
+
   const shutdown = async (signal: string) => {
     app.log.info(`Arrêt (${signal})`);
     clearInterval(purge);
+    clearInterval(reminders);
     await app.close();
     await prisma.$disconnect();
     process.exit(0);

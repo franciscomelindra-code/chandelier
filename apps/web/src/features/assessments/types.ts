@@ -64,4 +64,5 @@ export interface ObligationView {
   validatedAt: string | null;
   validatedBy: string | null;
   comment: string;
+  evidences: { id: string; title: string; type: string; archivedAt: string | null }[];
 }

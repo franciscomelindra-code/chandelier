@@ -2,7 +2,7 @@
 
 Application de gouvernance et de pilotage des systèmes d'intelligence artificielle (SIA) de GLS France : registre, référentiel des modèles, qualification AI Act (règlement (UE) 2024/1689), risques, FRIA, articulation RGPD, preuves et traçabilité.
 
-> **État : tranches S1 (socle), S2 (registre des SIA), S3 (fiche en 12 étapes, référentiels), S4 (modèles d'IA, fournisseurs), S5 (moteur de qualification AI Act) et S6 (risques, mesures, plans d'action) livrées.** Authentification, utilisateurs, unités organisationnelles, RBAC avec périmètres, journal d'audit immuable, registre des SIA (recherche plein texte, filtres, vues, actions de masse, export, archivage motivé), API OpenAPI, Docker et CI. Les modules métier (registre, qualification, risques…) arrivent par tranches : voir [Fonctionnalités](#fonctionnalités) et [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md). Les écrans non livrés affichent « Fonctionnalité non implémentée ».
+> **État : tranches S1 (socle), S2 (registre des SIA), S3 (fiche en 12 étapes, référentiels), S4 (modèles d'IA, fournisseurs), S5 (moteur de qualification AI Act), S6 (risques, mesures, plans d'action) et S7 (documents, validations, revues, collaboration) livrées.** Authentification, utilisateurs, unités organisationnelles, RBAC avec périmètres, journal d'audit immuable, registre des SIA (recherche plein texte, filtres, vues, actions de masse, export, archivage motivé), API OpenAPI, Docker et CI. Les modules métier (registre, qualification, risques…) arrivent par tranches : voir [Fonctionnalités](#fonctionnalités) et [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md). Les écrans non livrés affichent « Fonctionnalité non implémentée ».
 
 Le dépôt ne contient **aucune donnée réelle de GLS France** ni aucun secret. Le seul jeu de données facultatif est marqué `[DEMO]`.
 
@@ -162,9 +162,15 @@ docs            Architecture, données, AI Act, sécurité, déploiement…
 - Mesures rattachées aux risques ; plans d'action liés aux risques, obligations et mesures ; actions échues et « mes actions ».
 - Pages « Risques » (carte de chaleur cliquable) et « Actions », onglets de la fiche SIA, administration de la méthodologie.
 
+### Implémentées et testées (S7)
+
+- Documents et preuves versionnés (dépôt contrôlé, empreinte SHA-256, téléchargement en pièce jointe), rattachés aux obligations et aux risques.
+- Validation par domaine d'une version de la fiche (quatre yeux), revue exceptionnelle automatique sur modification substantielle, revues périodiques paramétrables, comparaison et restauration de versions.
+- Commentaires avec mentions, notifications in-app et rappels d'échéance 90/60/30/7 jours.
+
 ### Restant à développer
 
-Voir [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) (statut par exigence) : documents, versions et validations (S7), tableau de bord (S8), FRIA/DPIA/notices (S9), assistant IA, import/export, rapports, Entra ID (S10), Trust Center et intégrations Microsoft 365 (phase 3).
+Voir [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) (statut par exigence) : tableau de bord (S8), FRIA/DPIA/notices (S9), assistant IA, import/export, rapports, Entra ID (S10), Trust Center et intégrations Microsoft 365 (phase 3).
 
 ## Licence
 

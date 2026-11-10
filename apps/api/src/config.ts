@@ -38,6 +38,9 @@ const schema = z.object({
   SECRETS_DIR: z.string().optional(),
   LLM_PROVIDER: z.enum(['disabled', 'anthropic']).default('disabled'),
   REMOTE_ACCESS_MODE: z.enum(['disabled', 'lan', 'tailscale', 'cloudflare']).default('disabled'),
+  /// Répertoire des pièces justificatives (volume Docker /data/documents ; .local/storage en développement).
+  STORAGE_DIR: z.string().min(1).default('.local/storage'),
+  UPLOAD_MAX_MB: z.coerce.number().int().min(1).max(200).default(25),
 });
 
 export type AppConfig = z.infer<typeof schema> & { cookieSecure: boolean };

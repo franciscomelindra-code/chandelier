@@ -68,6 +68,7 @@ export interface Risk {
   measures: RiskMeasureView[];
   actions: RiskActionView[];
   openActions: number;
+  evidences: { id: string; title: string; type: string; archivedAt: string | null }[];
   warnings: { code: string; message: string }[];
   createdAt: string;
   updatedAt: string;

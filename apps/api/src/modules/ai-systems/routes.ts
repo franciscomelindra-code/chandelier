@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { AI_SYSTEM_STATUSES } from '@chandelier/shared';
 import {
   COMPAT_EXPORT_HEADERS,
+  SUBSTANTIAL_FIELDS,
   TEMPLATE_FIELDS,
   RISK_CATEGORY_META,
   VALUE_LEVEL_META,
@@ -16,6 +17,7 @@ import {
 } from '@chandelier/shared';
 import type { Prisma } from '@prisma/client';
 import { diff, recordAudit } from '../../audit/audit.js';
+import { notify, triggerExceptionalReview } from '../notify.js';
 import { AppError, badRequest, conflict, forbidden, notFound } from '../../errors.js';
 import { actorOf, requirePermission } from '../../http.js';
 import { can, type AccessContext } from '../../rbac/access.js';
@@ -415,6 +417,15 @@ export const aiSystemRoutes: FastifyPluginAsyncZod = async (app) => {
           aiSystemId: before.id,
           changes,
         });
+        // Modification substantielle d'un SIA validé → revue exceptionnelle (F-040).
+        await triggerExceptionalReview(
+          tx,
+          actorOf(request),
+          after,
+          Object.keys(changes)
+            .map((k) => SUBSTANTIAL_FIELDS[k])
+            .filter((t): t is NonNullable<typeof t> => !!t),
+        );
         return { after, sections };
       });
       return serializeDetail(ctx, updated.after, updated.sections);
@@ -559,11 +570,14 @@ export const aiSystemRoutes: FastifyPluginAsyncZod = async (app) => {
           }
           if (input.action === 'assignOwner') await assertActiveUsers(tx, [input.ownerId]);
           if (input.action === 'addTags' || input.action === 'removeTags') await assertTags(tx, input.tagIds);
+          if (input.action === 'startReview') await assertActiveUsers(tx, [input.reviewerId]);
 
           const section = input.action === 'assignOwner' ? 'responsibility' : 'general';
           const denied = rows.filter((r) => {
             if (input.action === 'archive')
               return !can(ctx, 'aiSystem:archive', targetOf(r, sectionsOf(r))) || !!r.archivedAt;
+            if (input.action === 'startReview')
+              return !can(ctx, 'review:manage', targetOf(r, sectionsOf(r))) || !!r.archivedAt;
             if (r.archivedAt) return true;
             if (!can(ctx, 'aiSystem:update', targetOf(r, sectionsOf(r), section))) return true;
             if (
@@ -593,6 +607,37 @@ export const aiSystemRoutes: FastifyPluginAsyncZod = async (app) => {
           for (const r of rows) {
             if (input.action === 'archive') {
               await archiveOne(tx, ctx, r, sectionsOf(r), input.reason, actor);
+              continue;
+            }
+            if (input.action === 'startReview') {
+              const review = await tx.review.create({
+                data: {
+                  aiSystemId: r.id,
+                  kind: 'PERIODIC',
+                  trigger: 'MANUAL',
+                  dueDate: new Date(`T00:00:00Z`),
+                  reviewerId: input.reviewerId,
+                  createdById: ctx.user.id,
+                },
+              });
+              await recordAudit(tx, actor, {
+                action: 'bulk_startReview',
+                entityType: 'Review',
+                entityId: review.id,
+                aiSystemId: r.id,
+                changes: { dueDate: { old: null, new: input.dueDate } },
+              });
+              await notify(
+                tx,
+                [input.reviewerId ?? r.ownerId],
+                {
+                  type: 'review',
+                  title: `Revue à réaliser — ${r.reference}`,
+                  body: `Échéance : ${input.dueDate}`,
+                  link: `/systemes/${r.id}?onglet=validation`,
+                },
+                ctx.user.id,
+              );
               continue;
             }
             const changes: Record<string, { old: unknown; new: unknown }> = {};

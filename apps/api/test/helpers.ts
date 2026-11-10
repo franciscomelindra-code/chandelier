@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { PrismaClient } from '@prisma/client';
 import type { FastifyInstance } from 'fastify';
@@ -30,6 +31,8 @@ export async function setupApp(): Promise<TestCtx> {
     SESSION_SECRET: 'a'.repeat(64),
     APP_URL: 'http://localhost:8080',
     SECRETS_DIR: '',
+    STORAGE_DIR: resolve(tmpdir(), 'chandelier-test-storage'),
+    UPLOAD_MAX_MB: '1',
   });
   const prisma = new PrismaClient({ datasources: { db: { url } } });
   await seedBase(prisma);
@@ -119,6 +122,26 @@ export async function login(app: FastifyInstance, email: string, password = TEST
 export async function loginAs(ctx: TestCtx, roles: Parameters<typeof createUser>[1]) {
   const user = await createUser(ctx.prisma, roles);
   return { user, session: await login(ctx.app, user.email) };
+}
+
+/** Corps multipart/form-data : champs d'abord, puis le fichier (ordre exigé par l'API). */
+export function multipart(fields: Record<string, string>, file?: { name: string; content: Buffer | string }) {
+  const boundary = `----chandelier${Math.random().toString(16).slice(2)}`;
+  const parts: Buffer[] = [];
+  for (const [k, v] of Object.entries(fields)) {
+    parts.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="${k}"\r\n\r\n${v}\r\n`));
+  }
+  if (file) {
+    parts.push(
+      Buffer.from(
+        `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${file.name}"\r\nContent-Type: application/octet-stream\r\n\r\n`,
+      ),
+      Buffer.isBuffer(file.content) ? file.content : Buffer.from(file.content),
+      Buffer.from('\r\n'),
+    );
+  }
+  parts.push(Buffer.from(`--${boundary}--\r\n`));
+  return { payload: Buffer.concat(parts), contentType: `multipart/form-data; boundary=${boundary}` };
 }
 
 export function authed(s: Session, extra: Record<string, string> = {}) {

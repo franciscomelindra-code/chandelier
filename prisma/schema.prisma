@@ -385,21 +385,21 @@ enum ImportStatus {
 // ───────────────────────────── Organisation & identités ─────────────────────────────
 
 model OrganizationUnit {
-  id          String      @id @default(uuid()) @db.Uuid
-  code        String      @unique
+  id          String             @id @default(uuid()) @db.Uuid
+  code        String             @unique
   name        String
   type        OrgUnitType
-  parentId    String?     @db.Uuid
+  parentId    String?            @db.Uuid
   parent      OrganizationUnit?  @relation("OrgTree", fields: [parentId], references: [id], onDelete: Restrict)
   children    OrganizationUnit[] @relation("OrgTree")
   /// Chemin matérialisé "/<idRacine>/.../<id>/" pour les contrôles de périmètre (descendants).
   path        String
-  isActive    Boolean     @default(true)
-  isDemo      Boolean     @default(false)
-  createdAt   DateTime    @default(now())
-  createdById String?     @db.Uuid
-  updatedAt   DateTime    @updatedAt
-  updatedById String?     @db.Uuid
+  isActive    Boolean            @default(true)
+  isDemo      Boolean            @default(false)
+  createdAt   DateTime           @default(now())
+  createdById String?            @db.Uuid
+  updatedAt   DateTime           @updatedAt
+  updatedById String?            @db.Uuid
 
   users           User[]
   roleAssignments UserRoleAssignment[]
@@ -411,36 +411,36 @@ model OrganizationUnit {
 }
 
 model User {
-  id                String           @id @default(uuid()) @db.Uuid
-  email             String           @unique
-  displayName       String
-  authProvider      AuthProviderKind @default(LOCAL)
+  id                 String            @id @default(uuid()) @db.Uuid
+  email              String            @unique
+  displayName        String
+  authProvider       AuthProviderKind  @default(LOCAL)
   /// Identifiant IdP (Entra ID : claim oid) — null en mode local.
-  externalId        String?          @unique
+  externalId         String?           @unique
   /// argon2id ; null pour les comptes OIDC.
-  passwordHash      String?
-  isActive          Boolean          @default(true)
-  isDemo            Boolean          @default(false)
-  orgUnitId         String?          @db.Uuid
-  orgUnit           OrganizationUnit? @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
-  failedLoginCount  Int              @default(0)
-  lockedUntil       DateTime?
-  lastLoginAt       DateTime?
-  passwordChangedAt DateTime?
+  passwordHash       String?
+  isActive           Boolean           @default(true)
+  isDemo             Boolean           @default(false)
+  orgUnitId          String?           @db.Uuid
+  orgUnit            OrganizationUnit? @relation(fields: [orgUnitId], references: [id], onDelete: SetNull)
+  failedLoginCount   Int               @default(0)
+  lockedUntil        DateTime?
+  lastLoginAt        DateTime?
+  passwordChangedAt  DateTime?
   /// Mot de passe initial ou réinitialisé : changement imposé à la prochaine connexion.
-  mustChangePassword Boolean         @default(false)
-  createdAt         DateTime         @default(now())
-  createdById       String?          @db.Uuid
-  updatedAt         DateTime         @updatedAt
-  updatedById       String?          @db.Uuid
+  mustChangePassword Boolean           @default(false)
+  createdAt          DateTime          @default(now())
+  createdById        String?           @db.Uuid
+  updatedAt          DateTime          @updatedAt
+  updatedById        String?           @db.Uuid
 
-  roleAssignments   UserRoleAssignment[]
-  sessions          Session[]
-  ownedSystems      AiSystem[]       @relation("SystemOwner")
-  businessSystems   AiSystem[]       @relation("SystemBusinessOwner")
+  roleAssignments    UserRoleAssignment[]
+  sessions           Session[]
+  ownedSystems       AiSystem[]           @relation("SystemOwner")
+  businessSystems    AiSystem[]           @relation("SystemBusinessOwner")
   sectionAssignments SectionAssignment[]
-  notifications     Notification[]
-  savedViews        SavedView[]
+  notifications      Notification[]
+  savedViews         SavedView[]
 
   @@index([orgUnitId])
   @@map("app_user")
@@ -483,18 +483,18 @@ model UserRoleAssignment {
 }
 
 model Session {
-  id          String   @id @default(uuid()) @db.Uuid
+  id         String   @id @default(uuid()) @db.Uuid
   /// SHA-256 du jeton de session (le jeton brut n'est jamais stocké).
-  tokenHash   String   @unique
-  csrfToken   String
-  userId      String   @db.Uuid
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  lastSeenAt  DateTime @default(now())
+  tokenHash  String   @unique
+  csrfToken  String
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
   /// Expiration absolue.
-  expiresAt   DateTime
-  ipAddress   String?
-  userAgent   String?
+  expiresAt  DateTime
+  ipAddress  String?
+  userAgent  String?
 
   @@index([userId])
   @@index([expiresAt])
@@ -504,97 +504,99 @@ model Session {
 // ───────────────────────────── Registre des SIA ─────────────────────────────
 
 model AiSystem {
-  id                    String           @id @default(uuid()) @db.Uuid
-  reference             String           @unique
-  name                  String
-  description           String           @default("")
-  purpose               String           @default("")
-  objectives            String           @default("")
-  useCases              String           @default("")
-  functioning           String           @default("")
-  scope                 String           @default("")
-  operationalContext    String           @default("")
-  countries             String[]
-  targetPopulations     String           @default("")
-  status                AiSystemStatus   @default(DRAFT)
-  autonomyLevel         AutonomyLevel    @default(UNKNOWN)
-  aiActRoles            AiActRole[]
-  orgUnitId             String           @db.Uuid
-  orgUnit               OrganizationUnit @relation(fields: [orgUnitId], references: [id], onDelete: Restrict)
-  ownerId               String?          @db.Uuid
-  owner                 User?            @relation("SystemOwner", fields: [ownerId], references: [id], onDelete: SetNull)
-  businessOwnerId       String?          @db.Uuid
-  businessOwner         User?            @relation("SystemBusinessOwner", fields: [businessOwnerId], references: [id], onDelete: SetNull)
-  raciEnabled           Boolean          @default(false)
+  id                 String           @id @default(uuid()) @db.Uuid
+  reference          String           @unique
+  name               String
+  description        String           @default("")
+  purpose            String           @default("")
+  objectives         String           @default("")
+  useCases           String           @default("")
+  functioning        String           @default("")
+  scope              String           @default("")
+  operationalContext String           @default("")
+  countries          String[]
+  targetPopulations  String           @default("")
+  status             AiSystemStatus   @default(DRAFT)
+  autonomyLevel      AutonomyLevel    @default(UNKNOWN)
+  aiActRoles         AiActRole[]
+  orgUnitId          String           @db.Uuid
+  orgUnit            OrganizationUnit @relation(fields: [orgUnitId], references: [id], onDelete: Restrict)
+  ownerId            String?          @db.Uuid
+  owner              User?            @relation("SystemOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  businessOwnerId    String?          @db.Uuid
+  businessOwner      User?            @relation("SystemBusinessOwner", fields: [businessOwnerId], references: [id], onDelete: SetNull)
+  raciEnabled        Boolean          @default(false)
 
-  firstDeploymentDate   DateTime?        @db.Date
-  productionDate        DateTime?        @db.Date
-  plannedRetirementDate DateTime?        @db.Date
-  actualRetirementDate  DateTime?        @db.Date
-  nextReviewDate        DateTime?        @db.Date
+  firstDeploymentDate   DateTime? @db.Date
+  productionDate        DateTime? @db.Date
+  plannedRetirementDate DateTime? @db.Date
+  actualRetirementDate  DateTime? @db.Date
+  nextReviewDate        DateTime? @db.Date
 
   /// Données personnelles / personnes concernées (étapes 7-8, synthèse).
-  processesPersonalData TriState         @default(UNKNOWN)
-  includesMinors        TriState         @default(UNKNOWN)
-  includesVulnerable    TriState         @default(UNKNOWN)
-  affectedVolumeEstimate String          @default("")
-  potentialConsequences String           @default("")
+  processesPersonalData  TriState @default(UNKNOWN)
+  includesMinors         TriState @default(UNKNOWN)
+  includesVulnerable     TriState @default(UNKNOWN)
+  affectedVolumeEstimate String   @default("")
+  potentialConsequences  String   @default("")
 
   /// Valeur ajoutée (étape 10).
-  valueLevel            ValueLevel       @default(UNKNOWN)
-  valueJustification    String           @default("")
+  valueLevel         ValueLevel @default(UNKNOWN)
+  valueJustification String     @default("")
   /// { benefits, kpis, estimatedGains, quality, productivity, experience, safety, avoidedCosts }
-  valueDetails          Json             @default("{}")
+  valueDetails       Json       @default("{}")
 
   /// Dénormalisation de la qualification effective courante (source : ai_act_assessment).
-  riskCategory          RiskDisplayCategory @default(UNDETERMINED)
-  riskJustification     String           @default("")
-  currentAssessmentId   String?          @unique @db.Uuid
-  complianceStatus      ComplianceStatus @default(NOT_ASSESSED)
+  riskCategory        RiskDisplayCategory @default(UNDETERMINED)
+  riskJustification   String              @default("")
+  currentAssessmentId String?             @unique @db.Uuid
+  complianceStatus    ComplianceStatus    @default(NOT_ASSESSED)
   /// 0-100, recalculé côté serveur à chaque sauvegarde.
-  completeness          Int              @default(0)
+  completeness        Int                 @default(0)
   /// { "general": true, ... } sections marquées terminées par l'utilisateur.
-  sectionsState         Json             @default("{}")
+  sectionsState       Json                @default("{}")
 
-  isPublished           Boolean          @default(false)
-  publishedAt           DateTime?
-  archivedAt            DateTime?
-  archivedById          String?          @db.Uuid
-  archiveReason         String?
+  isPublished         Boolean                  @default(false)
+  publishedAt         DateTime?
+  archivedAt          DateTime?
+  archivedById        String?                  @db.Uuid
+  archiveReason       String?
   /// Statut restauré lors d'une désarchivage.
-  statusBeforeArchive   AiSystemStatus?
+  statusBeforeArchive AiSystemStatus?
   /// Colonne générée PostgreSQL (recherche plein texte, français) — voir migration s2_registry.
-  search                Unsupported("tsvector")?
+  search              Unsupported("tsvector")?
   /// Verrou optimiste : incrémenté à chaque modification.
-  version               Int              @default(1)
-  /// Version validée verrouillée (S7).
-  lockedVersion         Int?
-  isDemo                Boolean          @default(false)
-  createdAt             DateTime         @default(now())
-  createdById           String?          @db.Uuid
-  updatedAt             DateTime         @updatedAt
-  updatedById           String?          @db.Uuid
+  version             Int                      @default(1)
+  /// Dernière version validée (circuit de validation S7) ; toute modification ultérieure crée une version non validée.
+  lockedVersion       Int?
+  validatedAt         DateTime?
+  lastReviewDate      DateTime?                @db.Date
+  isDemo              Boolean                  @default(false)
+  createdAt           DateTime                 @default(now())
+  createdById         String?                  @db.Uuid
+  updatedAt           DateTime                 @updatedAt
+  updatedById         String?                  @db.Uuid
 
-  models            AiSystemModel[]
-  vendors           AiSystemVendor[]
-  stakeholders      AiSystemStakeholder[]
-  assets            AiSystemAsset[]
-  processing        AiSystemProcessingActivity[]
-  datasets          AiSystemDataset[]
-  dataCategories    AiSystemDataCategory[]
-  dataSubjects      AiSystemDataSubject[]
-  tags              AiSystemTag[]
-  assessments       AiActAssessment[]
-  obligations       Obligation[]
-  risks             Risk[]
-  measures          Measure[]
-  actions           Action[]
-  frias             Fria[]
-  dpias             Dpia[]
-  notices           TransparencyNotice[]
-  documents         AiSystemDocument[]
-  approvals         Approval[]
-  reviews           Review[]
+  models             AiSystemModel[]
+  vendors            AiSystemVendor[]
+  stakeholders       AiSystemStakeholder[]
+  assets             AiSystemAsset[]
+  processing         AiSystemProcessingActivity[]
+  datasets           AiSystemDataset[]
+  dataCategories     AiSystemDataCategory[]
+  dataSubjects       AiSystemDataSubject[]
+  tags               AiSystemTag[]
+  assessments        AiActAssessment[]
+  obligations        Obligation[]
+  risks              Risk[]
+  measures           Measure[]
+  actions            Action[]
+  frias              Fria[]
+  dpias              Dpia[]
+  notices            TransparencyNotice[]
+  documents          Document[]
+  approvals          Approval[]
+  reviews            Review[]
   sectionAssignments SectionAssignment[]
 
   @@index([orgUnitId])
@@ -624,16 +626,16 @@ model SystemTemplate {
 }
 
 model SectionAssignment {
-  id          String   @id @default(uuid()) @db.Uuid
-  aiSystemId  String   @db.Uuid
-  aiSystem    AiSystem @relation(fields: [aiSystemId], references: [id], onDelete: Cascade)
+  id          String    @id @default(uuid()) @db.Uuid
+  aiSystemId  String    @db.Uuid
+  aiSystem    AiSystem  @relation(fields: [aiSystemId], references: [id], onDelete: Cascade)
   /// Clé de section du wizard (general, responsibility, models, …).
   section     String
-  userId      String   @db.Uuid
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String    @db.Uuid
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   dueDate     DateTime? @db.Date
-  createdAt   DateTime @default(now())
-  createdById String?  @db.Uuid
+  createdAt   DateTime  @default(now())
+  createdById String?   @db.Uuid
 
   @@unique([aiSystemId, section, userId])
   @@index([userId])
@@ -666,19 +668,19 @@ model AiSystemTag {
 // ───────────────────────────── Fournisseurs, modèles, parties prenantes, actifs ─────────────────────────────
 
 model Vendor {
-  id           String   @id @default(uuid()) @db.Uuid
-  name         String   @unique
-  legalName    String   @default("")
-  country      String   @default("")
-  website      String   @default("")
-  description  String   @default("")
-  dpaSigned    TriState @default(UNKNOWN)
-  isActive     Boolean  @default(true)
-  isDemo       Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  createdById  String?  @db.Uuid
-  updatedAt    DateTime @updatedAt
-  updatedById  String?  @db.Uuid
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique
+  legalName   String   @default("")
+  country     String   @default("")
+  website     String   @default("")
+  description String   @default("")
+  dpaSigned   TriState @default(UNKNOWN)
+  isActive    Boolean  @default(true)
+  isDemo      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  createdById String?  @db.Uuid
+  updatedAt   DateTime @updatedAt
+  updatedById String?  @db.Uuid
 
   models  AiModel[]
   systems AiSystemVendor[]
@@ -701,35 +703,35 @@ model AiSystemVendor {
 }
 
 model AiModel {
-  id                 String          @id @default(uuid()) @db.Uuid
-  name               String
-  vendorId           String?         @db.Uuid
-  vendor             Vendor?         @relation(fields: [vendorId], references: [id], onDelete: SetNull)
-  family             String          @default("")
-  version            String          @default("")
-  type               ModelType
-  description        String          @default("")
-  capabilities       String          @default("")
-  knownLimitations   String          @default("")
-  accessMode         ModelAccessMode
-  hosting            String          @default("")
-  regions            String[]
-  documentationUrl   String          @default("")
-  knowledgeDate      DateTime?       @db.Date
-  versionDate        DateTime?       @db.Date
-  status             ModelStatus     @default(UNDER_EVALUATION)
-  isGpai             TriState        @default(UNKNOWN)
-  gpaiSystemicRisk   TriState        @default(UNKNOWN)
-  gpaiNotes          String          @default("")
-  license            String          @default("")
-  isDemo             Boolean         @default(false)
-  createdAt          DateTime        @default(now())
-  createdById        String?         @db.Uuid
-  updatedAt          DateTime        @updatedAt
-  updatedById        String?         @db.Uuid
+  id               String          @id @default(uuid()) @db.Uuid
+  name             String
+  vendorId         String?         @db.Uuid
+  vendor           Vendor?         @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  family           String          @default("")
+  version          String          @default("")
+  type             ModelType
+  description      String          @default("")
+  capabilities     String          @default("")
+  knownLimitations String          @default("")
+  accessMode       ModelAccessMode
+  hosting          String          @default("")
+  regions          String[]
+  documentationUrl String          @default("")
+  knowledgeDate    DateTime?       @db.Date
+  versionDate      DateTime?       @db.Date
+  status           ModelStatus     @default(UNDER_EVALUATION)
+  isGpai           TriState        @default(UNKNOWN)
+  gpaiSystemicRisk TriState        @default(UNKNOWN)
+  gpaiNotes        String          @default("")
+  license          String          @default("")
+  isDemo           Boolean         @default(false)
+  createdAt        DateTime        @default(now())
+  createdById      String?         @db.Uuid
+  updatedAt        DateTime        @updatedAt
+  updatedById      String?         @db.Uuid
 
   systems   AiSystemModel[]
-  documents AiModelDocument[]
+  documents Document[]
 
   @@unique([name, version, vendorId])
   @@index([vendorId])
@@ -738,20 +740,20 @@ model AiModel {
 
 /// Relation N-N SIA ↔ modèle, porteuse de la description de l'utilisation (CDC §5.7).
 model AiSystemModel {
-  id               String          @id @default(uuid()) @db.Uuid
-  aiSystemId       String          @db.Uuid
-  aiSystem         AiSystem        @relation(fields: [aiSystemId], references: [id], onDelete: Cascade)
-  aiModelId        String          @db.Uuid
-  aiModel          AiModel         @relation(fields: [aiModelId], references: [id], onDelete: Restrict)
+  id               String           @id @default(uuid()) @db.Uuid
+  aiSystemId       String           @db.Uuid
+  aiSystem         AiSystem         @relation(fields: [aiSystemId], references: [id], onDelete: Cascade)
+  aiModelId        String           @db.Uuid
+  aiModel          AiModel          @relation(fields: [aiModelId], references: [id], onDelete: Restrict)
   usageDescription String
-  versionUsed      String          @default("")
+  versionUsed      String           @default("")
   hostingMode      ModelAccessMode?
-  integrationDate  DateTime?       @db.Date
-  isPrimary        Boolean         @default(false)
-  createdAt        DateTime        @default(now())
-  createdById      String?         @db.Uuid
-  updatedAt        DateTime        @updatedAt
-  updatedById      String?         @db.Uuid
+  integrationDate  DateTime?        @db.Date
+  isPrimary        Boolean          @default(false)
+  createdAt        DateTime         @default(now())
+  createdById      String?          @db.Uuid
+  updatedAt        DateTime         @updatedAt
+  updatedById      String?          @db.Uuid
 
   @@unique([aiSystemId, aiModelId, versionUsed])
   @@index([aiModelId])
@@ -860,21 +862,21 @@ model DataSubjectCategory {
 }
 
 model ProcessingActivity {
-  id            String    @id @default(uuid()) @db.Uuid
-  reference     String    @unique
-  name          String
-  purpose       String    @default("")
-  legalBasis    String    @default("")
-  gdprRole      GdprRole  @default(CONTROLLER)
-  dpiaRequired  TriState  @default(UNKNOWN)
-  retention     String    @default("")
+  id           String   @id @default(uuid()) @db.Uuid
+  reference    String   @unique
+  name         String
+  purpose      String   @default("")
+  legalBasis   String   @default("")
+  gdprRole     GdprRole @default(CONTROLLER)
+  dpiaRequired TriState @default(UNKNOWN)
+  retention    String   @default("")
   /// Référence dans l'outil registre RGPD externe, le cas échéant.
-  externalRef   String    @default("")
-  isDemo        Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  createdById   String?   @db.Uuid
-  updatedAt     DateTime  @updatedAt
-  updatedById   String?   @db.Uuid
+  externalRef  String   @default("")
+  isDemo       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  createdById  String?  @db.Uuid
+  updatedAt    DateTime @updatedAt
+  updatedById  String?  @db.Uuid
 
   systems        AiSystemProcessingActivity[]
   dataCategories ProcessingActivityDataCategory[]
@@ -918,28 +920,28 @@ model AiSystemProcessingActivity {
 }
 
 model Dataset {
-  id                       String        @id @default(uuid()) @db.Uuid
-  name                     String
-  description              String        @default("")
-  origin                   DatasetOrigin
-  dataType                 String        @default("")
-  containsPersonalData     TriState      @default(UNKNOWN)
-  containsSpecialCategories TriState     @default(UNKNOWN)
-  containsCriminalData     TriState      @default(UNKNOWN)
-  isSynthetic              Boolean       @default(false)
-  provenance               String        @default("")
-  license                  String        @default("")
-  qualityNotes             String        @default("")
-  representativenessNotes  String        @default("")
-  retention                String        @default("")
-  storageLocation          String        @default("")
-  transfersOutsideEu       TriState      @default(UNKNOWN)
-  recipients               String        @default("")
-  isDemo                   Boolean       @default(false)
-  createdAt                DateTime      @default(now())
-  createdById              String?       @db.Uuid
-  updatedAt                DateTime      @updatedAt
-  updatedById              String?       @db.Uuid
+  id                        String        @id @default(uuid()) @db.Uuid
+  name                      String
+  description               String        @default("")
+  origin                    DatasetOrigin
+  dataType                  String        @default("")
+  containsPersonalData      TriState      @default(UNKNOWN)
+  containsSpecialCategories TriState      @default(UNKNOWN)
+  containsCriminalData      TriState      @default(UNKNOWN)
+  isSynthetic               Boolean       @default(false)
+  provenance                String        @default("")
+  license                   String        @default("")
+  qualityNotes              String        @default("")
+  representativenessNotes   String        @default("")
+  retention                 String        @default("")
+  storageLocation           String        @default("")
+  transfersOutsideEu        TriState      @default(UNKNOWN)
+  recipients                String        @default("")
+  isDemo                    Boolean       @default(false)
+  createdAt                 DateTime      @default(now())
+  createdById               String?       @db.Uuid
+  updatedAt                 DateTime      @updatedAt
+  updatedById               String?       @db.Uuid
 
   systems AiSystemDataset[]
 
@@ -1005,28 +1007,28 @@ model RegulatoryFramework {
 }
 
 model AiActAssessment {
-  id               String              @id @default(uuid()) @db.Uuid
-  aiSystemId       String              @db.Uuid
-  aiSystem         AiSystem            @relation(fields: [aiSystemId], references: [id], onDelete: Cascade)
-  frameworkId      String              @db.Uuid
-  framework        RegulatoryFramework @relation(fields: [frameworkId], references: [id], onDelete: Restrict)
-  status           AssessmentStatus    @default(DRAFT)
-  origin           Origin              @default(USER)
+  id                String               @id @default(uuid()) @db.Uuid
+  aiSystemId        String               @db.Uuid
+  aiSystem          AiSystem             @relation(fields: [aiSystemId], references: [id], onDelete: Cascade)
+  frameworkId       String               @db.Uuid
+  framework         RegulatoryFramework  @relation(fields: [frameworkId], references: [id], onDelete: Restrict)
+  status            AssessmentStatus     @default(DRAFT)
+  origin            Origin               @default(USER)
   /// { questionId: valeur }
-  answers          Json                @default("{}")
+  answers           Json                 @default("{}")
   /// Sortie brute du moteur (dimensions, règles déclenchées, manquants, obligations).
-  computedResult   Json?
-  computedCategory RiskDisplayCategory?
+  computedResult    Json?
+  computedCategory  RiskDisplayCategory?
   /// Résultat effectif après surcharges juristes.
   effectiveCategory RiskDisplayCategory?
-  computedAt       DateTime?
-  computedById     String?             @db.Uuid
-  validatedAt      DateTime?
-  validatedById    String?             @db.Uuid
-  createdAt        DateTime            @default(now())
-  createdById      String?             @db.Uuid
-  updatedAt        DateTime            @updatedAt
-  updatedById      String?             @db.Uuid
+  computedAt        DateTime?
+  computedById      String?              @db.Uuid
+  validatedAt       DateTime?
+  validatedById     String?              @db.Uuid
+  createdAt         DateTime             @default(now())
+  createdById       String?              @db.Uuid
+  updatedAt         DateTime             @updatedAt
+  updatedById       String?              @db.Uuid
 
   overrides   AssessmentOverride[]
   obligations Obligation[]
@@ -1137,39 +1139,39 @@ model RiskMethodology {
 }
 
 model Risk {
-  id                  String          @id @default(uuid()) @db.Uuid
-  reference           String          @unique
-  aiSystemId          String          @db.Uuid
-  aiSystem            AiSystem        @relation(fields: [aiSystemId], references: [id], onDelete: Cascade)
-  methodologyId       String          @db.Uuid
-  methodology         RiskMethodology @relation(fields: [methodologyId], references: [id], onDelete: Restrict)
-  category            RiskCategory
-  title               String
-  scenario            String          @default("")
-  cause               String          @default("")
-  event               String          @default("")
-  consequence         String          @default("")
-  inherentLikelihood  Int?
-  inherentSeverity    Int?
-  inherentScore       Int?
-  residualLikelihood  Int?
-  residualSeverity    Int?
-  residualScore       Int?
-  treatment           RiskTreatment?
-  treatmentPlan       String          @default("")
+  id                      String          @id @default(uuid()) @db.Uuid
+  reference               String          @unique
+  aiSystemId              String          @db.Uuid
+  aiSystem                AiSystem        @relation(fields: [aiSystemId], references: [id], onDelete: Cascade)
+  methodologyId           String          @db.Uuid
+  methodology             RiskMethodology @relation(fields: [methodologyId], references: [id], onDelete: Restrict)
+  category                RiskCategory
+  title                   String
+  scenario                String          @default("")
+  cause                   String          @default("")
+  event                   String          @default("")
+  consequence             String          @default("")
+  inherentLikelihood      Int?
+  inherentSeverity        Int?
+  inherentScore           Int?
+  residualLikelihood      Int?
+  residualSeverity        Int?
+  residualScore           Int?
+  treatment               RiskTreatment?
+  treatmentPlan           String          @default("")
   /// Décision d'acceptation (traitement ACCEPT) : motif, auteur, date.
-  acceptanceJustification String      @default("")
-  acceptedAt          DateTime?
-  acceptedById        String?         @db.Uuid
-  status              RiskStatus      @default(IDENTIFIED)
-  ownerId             String?         @db.Uuid
-  dueDate             DateTime?       @db.Date
+  acceptanceJustification String          @default("")
+  acceptedAt              DateTime?
+  acceptedById            String?         @db.Uuid
+  status                  RiskStatus      @default(IDENTIFIED)
+  ownerId                 String?         @db.Uuid
+  dueDate                 DateTime?       @db.Date
   /// Verrou optimiste.
-  version             Int             @default(1)
-  createdAt           DateTime        @default(now())
-  createdById         String?         @db.Uuid
-  updatedAt           DateTime        @updatedAt
-  updatedById         String?         @db.Uuid
+  version                 Int             @default(1)
+  createdAt               DateTime        @default(now())
+  createdById             String?         @db.Uuid
+  updatedAt               DateTime        @updatedAt
+  updatedById             String?         @db.Uuid
 
   measures  RiskMeasure[]
   actions   Action[]
@@ -1257,25 +1259,25 @@ model Action {
 // ───────────────────────────── FRIA, DPIA, notices ─────────────────────────────
 
 model Fria {
-  id                String     @id @default(uuid()) @db.Uuid
-  aiSystemId        String     @db.Uuid
-  aiSystem          AiSystem   @relation(fields: [aiSystemId], references: [id], onDelete: Cascade)
-  version           Int        @default(1)
-  status            WorkStatus @default(NOT_STARTED)
+  id                  String     @id @default(uuid()) @db.Uuid
+  aiSystemId          String     @db.Uuid
+  aiSystem            AiSystem   @relation(fields: [aiSystemId], references: [id], onDelete: Cascade)
+  version             Int        @default(1)
+  status              WorkStatus @default(NOT_STARTED)
   /// Sections art. 27(1) a-f : process, period/frequency, affectedPersons, specificRisks, humanOversight, mitigation + governance/complaints.
-  sections          Json       @default("{}")
+  sections            Json       @default("{}")
   /// DPIA réutilisée et sections couvertes par elle.
-  dpiaId            String?    @db.Uuid
-  dpia              Dpia?      @relation(fields: [dpiaId], references: [id], onDelete: SetNull)
-  coveredByDpia     String[]
-  conclusion        String     @default("")
-  validatedAt       DateTime?
-  validatedById     String?    @db.Uuid
+  dpiaId              String?    @db.Uuid
+  dpia                Dpia?      @relation(fields: [dpiaId], references: [id], onDelete: SetNull)
+  coveredByDpia       String[]
+  conclusion          String     @default("")
+  validatedAt         DateTime?
+  validatedById       String?    @db.Uuid
   notifiedAuthorityAt DateTime?
-  createdAt         DateTime   @default(now())
-  createdById       String?    @db.Uuid
-  updatedAt         DateTime   @updatedAt
-  updatedById       String?    @db.Uuid
+  createdAt           DateTime   @default(now())
+  createdById         String?    @db.Uuid
+  updatedAt           DateTime   @updatedAt
+  updatedById         String?    @db.Uuid
 
   @@unique([aiSystemId, version])
   @@map("fria")
@@ -1307,26 +1309,26 @@ model Dpia {
 }
 
 model TransparencyNotice {
-  id            String     @id @default(uuid()) @db.Uuid
-  aiSystemId    String     @db.Uuid
-  aiSystem      AiSystem   @relation(fields: [aiSystemId], references: [id], onDelete: Cascade)
-  language      String     @default("fr")
-  version       Int        @default(1)
-  status        WorkStatus @default(NOT_STARTED)
-  origin        Origin     @default(USER)
+  id              String     @id @default(uuid()) @db.Uuid
+  aiSystemId      String     @db.Uuid
+  aiSystem        AiSystem   @relation(fields: [aiSystemId], references: [id], onDelete: Cascade)
+  language        String     @default("fr")
+  version         Int        @default(1)
+  status          WorkStatus @default(NOT_STARTED)
+  origin          Origin     @default(USER)
   /// Blocs conditionnels activés (aiInteraction, syntheticContent, deepfake, emotionBiometric, decisionSupport, humanContact).
-  blocks        String[]
-  contentMarkdown String   @default("")
+  blocks          String[]
+  contentMarkdown String     @default("")
   /// Instantané des données structurées ayant servi à la génération.
-  sourceSnapshot Json?
-  validatedAt   DateTime?
-  validatedById String?    @db.Uuid
-  publishedAt   DateTime?
-  withdrawnAt   DateTime?
-  createdAt     DateTime   @default(now())
-  createdById   String?    @db.Uuid
-  updatedAt     DateTime   @updatedAt
-  updatedById   String?    @db.Uuid
+  sourceSnapshot  Json?
+  validatedAt     DateTime?
+  validatedById   String?    @db.Uuid
+  publishedAt     DateTime?
+  withdrawnAt     DateTime?
+  createdAt       DateTime   @default(now())
+  createdById     String?    @db.Uuid
+  updatedAt       DateTime   @updatedAt
+  updatedById     String?    @db.Uuid
 
   @@unique([aiSystemId, language, version])
   @@map("transparency_notice")
@@ -1347,12 +1349,18 @@ model Document {
   updatedAt        DateTime     @updatedAt
   updatedById      String?      @db.Uuid
 
+  /// Rattachement principal (contrôle de périmètre) : un SIA OU un modèle d'IA.
+  aiSystemId String?   @db.Uuid
+  aiSystem   AiSystem? @relation(fields: [aiSystemId], references: [id], onDelete: Cascade)
+  aiModelId  String?   @db.Uuid
+  aiModel    AiModel?  @relation(fields: [aiModelId], references: [id], onDelete: Cascade)
+
   versions    DocumentVersion[]
-  systems     AiSystemDocument[]
-  models      AiModelDocument[]
   obligations ObligationEvidence[]
   risks       RiskEvidence[]
 
+  @@index([aiSystemId])
+  @@index([aiModelId])
   @@map("document")
 }
 
@@ -1373,26 +1381,6 @@ model DocumentVersion {
 
   @@unique([documentId, versionNo])
   @@map("document_version")
-}
-
-model AiSystemDocument {
-  aiSystemId String   @db.Uuid
-  aiSystem   AiSystem @relation(fields: [aiSystemId], references: [id], onDelete: Cascade)
-  documentId String   @db.Uuid
-  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-
-  @@id([aiSystemId, documentId])
-  @@map("ai_system_document")
-}
-
-model AiModelDocument {
-  aiModelId  String   @db.Uuid
-  aiModel    AiModel  @relation(fields: [aiModelId], references: [id], onDelete: Cascade)
-  documentId String   @db.Uuid
-  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-
-  @@id([aiModelId, documentId])
-  @@map("ai_model_document")
 }
 
 model ObligationEvidence {
@@ -1461,18 +1449,18 @@ model Review {
 }
 
 model Comment {
-  id          String    @id @default(uuid()) @db.Uuid
-  entityType  String
-  entityId    String    @db.Uuid
-  aiSystemId  String?   @db.Uuid
-  section     String?
-  body        String
+  id         String    @id @default(uuid()) @db.Uuid
+  entityType String
+  entityId   String    @db.Uuid
+  aiSystemId String?   @db.Uuid
+  section    String?
+  body       String
   /// Utilisateurs mentionnés.
-  mentions    String[]
-  authorId    String    @db.Uuid
-  resolvedAt  DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  mentions   String[]
+  authorId   String    @db.Uuid
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@index([entityType, entityId])
   @@index([aiSystemId])
@@ -1487,6 +1475,8 @@ model Notification {
   title     String
   body      String    @default("")
   link      String    @default("")
+  /// Clé d'idempotence (rappels d'échéance : une seule notification par objet et par seuil).
+  dedupeKey String?   @unique
   readAt    DateTime?
   createdAt DateTime  @default(now())
 

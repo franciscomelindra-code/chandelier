@@ -13,7 +13,7 @@ Slice = tranche verticale du plan (`IMPLEMENTATION_PLAN.md`). Le statut est tenu
 | F-002 | §5.2 | Champs minimum du registre (UUID, référence, nom, description, finalité, unité, propriétaire, resp. métier, statut 9 valeurs, dates, fournisseurs, rôles AI Act, niveau de risque, justification, valeur, tags, prochaine revue, complétude, conformité) | S2/S3 | Chaque champ est saisissable, persisté, visible dans la fiche | Fait (S5) — tous les champs du registre sont alimentés (risque et conformité par la qualification) |
 | F-003 | §5.2 | Vue table + vue cartes, tri, filtres combinés, recherche plein texte, pagination serveur | S2 | Filtres reflétés dans l'URL ; pagination côté API (`page`, `pageSize`, `total`) | Fait (S2) |
 | F-004 | §5.2, §5.14 | Colonnes personnalisables, vues sauvegardées personnelles et partagées | S2 | Une vue sauvegardée restaure filtres + colonnes | Fait (S2) |
-| F-005 | §5.2 | Actions de masse : assigner propriétaire, unité, tags, statut, lancer revue, exporter, archiver | S2/S7 | Opération transactionnelle, journalisée par objet, refusée si droit manquant sur un seul objet | Partiel (S2) — tout sauf « lancer revue » (S7) |
+| F-005 | §5.2 | Actions de masse : assigner propriétaire, unité, tags, statut, lancer revue, exporter, archiver | S2/S7 | Opération transactionnelle, journalisée par objet, refusée si droit manquant sur un seul objet | Fait (S7) — « lancer une revue » ajouté |
 | F-006 | §5.3 | Création : fiche vierge | S2 | — | Fait (S2) |
 | F-007 | §5.3 | Création : à partir d'un modèle interne (gabarit) | S3 | Gabarit administrable ; la copie ne reprend ni historique ni validations | Fait (S3) |
 | F-008 | §5.3, §10 | Création : assistant IA, préremplissage sourcé, statut « À vérifier » | S10 | Aucune valeur IA n'est écrite dans les champs validés sans action humaine | À faire |
@@ -40,18 +40,18 @@ Slice = tranche verticale du plan (`IMPLEMENTATION_PLAN.md`). Le statut est tenu
 | F-029 | §5.5 | Checklist d'obligations générée depuis la classification (article, description, applicable Oui/Non/À confirmer, responsable, statut, preuve, date cible, date de validation, commentaire) | S5 | Régénération idempotente, sans perte des statuts déjà saisis | Fait (S5) |
 | F-030 | §5.6 | FRIA liée au SIA, sections art. 27, conclusion, validation, versions | S9 | — | À faire |
 | F-031 | §5.6 | Réutilisation d'une DPIA/AIPD sans double saisie, périmètre couvert | S9 | — | À faire |
-| F-032 | §5.7 | Référentiel modèles (nom, fournisseur, famille, version, type, capacités, limites, accès, hébergement, zones, URL, date de connaissance, statut, GPAI, licence, pièces) | S4 | — | Partiel (S4) — pièces justificatives du modèle en S7 ; préremplissage IA en S10 |
+| F-032 | §5.7 | Référentiel modèles (nom, fournisseur, famille, version, type, capacités, limites, accès, hébergement, zones, URL, date de connaissance, statut, GPAI, licence, pièces) | S4 | — | Partiel (S7) — pièces du modèle livrées ; préremplissage IA en S10 |
 | F-033 | §5.8 | Notice de transparence générée depuis les données structurées, blocs conditionnels, édition, versions, validation | S9 | — | À faire |
 | F-034 | §5.8 | Export notice MD, HTML, PDF, DOCX + ajout automatique aux pièces | S9/S10 | — | À faire |
 | F-035 | §5.9 | Registre des risques par SIA (13 catégories), scénario, cause, événement, conséquence, vraisemblance, gravité, scores inhérent/résiduel, mesures, propriétaire, traitement, échéance, preuve | S6 | Score et niveau calculés côté serveur ; résiduel ≤ inhérent ; acceptation motivée | Partiel (S6) — tout sauf la preuve (pièces justificatives en S7) |
 | F-036 | §5.9 | Méthodologie de cotation paramétrable par l'administrateur | S6 | Changement de méthodologie versionné ; anciens scores conservés avec leur version | Fait (S6) |
-| F-037 | §5.10 | Affectation de sections à un contributeur | S7 | Le contributeur ne peut modifier que les sections affectées (contrôle API) | Partiel (S3) — affectation et contrôle serveur faits ; notifications en S7 |
-| F-038 | §5.10 | Commentaires internes, mentions, notifications in-app | S7 | — | À faire |
-| F-039 | §5.10 | Validation par domaine (métier, DPO, RSSI, juridique, DSI), verrouillage de version validée | S7 | Une version validée n'est plus modifiable ; toute modification crée une nouvelle version | À faire |
-| F-040 | §5.10, §13 | Revalidation / revue déclenchée par modification substantielle (finalité, modèle, version, dataset, fournisseur, autonomie, population) | S7 | Modifier le modèle d'un SIA validé crée une revue exceptionnelle | À faire |
-| F-041 | §5.10 | Workflow configurable | Hors MVP (S7 partiel) | Hypothèse H-07 | À faire |
+| F-037 | §5.10 | Affectation de sections à un contributeur | S7 | Le contributeur ne peut modifier que les sections affectées (contrôle API) | Fait (S7) — affectation, contrôle serveur et notification |
+| F-038 | §5.10 | Commentaires internes, mentions, notifications in-app | S7 | Une mention n'est acceptée que si la personne a accès au SIA | Fait (S7) |
+| F-039 | §5.10 | Validation par domaine (métier, DPO, RSSI, juridique, DSI), verrouillage de version validée | S7 | Une version validée n'est plus modifiable ; toute modification crée une nouvelle version | Fait (S7) — la version validée est figée (instantané) ; toute modification crée une version non validée signalée ; demandeur ≠ décideur |
+| F-040 | §5.10, §13 | Revalidation / revue déclenchée par modification substantielle (finalité, modèle, version, dataset, fournisseur, autonomie, population) | S7 | Modifier le modèle d'un SIA validé crée une revue exceptionnelle | Fait (S7) |
+| F-041 | §5.10 | Workflow configurable | Hors MVP (S7 partiel) | Hypothèse H-07 | Partiel (S7) — domaines choisis à chaque demande ; pas de moteur de workflow |
 | F-042 | §5.11 | Journal d'audit immuable (qui, quoi, ancienne/nouvelle valeur, quand, origine, justification) | S1→S7 | UPDATE/DELETE sur `audit_event` rejetés par trigger PostgreSQL | Fait (S1) |
-| F-043 | §5.11 | Comparaison et restauration de versions, export du journal | S7 | — | Partiel (S2) — historique par SIA + instantanés ; diff/restauration en S7 |
+| F-043 | §5.11 | Comparaison et restauration de versions, export du journal | S7 | — | Fait (S7) — comparaison de versions, restauration des champs (pas des liens), export du journal |
 | F-044 | §5.12 | Import CSV (XLSX, JSON) avec mapping, aperçu, validation, rapport d'erreurs, transaction | S10 (CSV en S2 si possible) | Un fichier avec 1 ligne invalide n'importe rien et retourne le rapport | À faire |
 | F-045 | §5.12 | Champs de compatibilité Label, Ref, Description, State, RiskLevel… TransparencyNoticeHtml | S10 | — | À faire |
 | F-046 | §5.12 | Export registre CSV/XLSX/JSON ; fiche PDF/DOCX/MD/HTML ; notice ; FRIA ; rapport d'audit ; ZIP des preuves | S2 (CSV/JSON), S10 | — | Partiel (S2) — registre CSV (en-têtes §5.12) et JSON |
@@ -60,7 +60,7 @@ Slice = tranche verticale du plan (`IMPLEMENTATION_PLAN.md`). Le statut est tenu
 | F-049 | §5.1 | Chaque widget cliquable ouvre la liste filtrée | S8 | — | À faire |
 | F-050 | §5.1 | Filtres dashboard (unité, direction, équipe, propriétaire, fournisseur, modèle, risque, rôle, statut, tags, période) | S8 | — | À faire |
 | F-051 | §12 | Rapports standards (11 rapports) CSV/XLSX + PDF/DOCX | S10 | — | À faire |
-| F-052 | §13 | Rappels 90/60/30/7 j, revue annuelle paramétrable par niveau de risque | S7/S8 | — | À faire |
+| F-052 | §13 | Rappels 90/60/30/7 j, revue annuelle paramétrable par niveau de risque | S7/S8 | Rappels idempotents | Fait (S7) — notifications in-app ; pas d'e-mail (H-08) |
 | F-053 | §14 | API REST `/api/v1`, OpenAPI | S1→ | `/api/docs` sert la spec générée depuis les schémas réels | Fait (S1) |
 | F-054 | §14 | Webhooks facultatifs | Hors MVP | — | Hors MVP |
 | F-055 | §14 | Préparation Microsoft Graph / SharePoint / Teams / Power Automate | Hors MVP | Interfaces d'intégration documentées | Hors MVP |
@@ -118,4 +118,6 @@ Aucune ambiguïté n'a été jugée bloquante. Hypothèses retenues (révisables
 | H-13 | Acceptation d'un risque | Justification obligatoire (20 caractères min.). L'acceptation d'un risque du niveau le plus élevé de la méthodologie est réservée aux détenteurs de `assessment:validate` (DPO, LEGAL, AI_GOVERNANCE, SUPER_ADMIN). Toute modification de cotation d'un risque accepté impose de renouveler la justification. |
 | H-14 | Risque résiduel | Le résiduel est une cotation experte saisie, jamais calculée automatiquement à partir des mesures (une réduction automatique serait arbitraire). Il ne peut dépasser l'inhérent sur aucun axe ; une réduction sans mesure « en place » est signalée, non bloquée. |
 | H-15 | Mesures | Une mesure appartient à un SIA et peut couvrir plusieurs de ses risques ; son caractère « existant » découle de son statut (en place / vérifiée). Pas de bibliothèque de mesures transverse (évite qu'une modification dans un périmètre affecte un autre). |
+| H-16 | Documents | Un document appartient à un SIA ou à un modèle (contrôle de périmètre). Formats admis par liste blanche avec vérification de signature ; HTML, SVG, scripts et exécutables refusés ; téléchargement toujours en pièce jointe. Antivirus non actif : statut « non analysé » affiché. |
+| H-17 | Validation par domaine | Habilitations : Métier = REVIEWER ou AI_GOVERNANCE ; DPO, RSSI, LEGAL, IT = rôle correspondant ; le super administrateur n'est habilité pour aucun domaine (séparation des tâches) ; un approbateur nommément désigné doit détenir `approval:decide` sur le SIA. La version est validée quand la dernière décision de chaque domaine demandé est « approuvé ». |
 | H-12 | Base locale Windows | En développement sur poste sans Docker, PostgreSQL réel embarqué via `embedded-postgres` (binaires officiels distribués par npm). Jamais utilisé en production. |

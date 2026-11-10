@@ -24,6 +24,7 @@ import { Alert, Badge, Button, Card, EmptyState, SelectField, Spinner, TextField
 import { NewActionModal } from '../actions/ActionForm';
 import { ActionsTable } from '../actions/ActionsTable';
 import { LevelBadge } from './RiskHeatmap';
+import { EvidencePicker } from '../documents/DocumentsPanel';
 import type { ActionView, Measure, Methodology, Risk } from './types';
 
 export function useMethodologies() {
@@ -774,10 +775,14 @@ export function RiskPage() {
         <MeasuresCard r={r} />
         <RiskActions r={r} />
         <Card>
-          <h2 className="text-lg">Preuves</h2>
-          <p className="text-sm text-grey-600">
-            Fonctionnalité non implémentée — rattachement de pièces justificatives en S7.
-          </p>
+          <h2 className="mb-2 text-lg">Preuves ({r.evidences.length})</h2>
+          <EvidencePicker
+            systemId={r.aiSystem.id}
+            targetPath={`risks/${r.id}`}
+            evidences={r.evidences}
+            editable={!!r.permissions?.canManage}
+            onChange={() => void risk.refetch()}
+          />
         </Card>
         <RiskHistory id={r.id} />
       </div>

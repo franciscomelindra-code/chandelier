@@ -56,6 +56,7 @@ Permissions qualifiées : `:own` = uniquement les SIA dont l'utilisateur est pro
 | notice:validate | ✓ | ✓ | ✓ | | | | | | | | |
 | approval:decide | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | | | ✓ | | |
 | review:manage | ✓ | ✓ | ✓ | ✓ | | | | | | | |
+| comment:write | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | | |
 | import:run | ✓ | ✓ | ✓ | ✓ | | | | | | | |
 | report:read | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | | ✓ | ✓ | ✓ |
 | audit:read | ✓ | ✓ | ✓ | ✓ | ✓ | | | | | ✓ | |
@@ -72,6 +73,14 @@ Règles complémentaires (S6), vérifiées côté serveur et couvertes par des t
 - **Responsable d’une action** : peut en modifier le statut (et le motif de clôture) sans `action:manage` ; toute autre modification lui est refusée (403).
 - **Liens** risque ↔ mesure et action ↔ risque / obligation / mesure : uniquement au sein du même SIA (400), ce qui empêche de lier un objet hors périmètre.
 - **Méthodologie de cotation** : création et activation réservées à `settings:manage` ; une version utilisée n’est plus modifiable.
+
+Règles complémentaires (S7) :
+
+- **Dépôt de fichiers** : un fichier par requête, taille bornée (`UPLOAD_MAX_MB`, 25 Mo par défaut ; Caddy limite le corps à 30 Mo), liste blanche d’extensions **et** vérification de la signature (PDF, PNG, JPEG, conteneurs Office/OpenDocument, texte UTF-8 sans octet nul). HTML, SVG, JavaScript et exécutables sont refusés (415). Nom de fichier nettoyé ; clé de stockage aléatoire (aucun nom fourni par l’utilisateur dans un chemin) ; fichiers en `0600`. Empreinte SHA-256 conservée par version. Antivirus **non actif** : statut « non analysé » affiché ; un statut `INFECTED` bloque le téléchargement.
+- **Téléchargement** : toujours en pièce jointe (`Content-Disposition: attachment`), type MIME issu de la liste blanche (jamais du client), `X-Content-Type-Options: nosniff`, `Content-Security-Policy: default-src 'none'; sandbox`, journalisé.
+- **Validation** : permission `approval:decide` **et** rôle habilité pour le domaine (voir H-17) ; le demandeur ne peut pas décider ; une demande devient caduque si la fiche change.
+- **Commentaires** : nouvelle permission `comment:write` (tous les rôles sauf READER et AUDITOR) ; une mention n’est acceptée que si la personne mentionnée peut lire le SIA (pas de fuite par notification).
+- **Restauration de version** : `aiSystem:update` sans qualificatif de section (propriétaire ou gouvernance) ; un contributeur ne peut pas restaurer.
 
 ## 4. Points de vigilance connus
 

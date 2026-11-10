@@ -2,6 +2,24 @@
 
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versionnement sémantique.
 
+## [0.7.0] — 2026-11-10 — Slice S7 : documents, preuves, validations, revues, collaboration
+
+### Ajouté
+- Migration `s7_documents_workflow` : document rattaché à un SIA ou à un modèle, dates de validation et de dernière revue du SIA, clé d’idempotence des notifications.
+- Documents versionnés : dépôt contrôlé (liste blanche + signature, taille bornée, nom nettoyé, clé aléatoire, SHA-256), nouvelles versions, téléchargement en pièce jointe journalisé, archivage motivé ; stockage local (volume `chandelier_documents`, `STORAGE_DIR`).
+- Preuves rattachées aux obligations et aux risques (documents du même SIA).
+- Validation par domaine (Métier, DPO, RSSI, Juridique, DSI) d’une version de la fiche : habilitation par rôle, demandeur ≠ décideur, rejet motivé, demande caduque si la fiche change, version validée figée ; état « modifié depuis la validation ».
+- Revue exceptionnelle automatique sur modification substantielle d’un SIA validé (finalité, cas d’usage, autonomie, population, modèle, jeu de données, fournisseur, personnes concernées).
+- Revues périodiques et exceptionnelles, clôture motivée, prochaine revue recalculée selon une périodicité paramétrable par catégorie AI Act ; action de masse « Lancer une revue ».
+- Commentaires internes par étape avec mentions contrôlées ; nouvelle permission `comment:write`.
+- Notifications in-app (mentions, validations, revues, attributions d’actions et de sections) et rappels d’échéance 90/60/30/7 jours et dépassement, idempotents, toutes les 6 heures.
+- Comparaison de versions et restauration des champs d’une version antérieure.
+- Interface : étape 11 « Documentation », onglets « Validation et revues » et « Commentaires », versions dans l’historique, preuves sur risques et obligations, documents des modèles, pages « Documentation » et « Notifications », Administration › Périodicité des revues.
+- 6 tests unitaires et 9 tests d’intégration (158 tests au total).
+
+### Explicitement non livré
+- Analyse antivirus (statut « non analysé ») ; stockage S3 / Azure Blob ; notifications par e-mail ou Teams.
+
 ## [0.6.0] — 2026-11-10 — Slice S6 : risques, mesures, plans d’action
 
 ### Ajouté

@@ -19,10 +19,12 @@ import {
   systemStakeholderSchema,
   systemStakeholderUpdateSchema,
   type PartyFunction,
+  type ReviewTrigger,
   type SectionKey,
 } from '@chandelier/shared';
 import type { Prisma } from '@prisma/client';
 import { recordAudit } from '../../audit/audit.js';
+import { notify, triggerExceptionalReview } from '../notify.js';
 import { badRequest, conflict, forbidden, notFound } from '../../errors.js';
 import { actorOf, requirePermission } from '../../http.js';
 import { can } from '../../rbac/access.js';
@@ -32,6 +34,17 @@ type Tx = Prisma.TransactionClient;
 type Changes = Record<string, { old: unknown; new: unknown }>;
 
 const id = z.uuid();
+
+const SUBSTANTIAL_ACTIONS: Record<string, ReviewTrigger> = {
+  link_model: 'MODEL_CHANGE',
+  update_model_link: 'MODEL_CHANGE',
+  unlink_model: 'MODEL_CHANGE',
+  link_vendor: 'VENDOR_CHANGE',
+  unlink_vendor: 'VENDOR_CHANGE',
+  link_dataset: 'DATASET_CHANGE',
+  unlink_dataset: 'DATASET_CHANGE',
+  set_data_subjects: 'POPULATION_CHANGE',
+};
 
 /**
  * Modification d'une section relationnelle d'un SIA, dans une transaction :
@@ -67,6 +80,9 @@ async function mutateSection(
       aiSystemId: system.id,
       changes,
     });
+    // Modèle, jeu de données, fournisseur ou personnes concernées modifiés sur un SIA validé → revue exceptionnelle.
+    const trigger = SUBSTANTIAL_ACTIONS[action];
+    if (trigger) await triggerExceptionalReview(tx, actorOf(request), after, [trigger]);
     return { after, sections };
   });
   return serializeDetail(ctx, result.after, result.sections);
@@ -523,6 +539,17 @@ export const aiSystemLinkRoutes: FastifyPluginAsyncZod = async (app) => {
             assignment: { old: null, new: `${SECTION_LABELS[a.section as SectionKey]} → ${user.displayName}` },
           },
         });
+        await notify(
+          tx,
+          [user.id],
+          {
+            type: 'assignment',
+            title: `Section « ${SECTION_LABELS[a.section as SectionKey]} » à compléter — ${system.reference}`,
+            body: a.dueDate ? `Échéance : ${a.dueDate.toISOString().slice(0, 10)}` : '',
+            link: `/systemes/${system.id}?etape=${a.section}`,
+          },
+          ctx.user.id,
+        );
         return a;
       });
       return reply.status(201).send(assignmentOut(created));

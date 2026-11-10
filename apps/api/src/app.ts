@@ -2,6 +2,7 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import cookie from '@fastify/cookie';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
+import multipart from '@fastify/multipart';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import {
@@ -30,6 +31,8 @@ import { catalogRoutes } from './modules/catalog.js';
 import { assessmentRoutes } from './modules/assessments.js';
 import { riskRoutes } from './modules/risks.js';
 import { actionRoutes } from './modules/actions.js';
+import { documentRoutes } from './modules/documents.js';
+import { workflowRoutes } from './modules/workflow.js';
 
 export interface AppDeps {
   config: AppConfig;
@@ -81,6 +84,10 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   });
   await app.register(cookie);
   await app.register(rateLimit, { global: false });
+  // Dépôt de fichiers : un seul fichier par requête, taille bornée (UPLOAD_MAX_MB), contrôlé par documents.ts.
+  await app.register(multipart, {
+    limits: { fileSize: config.UPLOAD_MAX_MB * 1024 * 1024, files: 1, fields: 10, fieldSize: 4096, parts: 12 },
+  });
 
   await app.register(swagger, {
     openapi: {
@@ -184,6 +191,8 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
       await v1.register(assessmentRoutes);
       await v1.register(riskRoutes);
       await v1.register(actionRoutes);
+      await v1.register(documentRoutes);
+      await v1.register(workflowRoutes);
       await v1.register(tagRoutes, { prefix: '/tags' });
       await v1.register(savedViewRoutes, { prefix: '/saved-views' });
     },

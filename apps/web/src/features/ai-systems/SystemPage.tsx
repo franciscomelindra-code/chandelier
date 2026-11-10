@@ -24,9 +24,12 @@ import {
   type StepProps,
 } from './wizard/steps';
 import { SystemActions, SystemRisks } from '../risks/RisksPage';
+import { ValidationTab } from '../workflow/ValidationTab';
+import { CommentsTab } from '../workflow/CommentsTab';
+import { VersionsPanel } from '../workflow/VersionsPanel';
 
 /** Étapes dont le contenu dépend d'une tranche ultérieure. */
-const PLANNED: Partial<Record<SectionKey, string>> = { documentation: 'S7' };
+const PLANNED: Partial<Record<SectionKey, string>> = {};
 
 const STEP_COMPONENTS: Record<SectionKey, ComponentType<StepProps>> = {
   general: GeneralStep,
@@ -142,7 +145,7 @@ export function SystemPage() {
   const qc = useQueryClient();
   const [reasonFor, setReasonFor] = useState<'archive' | 'restore' | null>(null);
   const [reasonError, setReasonError] = useState<string | null>(null);
-  const TABS = ['fiche', 'risques', 'actions', 'historique'] as const;
+  const TABS = ['fiche', 'risques', 'actions', 'validation', 'commentaires', 'historique'] as const;
   const tab: (typeof TABS)[number] = (TABS as readonly string[]).includes(sp.get('onglet') ?? '')
     ? (sp.get('onglet') as (typeof TABS)[number])
     : 'fiche';
@@ -263,6 +266,8 @@ export function SystemPage() {
             ['fiche', 'Fiche (12 étapes)'],
             ['risques', 'Risques'],
             ['actions', 'Actions'],
+            ['validation', 'Validation et revues'],
+            ['commentaires', 'Commentaires'],
             ['historique', 'Historique'],
           ] as const
         ).map(([k, l]) => (
@@ -285,10 +290,17 @@ export function SystemPage() {
         <SystemRisks systemId={s.id} />
       ) : tab === 'actions' ? (
         <SystemActions systemId={s.id} />
+      ) : tab === 'validation' ? (
+        <ValidationTab systemId={s.id} />
+      ) : tab === 'commentaires' ? (
+        <CommentsTab systemId={s.id} />
       ) : tab === 'historique' ? (
-        <Card>
-          <History id={s.id} />
-        </Card>
+        <div className="space-y-4">
+          <VersionsPanel systemId={s.id} />
+          <Card>
+            <History id={s.id} />
+          </Card>
+        </div>
       ) : (
         <div className="lg:grid lg:grid-cols-[230px_minmax(0,1fr)] lg:gap-6">
           <nav aria-label="Étapes de la fiche" className="no-print mb-4 lg:sticky lg:top-40 lg:mb-0 lg:self-start">

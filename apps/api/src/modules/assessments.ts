@@ -660,8 +660,17 @@ export const assessmentRoutes: FastifyPluginAsyncZod = async (app) => {
   );
 
   // ── Obligations ──
-  const obligationOut = (o: Prisma.ObligationGetPayload<object>, names: Map<string, string>) => ({
+  const obligationOut = (
+    o: Prisma.ObligationGetPayload<object> & {
+      evidences?: { document: { id: string; title: string; type: string; archivedAt: Date | null } }[];
+    },
+    names: Map<string, string>,
+  ) => ({
     ...o,
+    evidences: (o.evidences ?? []).map((e) => ({
+      ...e.document,
+      archivedAt: e.document.archivedAt?.toISOString() ?? null,
+    })),
     targetDate: o.targetDate ? o.targetDate.toISOString().slice(0, 10) : null,
     validatedAt: o.validatedAt?.toISOString() ?? null,
     validatedBy: o.validatedById ? (names.get(o.validatedById) ?? null) : null,
@@ -678,6 +687,9 @@ export const assessmentRoutes: FastifyPluginAsyncZod = async (app) => {
       const { system, sections } = await loadVisible(prisma, ctx, request.params.sid);
       const items = await prisma.obligation.findMany({
         where: { aiSystemId: system.id },
+        include: {
+          evidences: { include: { document: { select: { id: true, title: true, type: true, archivedAt: true } } } },
+        },
         orderBy: [{ category: 'asc' }, { templateKey: 'asc' }],
       });
       const names = await namesFor(

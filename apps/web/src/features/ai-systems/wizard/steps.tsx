@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { errorMessage, post } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth';
 import { AssessmentPanel } from '../../assessments/AssessmentPanel';
+import { DocumentsPanel } from '../../documents/DocumentsPanel';
 import clsx from 'clsx';
 import {
   AI_ACT_ROLES,
@@ -301,18 +302,6 @@ export function ResponsibilityStep({ s, editable, reload }: StepProps) {
   );
 }
 
-// ── Étapes reposant sur des tranches ultérieures ───────────────────────────
-function Planned({ title, slice, children }: { title: string; slice: string; children?: React.ReactNode }) {
-  return (
-    <StepCard title={title} editable={false}>
-      <Alert tone="gray" title="Fonctionnalité non implémentée">
-        Cette étape sera livrée avec la tranche {slice}. Aucune donnée n’y est simulée.
-      </Alert>
-      {children && <div className="mt-4 text-sm text-grey-700">{children}</div>}
-    </StepCard>
-  );
-}
-
 export function ModelsStep({ s, editable }: StepProps) {
   const gpai = s.modelLinks.filter((l) => l.model.isGpai === 'YES');
   return (
@@ -569,11 +558,10 @@ export function ValueStep({ s, editable, reload }: StepProps) {
   );
 }
 
-export const DocumentationStep = () => (
-  <Planned title="11. Documentation" slice="S7 (documents, preuves, versions) et S9 (notice, FRIA, DPIA)">
-    Pièces jointes, notice de transparence, contrats / DPA, documentation fournisseur, DPIA / AIPD, FRIA, analyses de
-    sécurité, tests, validations, instructions d’utilisation, journaux, certificats, rapports de conformité.
-  </Planned>
+export const DocumentationStep = ({ s }: StepProps) => (
+  <div className="space-y-4">
+    <DocumentsPanel ownerPath={`ai-systems/${s.id}`} title="11. Documentation — pièces justificatives" />
+  </div>
 );
 
 // ── 12. Récapitulatif imprimable ────────────────────────────────────────────
