@@ -269,3 +269,115 @@ export const VALUE_DETAIL_LABELS: Record<keyof ValueDetails, string> = {
   safety: 'Sécurité',
   avoidedCosts: 'Coûts évités',
 };
+
+// ── Fournisseurs et modèles d'IA (S4) ───────────────────────────────────────
+
+export const VENDOR_RELATIONS = ['PROVIDER', 'INTEGRATOR', 'HOSTING', 'RESELLER', 'OTHER'] as const;
+export const VENDOR_RELATION_LABELS: Record<(typeof VENDOR_RELATIONS)[number], string> = {
+  PROVIDER: 'Fournisseur / éditeur',
+  INTEGRATOR: 'Intégrateur',
+  HOSTING: 'Hébergeur',
+  RESELLER: 'Revendeur',
+  OTHER: 'Autre',
+};
+
+export const MODEL_TYPES = [
+  'LLM',
+  'VISION',
+  'CLASSIFICATION',
+  'RECOMMENDATION',
+  'SPEECH',
+  'MULTIMODAL',
+  'OTHER',
+] as const;
+export const MODEL_TYPE_LABELS: Record<(typeof MODEL_TYPES)[number], string> = {
+  LLM: 'Modèle de langage (LLM)',
+  VISION: 'Vision',
+  CLASSIFICATION: 'Classification',
+  RECOMMENDATION: 'Recommandation',
+  SPEECH: 'Parole',
+  MULTIMODAL: 'Multimodal',
+  OTHER: 'Autre',
+};
+
+export const MODEL_ACCESS_MODES = ['API', 'SAAS', 'ON_PREMISE', 'OPEN_WEIGHTS', 'EMBEDDED', 'OTHER'] as const;
+export const MODEL_ACCESS_LABELS: Record<(typeof MODEL_ACCESS_MODES)[number], string> = {
+  API: 'API',
+  SAAS: 'SaaS',
+  ON_PREMISE: 'Sur site',
+  OPEN_WEIGHTS: 'Poids ouverts',
+  EMBEDDED: 'Embarqué',
+  OTHER: 'Autre',
+};
+
+export const MODEL_STATUSES = ['UNDER_EVALUATION', 'APPROVED', 'DEPRECATED', 'RETIRED'] as const;
+export const MODEL_STATUS_META: Record<
+  (typeof MODEL_STATUSES)[number],
+  { label: string; tone: 'green' | 'yellow' | 'orange' | 'gray' | 'blue' | 'red' }
+> = {
+  UNDER_EVALUATION: { label: 'En évaluation', tone: 'blue' },
+  APPROVED: { label: 'Approuvé', tone: 'green' },
+  DEPRECATED: { label: 'Obsolète', tone: 'orange' },
+  RETIRED: { label: 'Retiré', tone: 'gray' },
+};
+
+const httpUrl = z
+  .string()
+  .trim()
+  .max(500)
+  .refine((v) => v === '' || /^https?:\/\/[^\s]+$/i.test(v), 'URL http(s) attendue');
+
+export const vendorSchema = z.strictObject({
+  name: text(160).min(2),
+  legalName: text(200).default(''),
+  country: text(2)
+    .toUpperCase()
+    .refine((v) => v === '' || /^[A-Z]{2}$/.test(v), 'Code pays ISO à 2 lettres')
+    .default(''),
+  website: httpUrl.default(''),
+  description: text(4000).default(''),
+  dpaSigned: triState.default('UNKNOWN'),
+  isActive: z.boolean().default(true),
+});
+export const vendorUpdateSchema = vendorSchema.partial();
+
+export const aiModelSchema = z.strictObject({
+  name: text(160).min(2),
+  vendorId: uuid.nullable().default(null),
+  family: text(160).default(''),
+  version: text(80).default(''),
+  type: z.enum(MODEL_TYPES),
+  description: text(4000).default(''),
+  capabilities: text(4000).default(''),
+  knownLimitations: text(4000).default(''),
+  accessMode: z.enum(MODEL_ACCESS_MODES),
+  hosting: text(500).default(''),
+  regions: z.array(text(60).min(1)).max(30).default([]),
+  /** Saisie seulement : l'URL n'est jamais récupérée côté serveur (pas de SSRF). */
+  documentationUrl: httpUrl.default(''),
+  knowledgeDate: z.iso.date().nullable().default(null),
+  versionDate: z.iso.date().nullable().default(null),
+  status: z.enum(MODEL_STATUSES).default('UNDER_EVALUATION'),
+  isGpai: triState.default('UNKNOWN'),
+  gpaiSystemicRisk: triState.default('UNKNOWN'),
+  gpaiNotes: text(4000).default(''),
+  license: text(200).default(''),
+});
+export const aiModelUpdateSchema = aiModelSchema.partial();
+
+/** Lien SIA ↔ modèle : la description de l'utilisation est propre à chaque relation (CDC §5.7). */
+export const systemModelSchema = z.strictObject({
+  aiModelId: uuid,
+  usageDescription: text(4000).min(10, 'Décrivez l’usage du modèle dans ce SIA (10 caractères minimum)'),
+  versionUsed: text(80).default(''),
+  hostingMode: z.enum(MODEL_ACCESS_MODES).nullable().default(null),
+  integrationDate: z.iso.date().nullable().default(null),
+  isPrimary: z.boolean().default(false),
+});
+export const systemModelUpdateSchema = systemModelSchema.omit({ aiModelId: true }).partial();
+
+export const systemVendorSchema = z.strictObject({
+  vendorId: uuid,
+  relation: z.enum(VENDOR_RELATIONS),
+  notes: text(1000).default(''),
+});

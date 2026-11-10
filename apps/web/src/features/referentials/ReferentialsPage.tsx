@@ -15,7 +15,15 @@ import {
 import { api, errorMessage } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import { useCatalog } from '../../lib/queries';
-import type { Asset, Dataset, ProcessingActivity, RefCategory, Stakeholder, SystemTemplate } from '../../lib/types';
+import type {
+  Vendor,
+  Asset,
+  Dataset,
+  ProcessingActivity,
+  RefCategory,
+  Stakeholder,
+  SystemTemplate,
+} from '../../lib/types';
 import {
   Alert,
   Badge,
@@ -31,7 +39,9 @@ import {
 import { TRI_OPTIONS, TextArea, triLabel } from '../ai-systems/wizard/form';
 
 // ── Formulaire générique piloté par une description de champs ──────────────
-type FieldDef =
+export type FieldDef =
+  | { key: string; label: string; kind: 'list'; hint?: string }
+  | { key: string; label: string; kind: 'date' }
   | { key: string; label: string; kind: 'text'; required?: boolean; hint?: string }
   | { key: string; label: string; kind: 'area' }
   | { key: string; label: string; kind: 'select'; options: readonly (readonly [string, string])[]; nullable?: boolean }
@@ -39,7 +49,7 @@ type FieldDef =
   | { key: string; label: string; kind: 'bool' }
   | { key: string; label: string; kind: 'multi'; options: { id: string; label: string }[] };
 
-function CatalogForm({
+export function CatalogForm({
   fields,
   initial,
   onSubmit,
@@ -59,7 +69,17 @@ function CatalogForm({
       className="space-y-4"
       onSubmit={(e) => {
         e.preventDefault();
-        onSubmit(v);
+        // Champs « liste » saisis en texte : conversion en tableau à l'envoi.
+        const out = { ...v };
+        for (const f of fields) {
+          if (f.kind === 'list' && typeof out[f.key] === 'string') {
+            out[f.key] = (out[f.key] as string)
+              .split(',')
+              .map((x) => x.trim())
+              .filter(Boolean);
+          }
+        }
+        onSubmit(out);
       }}
     >
       {error && <Alert tone="red">{error}</Alert>}
@@ -115,6 +135,26 @@ function CatalogForm({
                   ))}
                 </SelectField>
               );
+            case 'list':
+              return (
+                <TextField
+                  key={f.key}
+                  label={f.label}
+                  hint={f.hint ?? 'Valeurs séparées par des virgules'}
+                  value={typeof val === 'string' ? val : ((val as string[]) ?? []).join(', ')}
+                  onChange={(e) => set(f.key, e.target.value)}
+                />
+              );
+            case 'date':
+              return (
+                <TextField
+                  key={f.key}
+                  label={f.label}
+                  type="date"
+                  value={(val as string) ?? ''}
+                  onChange={(e) => set(f.key, e.target.value || null)}
+                />
+              );
             case 'bool':
               return (
                 <label key={f.key} className="flex items-center gap-2 self-end pb-2 text-sm">
@@ -156,7 +196,7 @@ function CatalogForm({
   );
 }
 
-function CatalogPanel<T extends { id: string; usage: number }>({
+export function CatalogPanel<T extends { id: string; usage: number }>({
   path,
   title,
   intro,
@@ -291,7 +331,7 @@ function CatalogPanel<T extends { id: string; usage: number }>({
   );
 }
 
-const opts = <K extends string>(keys: readonly K[], labels: Record<K, string>) =>
+export const opts = <K extends string>(keys: readonly K[], labels: Record<K, string>) =>
   keys.map((k) => [k, labels[k]] as const);
 
 function StakeholdersPanel() {
@@ -483,6 +523,53 @@ function DatasetsPanel() {
   );
 }
 
+function VendorsPanel() {
+  return (
+    <CatalogPanel<Vendor>
+      path="vendors"
+      title="Fournisseurs"
+      intro="Éditeurs, intégrateurs et hébergeurs. Un fournisseur lié à un SIA, un modèle ou un actif ne peut pas être supprimé : désactivez-le."
+      fields={[
+        { key: 'name', label: 'Nom', kind: 'text', required: true },
+        { key: 'legalName', label: 'Raison sociale', kind: 'text' },
+        { key: 'country', label: 'Pays (ISO 2 lettres)', kind: 'text' },
+        {
+          key: 'website',
+          label: 'Site web',
+          kind: 'text',
+          hint: 'Information saisie, jamais consultée par le serveur.',
+        },
+        { key: 'dpaSigned', label: 'Accord de traitement (DPA) signé', kind: 'tri' },
+        { key: 'isActive', label: 'Actif', kind: 'bool' },
+        { key: 'description', label: 'Description', kind: 'area' },
+      ]}
+      empty={{
+        name: '',
+        legalName: '',
+        country: '',
+        website: '',
+        dpaSigned: 'UNKNOWN',
+        isActive: true,
+        description: '',
+      }}
+      render={(v) => (
+        <>
+          <p className="font-semibold">
+            {v.name} {v.country && <Badge tone="gray">{v.country}</Badge>}{' '}
+            <Badge tone={v.dpaSigned === 'YES' ? 'green' : v.dpaSigned === 'NO' ? 'orange' : 'gray'}>
+              DPA : {triLabel(v.dpaSigned)}
+            </Badge>{' '}
+            {!v.isActive && <Badge tone="gray">Inactif</Badge>}
+          </p>
+          <p className="text-xs text-grey-600">
+            {v.modelCount} modèle{v.modelCount > 1 ? 's' : ''} au référentiel{v.legalName ? ` · ${v.legalName}` : ''}
+          </p>
+        </>
+      )}
+    />
+  );
+}
+
 function CategoriesPanel() {
   const cats = useCatalog<RefCategory>('data-categories');
   const subs = useCatalog<RefCategory>('data-subject-categories');
@@ -560,6 +647,7 @@ function TemplatesPanel() {
 }
 
 const TABS = [
+  ['fournisseurs', 'Fournisseurs', <VendorsPanel key="v" />],
   ['parties-prenantes', 'Parties prenantes', <StakeholdersPanel key="s" />],
   ['actifs', 'Actifs', <AssetsPanel key="a" />],
   ['traitements', 'Traitements RGPD', <ProcessingPanel key="p" />],

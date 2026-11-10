@@ -16,8 +16,8 @@ import {
 import { ApiError, api, errorMessage, get, post } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import { formatDate } from '../../lib/format';
-import { indent, useActiveUsers, useOrgUnits, useTags } from '../../lib/queries';
-import type { AiSystemListItem, Page, SavedView } from '../../lib/types';
+import { indent, useActiveUsers, useCatalog, useOrgUnits, useTags } from '../../lib/queries';
+import type { AiModel, AiSystemListItem, Page, SavedView, Vendor } from '../../lib/types';
 import {
   Alert,
   Badge,
@@ -87,6 +87,16 @@ const COLUMNS: Column[] = [
     render: (s) => (s.vendors.length ? s.vendors.join(', ') : <span className="text-grey-400">—</span>),
   },
   {
+    key: 'models',
+    label: 'Modèles',
+    render: (s) =>
+      s.models.length ? (
+        s.models.map((m) => `${m.name}${m.version ? ` ${m.version}` : ''}`).join(', ')
+      ) : (
+        <span className="text-grey-400">—</span>
+      ),
+  },
+  {
     key: 'tags',
     label: 'Tags',
     render: (s) => (
@@ -116,6 +126,7 @@ const DEFAULT_COLUMNS = [
   'value',
   'orgUnit',
   'owner',
+  'models',
   'completeness',
   'nextReview',
 ];
@@ -130,6 +141,8 @@ const API_PARAMS = [
   'orgUnitId',
   'ownerId',
   'tagId',
+  'vendorId',
+  'modelId',
   'archived',
   'demo',
   'sort',
@@ -424,6 +437,8 @@ export function RegistryPage() {
   const units = useOrgUnits();
   const users = useActiveUsers();
   const tags = useTags();
+  const vendorList = useCatalog<Vendor>('vendors');
+  const modelList = useCatalog<AiModel>('ai-models');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulk, setBulk] = useState<BulkAction | null>(null);
   const [creating, setCreating] = useState(false);
@@ -557,6 +572,32 @@ export function RegistryPage() {
             {tags.data?.items.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.label}
+              </option>
+            ))}
+          </SelectField>
+          <SelectField
+            className="w-48"
+            label="Fournisseur"
+            value={sp.get('vendorId') ?? ''}
+            onChange={(e) => set('vendorId', e.target.value || null)}
+          >
+            <option value="">Tous</option>
+            {vendorList.data?.items.map((v) => (
+              <option key={v.id} value={v.id}>
+                {v.name}
+              </option>
+            ))}
+          </SelectField>
+          <SelectField
+            className="w-52"
+            label="Modèle"
+            value={sp.get('modelId') ?? ''}
+            onChange={(e) => set('modelId', e.target.value || null)}
+          >
+            <option value="">Tous</option>
+            {modelList.data?.items.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name} {m.version}
               </option>
             ))}
           </SelectField>

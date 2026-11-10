@@ -10,16 +10,16 @@ Slice = tranche verticale du plan (`IMPLEMENTATION_PLAN.md`). Le statut est tenu
 | ID | Réf. CDC | Exigence | Slice | Critère d'acceptation | Statut |
 |---|---|---|---|---|---|
 | F-001 | §2.1, §5.2 | Registre central des SIA persisté en BDD | S2 | Un SIA créé via l'UI est relu après redémarrage des conteneurs | Fait (S2) — persistance après redémarrage Docker à valider |
-| F-002 | §5.2 | Champs minimum du registre (UUID, référence, nom, description, finalité, unité, propriétaire, resp. métier, statut 9 valeurs, dates, fournisseurs, rôles AI Act, niveau de risque, justification, valeur, tags, prochaine revue, complétude, conformité) | S2/S3 | Chaque champ est saisissable, persisté, visible dans la fiche | Partiel (S2) — fournisseurs en S4, niveau de risque issu de S5 |
+| F-002 | §5.2 | Champs minimum du registre (UUID, référence, nom, description, finalité, unité, propriétaire, resp. métier, statut 9 valeurs, dates, fournisseurs, rôles AI Act, niveau de risque, justification, valeur, tags, prochaine revue, complétude, conformité) | S2/S3 | Chaque champ est saisissable, persisté, visible dans la fiche | Partiel (S4) — tous les champs saisissables sauf niveau de risque (S5) et conformité globale (S5) |
 | F-003 | §5.2 | Vue table + vue cartes, tri, filtres combinés, recherche plein texte, pagination serveur | S2 | Filtres reflétés dans l'URL ; pagination côté API (`page`, `pageSize`, `total`) | Fait (S2) |
 | F-004 | §5.2, §5.14 | Colonnes personnalisables, vues sauvegardées personnelles et partagées | S2 | Une vue sauvegardée restaure filtres + colonnes | Fait (S2) |
 | F-005 | §5.2 | Actions de masse : assigner propriétaire, unité, tags, statut, lancer revue, exporter, archiver | S2/S7 | Opération transactionnelle, journalisée par objet, refusée si droit manquant sur un seul objet | Partiel (S2) — tout sauf « lancer revue » (S7) |
 | F-006 | §5.3 | Création : fiche vierge | S2 | — | Fait (S2) |
 | F-007 | §5.3 | Création : à partir d'un modèle interne (gabarit) | S3 | Gabarit administrable ; la copie ne reprend ni historique ni validations | Fait (S3) |
 | F-008 | §5.3, §10 | Création : assistant IA, préremplissage sourcé, statut « À vérifier » | S10 | Aucune valeur IA n'est écrite dans les champs validés sans action humaine | À faire |
-| F-009 | §5.3 | Wizard 12 sections (Général → Récapitulatif) avec sauvegarde progressive | S3 | Chaque section s'enregistre indépendamment ; quitter puis revenir conserve la saisie | Fait (S3) — étapes 3, 9, 11 renvoient explicitement à S4, S5, S7 |
+| F-009 | §5.3 | Wizard 12 sections (Général → Récapitulatif) avec sauvegarde progressive | S3 | Chaque section s'enregistre indépendamment ; quitter puis revenir conserve la saisie | Fait (S3/S4) — étapes 9 et 11 renvoient à S5 et S7 |
 | F-010 | §5.3 ét.2 | Responsabilités : propriétaire, sponsor, resp. métier, DSI, RSSI, DPO/juridique, fournisseur, intégrateur, rôles AI Act, RACI facultatif | S3 | — | Fait (S3) |
-| F-011 | §5.3 ét.3, §5.7 | Liaison N-N SIA ↔ modèles avec « description de l'utilisation » propre à la relation | S4 | Un modèle lié à 2 SIA affiche 2 descriptions distinctes | À faire |
+| F-011 | §5.3 ét.3, §5.7 | Liaison N-N SIA ↔ modèles avec « description de l'utilisation » propre à la relation | S4 | Un modèle lié à 2 SIA affiche 2 descriptions distinctes | Fait (S4) |
 | F-012 | §5.3 ét.4 | Parties prenantes internes/externes | S3 | — | Fait (S3) |
 | F-013 | §5.3 ét.5 | Actifs (applications, API, serveurs, SaaS, bases, appareils, infra) réutilisables | S3 | Un actif existant peut être relié sans ressaisie | Fait (S3) |
 | F-014 | §5.3 ét.6 | Liaison traitements RGPD ; synchronisation sélective sans écrasement silencieux | S3/S9 | Toute synchro affiche un diff et requiert confirmation champ par champ | Partiel (S3) — liaison faite ; synchronisation sélective en S9 |
@@ -40,7 +40,7 @@ Slice = tranche verticale du plan (`IMPLEMENTATION_PLAN.md`). Le statut est tenu
 | F-029 | §5.5 | Checklist d'obligations générée depuis la classification (article, description, applicable Oui/Non/À confirmer, responsable, statut, preuve, date cible, date de validation, commentaire) | S5 | Régénération idempotente, sans perte des statuts déjà saisis | À faire |
 | F-030 | §5.6 | FRIA liée au SIA, sections art. 27, conclusion, validation, versions | S9 | — | À faire |
 | F-031 | §5.6 | Réutilisation d'une DPIA/AIPD sans double saisie, périmètre couvert | S9 | — | À faire |
-| F-032 | §5.7 | Référentiel modèles (nom, fournisseur, famille, version, type, capacités, limites, accès, hébergement, zones, URL, date de connaissance, statut, GPAI, licence, pièces) | S4 | — | À faire |
+| F-032 | §5.7 | Référentiel modèles (nom, fournisseur, famille, version, type, capacités, limites, accès, hébergement, zones, URL, date de connaissance, statut, GPAI, licence, pièces) | S4 | — | Partiel (S4) — pièces justificatives du modèle en S7 ; préremplissage IA en S10 |
 | F-033 | §5.8 | Notice de transparence générée depuis les données structurées, blocs conditionnels, édition, versions, validation | S9 | — | À faire |
 | F-034 | §5.8 | Export notice MD, HTML, PDF, DOCX + ajout automatique aux pièces | S9/S10 | — | À faire |
 | F-035 | §5.9 | Registre des risques par SIA (13 catégories), scénario, cause, événement, conséquence, vraisemblance, gravité, scores inhérent/résiduel, mesures, propriétaire, traitement, échéance, preuve | S6 | — | À faire |

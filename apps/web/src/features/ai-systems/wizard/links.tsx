@@ -7,6 +7,12 @@ import {
   DATASET_ORIGIN_LABELS,
   DATASET_USAGES,
   DATASET_USAGE_LABELS,
+  MODEL_ACCESS_LABELS,
+  MODEL_ACCESS_MODES,
+  MODEL_TYPES,
+  MODEL_TYPE_LABELS,
+  VENDOR_RELATIONS,
+  VENDOR_RELATION_LABELS,
   PARTY_FUNCTIONS,
   PARTY_FUNCTION_LABELS,
   PRIORITY_LABELS,
@@ -20,7 +26,10 @@ import {
 import { api, errorMessage, get, post } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth';
 import { useActiveUsers, useCatalog } from '../../../lib/queries';
+import { Link } from 'react-router';
 import type {
+  AiModel,
+  Vendor,
   AiSystemDetail,
   Asset,
   Assignment,
@@ -764,5 +773,319 @@ export function Assignments({ s, canManage }: { s: AiSystemDetail; canManage: bo
         serveur).
       </p>
     </div>
+  );
+}
+
+// ── Modèles d'IA (étape 3) ──────────────────────────────────────────────────
+export function ModelLinks({ s, editable }: { s: AiSystemDetail; editable: boolean }) {
+  const { can } = useAuth();
+  const catalog = useCatalog<AiModel>('ai-models');
+  const vendors = useCatalog<Vendor>('vendors');
+  const [aiModelId, setAiModelId] = useState('');
+  const [usageDescription, setUsage] = useState('');
+  const [versionUsed, setVersionUsed] = useState('');
+  const [hostingMode, setHostingMode] = useState('');
+  const [integrationDate, setIntegrationDate] = useState('');
+  const [isPrimary, setIsPrimary] = useState(s.modelLinks.length === 0);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editUsage, setEditUsage] = useState('');
+  const [newName, setNewName] = useState('');
+  const [newType, setNewType] = useState<string>('LLM');
+  const [newAccess, setNewAccess] = useState<string>('API');
+  const [newVendor, setNewVendor] = useState('');
+  const quick = useQuickCreate<AiModel>('ai-models');
+  const add = useSectionMutation(s.id, () =>
+    sectionCall(s.id, 'POST', 'models', {
+      aiModelId,
+      usageDescription,
+      versionUsed,
+      hostingMode: hostingMode || null,
+      integrationDate: integrationDate || null,
+      isPrimary,
+    }),
+  );
+  const update = useSectionMutation(s.id, (v: { linkId: string; body: Record<string, unknown> }) =>
+    sectionCall(s.id, 'PATCH', `models/${v.linkId}`, v.body),
+  );
+  const remove = useSectionMutation(s.id, (linkId: string) => sectionCall(s.id, 'DELETE', `models/${linkId}`));
+  const err = add.error ?? update.error ?? remove.error ?? (quick.error ? errorMessage(quick.error) : null);
+  return (
+    <>
+      <ErrorLine error={err} />
+      {s.modelLinks.length === 0 ? (
+        <EmptyState>Aucun modèle lié.</EmptyState>
+      ) : (
+        <ul className="divide-y divide-grey-100">
+          {s.modelLinks.map((l) => (
+            <Row
+              key={l.id}
+              actions={
+                editable && (
+                  <>
+                    {!l.isPrimary && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => update.mutate({ linkId: l.id, body: { isPrimary: true } })}
+                      >
+                        Définir principal
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => (setEditId(l.id), setEditUsage(l.usageDescription))}
+                    >
+                      Modifier l’usage
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => remove.mutate(l.id)}>
+                      Retirer
+                    </Button>
+                  </>
+                )
+              }
+            >
+              <p className="flex flex-wrap items-center gap-1 font-semibold">
+                <Link to={`/modeles/${l.model.id}`} className="text-gls-blue hover:underline">
+                  {l.model.name} {l.versionUsed || l.model.version}
+                </Link>
+                {l.isPrimary && <Badge tone="blue">Principal</Badge>}
+                <Badge tone="gray">{MODEL_TYPE_LABELS[l.model.type as keyof typeof MODEL_TYPE_LABELS]}</Badge>
+                {l.model.isGpai === 'YES' && (
+                  <Badge tone={l.model.gpaiSystemicRisk === 'YES' ? 'orange' : 'blue'}>GPAI</Badge>
+                )}
+                {l.model.status === 'DEPRECATED' || l.model.status === 'RETIRED' ? (
+                  <Badge tone="orange">Modèle obsolète ou retiré</Badge>
+                ) : null}
+              </p>
+              <p className="text-xs text-grey-600">
+                {l.model.vendor?.name ?? 'Fournisseur non renseigné'} · accès :{' '}
+                {MODEL_ACCESS_LABELS[(l.hostingMode ?? l.model.accessMode) as keyof typeof MODEL_ACCESS_LABELS]}
+                {l.integrationDate ? ` · intégré le ${l.integrationDate}` : ''}
+              </p>
+              {editId === l.id ? (
+                <div className="mt-2 flex items-end gap-2">
+                  <TextField
+                    className="flex-1"
+                    label="Description de l’utilisation"
+                    value={editUsage}
+                    onChange={(e) => setEditUsage(e.target.value)}
+                  />
+                  <Button
+                    size="sm"
+                    disabled={editUsage.trim().length < 10 || update.isPending}
+                    onClick={() =>
+                      update.mutate(
+                        { linkId: l.id, body: { usageDescription: editUsage } },
+                        { onSuccess: () => setEditId(null) },
+                      )
+                    }
+                  >
+                    Enregistrer
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setEditId(null)}>
+                    Annuler
+                  </Button>
+                </div>
+              ) : (
+                <p className="mt-1 text-sm text-grey-700">
+                  <span className="font-semibold">Utilisation dans ce SIA :</span> {l.usageDescription}
+                </p>
+              )}
+            </Row>
+          ))}
+        </ul>
+      )}
+      {editable && (
+        <AddPanel title="Lier un modèle du référentiel">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <SelectField label="Modèle" value={aiModelId} onChange={(e) => setAiModelId(e.target.value)}>
+              <option value="">— Choisir —</option>
+              {catalog.data?.items.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name} {m.version} {m.vendor ? `— ${m.vendor.name}` : ''}
+                </option>
+              ))}
+            </SelectField>
+            <TextField
+              label="Version utilisée (si différente)"
+              value={versionUsed}
+              onChange={(e) => setVersionUsed(e.target.value)}
+            />
+            <div className="md:col-span-2">
+              <TextField
+                label="Description de l’utilisation du modèle dans ce SIA"
+                required
+                hint="10 caractères minimum. Propre à ce SIA : un même modèle peut avoir des usages différents ailleurs."
+                value={usageDescription}
+                onChange={(e) => setUsage(e.target.value)}
+              />
+            </div>
+            <SelectField
+              label="Hébergement / accès pour ce SIA"
+              value={hostingMode}
+              onChange={(e) => setHostingMode(e.target.value)}
+            >
+              <option value="">Comme le modèle</option>
+              {MODEL_ACCESS_MODES.map((a) => (
+                <option key={a} value={a}>
+                  {MODEL_ACCESS_LABELS[a]}
+                </option>
+              ))}
+            </SelectField>
+            <TextField
+              label="Date d’intégration"
+              type="date"
+              value={integrationDate}
+              onChange={(e) => setIntegrationDate(e.target.value)}
+            />
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={isPrimary} onChange={(e) => setIsPrimary(e.target.checked)} />
+              Modèle principal du SIA
+            </label>
+          </div>
+          <Button
+            className="mt-3"
+            size="sm"
+            disabled={!aiModelId || usageDescription.trim().length < 10 || add.isPending}
+            onClick={() =>
+              add.mutate(undefined, {
+                onSuccess: () => (setAiModelId(''), setUsage(''), setVersionUsed(''), setIsPrimary(false)),
+              })
+            }
+          >
+            Lier le modèle
+          </Button>
+          {can('catalog:manage') && (
+            <div className="mt-4 grid grid-cols-1 items-end gap-3 border-t border-grey-200 pt-3 md:grid-cols-4">
+              <TextField label="Nouveau modèle" value={newName} onChange={(e) => setNewName(e.target.value)} />
+              <SelectField label="Type" value={newType} onChange={(e) => setNewType(e.target.value)}>
+                {MODEL_TYPES.map((t) => (
+                  <option key={t} value={t}>
+                    {MODEL_TYPE_LABELS[t]}
+                  </option>
+                ))}
+              </SelectField>
+              <SelectField label="Accès" value={newAccess} onChange={(e) => setNewAccess(e.target.value)}>
+                {MODEL_ACCESS_MODES.map((t) => (
+                  <option key={t} value={t}>
+                    {MODEL_ACCESS_LABELS[t]}
+                  </option>
+                ))}
+              </SelectField>
+              <SelectField label="Fournisseur" value={newVendor} onChange={(e) => setNewVendor(e.target.value)}>
+                <option value="">—</option>
+                {vendors.data?.items.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.name}
+                  </option>
+                ))}
+              </SelectField>
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={newName.trim().length < 2 || quick.isPending}
+                onClick={() =>
+                  quick.mutate(
+                    { name: newName, type: newType, accessMode: newAccess, vendorId: newVendor || null },
+                    { onSuccess: (m) => (setAiModelId(m.id), setNewName('')) },
+                  )
+                }
+              >
+                Créer et sélectionner
+              </Button>
+              <p className="text-xs text-grey-500 md:col-span-3">
+                La fiche complète du modèle (capacités, limites, GPAI…) se complète dans « Modèles d’IA ».
+              </p>
+            </div>
+          )}
+        </AddPanel>
+      )}
+    </>
+  );
+}
+
+// ── Fournisseurs du SIA (étape 2) ───────────────────────────────────────────
+export function VendorLinks({ s, editable }: { s: AiSystemDetail; editable: boolean }) {
+  const catalog = useCatalog<Vendor>('vendors');
+  const [vendorId, setVendorId] = useState('');
+  const [relation, setRelation] = useState<string>('PROVIDER');
+  const [notes, setNotes] = useState('');
+  const add = useSectionMutation(s.id, () => sectionCall(s.id, 'POST', 'vendors', { vendorId, relation, notes }));
+  const remove = useSectionMutation(s.id, (v: { vendorId: string; relation: string }) =>
+    sectionCall(s.id, 'DELETE', `vendors/${v.vendorId}/${v.relation}`),
+  );
+  return (
+    <>
+      <ErrorLine error={add.error ?? remove.error} />
+      {s.vendorLinks.length === 0 ? (
+        <EmptyState>Aucun fournisseur déclaré pour ce SIA.</EmptyState>
+      ) : (
+        <ul className="divide-y divide-grey-100">
+          {s.vendorLinks.map((l) => (
+            <Row
+              key={`${l.vendor.id}-${l.relation}`}
+              actions={
+                editable && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => remove.mutate({ vendorId: l.vendor.id, relation: l.relation })}
+                  >
+                    Retirer
+                  </Button>
+                )
+              }
+            >
+              <p className="font-semibold">
+                {l.vendor.name}{' '}
+                <Badge tone="blue">{VENDOR_RELATION_LABELS[l.relation as keyof typeof VENDOR_RELATION_LABELS]}</Badge>{' '}
+                <Badge tone={l.vendor.dpaSigned === 'YES' ? 'green' : l.vendor.dpaSigned === 'NO' ? 'orange' : 'gray'}>
+                  DPA : {triLabel(l.vendor.dpaSigned)}
+                </Badge>
+              </p>
+              {l.notes && <p className="text-sm text-grey-700">{l.notes}</p>}
+            </Row>
+          ))}
+        </ul>
+      )}
+      {editable && (
+        <AddPanel title="Rattacher un fournisseur">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <SelectField
+              label="Fournisseur (référentiel)"
+              value={vendorId}
+              onChange={(e) => setVendorId(e.target.value)}
+            >
+              <option value="">— Choisir —</option>
+              {catalog.data?.items
+                .filter((v) => v.isActive)
+                .map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.name}
+                  </option>
+                ))}
+            </SelectField>
+            <SelectField label="Rôle" value={relation} onChange={(e) => setRelation(e.target.value)}>
+              {VENDOR_RELATIONS.map((r) => (
+                <option key={r} value={r}>
+                  {VENDOR_RELATION_LABELS[r]}
+                </option>
+              ))}
+            </SelectField>
+            <TextField label="Précisions" value={notes} onChange={(e) => setNotes(e.target.value)} />
+          </div>
+          <Button
+            className="mt-3"
+            size="sm"
+            disabled={!vendorId || add.isPending}
+            onClick={() => add.mutate(undefined)}
+          >
+            Rattacher
+          </Button>
+          <p className="mt-2 text-xs text-grey-500">Nouveau fournisseur : Référentiels › Fournisseurs.</p>
+        </AddPanel>
+      )}
+    </>
   );
 }

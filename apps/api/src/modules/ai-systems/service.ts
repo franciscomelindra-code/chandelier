@@ -18,7 +18,11 @@ export const systemInclude = {
   owner: { select: { id: true, displayName: true, email: true } },
   businessOwner: { select: { id: true, displayName: true, email: true } },
   tags: { include: { tag: true } },
-  vendors: { include: { vendor: { select: { id: true, name: true } } } },
+  vendors: { include: { vendor: { select: { id: true, name: true, country: true, dpaSigned: true } } } },
+  models: {
+    include: { aiModel: { include: { vendor: { select: { id: true, name: true } } } } },
+    orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
+  },
   stakeholders: { include: { stakeholder: true }, orderBy: { function: 'asc' } },
   assets: { include: { asset: true } },
   processing: { include: { processingActivity: true } },
@@ -32,6 +36,7 @@ export type SystemRow = Prisma.AiSystemGetPayload<{ include: typeof systemInclud
 export function relationsOf(s: SystemRow): CompletenessRelations {
   return {
     functions: [...new Set(s.stakeholders.map((x) => x.function))],
+    models: s.models.length,
     stakeholders: s.stakeholders.length,
     assets: s.assets.length,
     processing: s.processing.length,
@@ -191,6 +196,16 @@ export async function buildListWhere(
   if (q.role) and.push({ aiActRoles: { hasSome: q.role } });
   if (q.ownerId) and.push({ ownerId: q.ownerId });
   if (q.tagId) and.push({ tags: { some: { tagId: q.tagId } } });
+  if (q.modelId) and.push({ models: { some: { aiModelId: q.modelId } } });
+  if (q.vendorId) {
+    // Fournisseur déclaré sur le SIA OU éditeur d'un modèle utilisé.
+    and.push({
+      OR: [
+        { vendors: { some: { vendorId: q.vendorId } } },
+        { models: { some: { aiModel: { vendorId: q.vendorId } } } },
+      ],
+    });
+  }
   if (q.personalData) and.push({ processesPersonalData: q.personalData });
   if (q.reviewBefore) and.push({ nextReviewDate: { lte: new Date(`${q.reviewBefore}T00:00:00Z`) } });
   if (q.orgUnitId) {
@@ -231,6 +246,7 @@ export async function snapshot(tx: Prisma.TransactionClient, s: SystemRow, actor
     businessOwner: _b,
     tags,
     vendors,
+    models,
     stakeholders,
     assets,
     processing,
@@ -242,7 +258,8 @@ export async function snapshot(tx: Prisma.TransactionClient, s: SystemRow, actor
   // Les liens sont figés par identifiant + attributs propres à la relation.
   const links = {
     tagIds: tags.map((t) => t.tagId),
-    vendors: vendors.map((v) => ({ vendorId: v.vendorId, relation: v.relation })),
+    vendors: vendors.map((v) => ({ vendorId: v.vendorId, relation: v.relation, notes: v.notes })),
+    models: models.map(({ aiModel: _m, ...l }) => l),
     stakeholders: stakeholders.map(({ stakeholder: _s, ...l }) => l),
     assets: assets.map(({ asset: _a, ...l }) => l),
     processing: processing.map(({ processingActivity: _p, ...l }) => l),
@@ -288,7 +305,17 @@ export function serializeListItem(ctx: AccessContext, s: SystemRow, sections: st
     completeness: s.completeness,
     nextReviewDate: day(s.nextReviewDate),
     tags: s.tags.map((t) => ({ id: t.tag.id, label: t.tag.label, color: t.tag.color })),
-    vendors: s.vendors.map((v) => v.vendor.name),
+    vendors: [
+      ...new Set([
+        ...s.vendors.map((v) => v.vendor.name),
+        ...s.models.flatMap((m) => (m.aiModel.vendor ? [m.aiModel.vendor.name] : [])),
+      ]),
+    ],
+    models: s.models.map((m) => ({
+      id: m.aiModel.id,
+      name: m.aiModel.name,
+      version: m.versionUsed || m.aiModel.version,
+    })),
     isDemo: s.isDemo,
     archivedAt: s.archivedAt?.toISOString() ?? null,
     updatedAt: s.updatedAt.toISOString(),
@@ -329,6 +356,26 @@ export function serializeDetail(ctx: AccessContext, s: SystemRow, sections: stri
     createdAt: s.createdAt.toISOString(),
     completenessChecks: completenessOf({ ...s, relations: relationsOf(s) }).checks,
     valueDetails: s.valueDetails,
+    modelLinks: s.models.map((l) => ({
+      id: l.id,
+      usageDescription: l.usageDescription,
+      versionUsed: l.versionUsed,
+      hostingMode: l.hostingMode,
+      integrationDate: l.integrationDate ? l.integrationDate.toISOString().slice(0, 10) : null,
+      isPrimary: l.isPrimary,
+      model: {
+        id: l.aiModel.id,
+        name: l.aiModel.name,
+        version: l.aiModel.version,
+        type: l.aiModel.type,
+        accessMode: l.aiModel.accessMode,
+        status: l.aiModel.status,
+        isGpai: l.aiModel.isGpai,
+        gpaiSystemicRisk: l.aiModel.gpaiSystemicRisk,
+        vendor: l.aiModel.vendor,
+      },
+    })),
+    vendorLinks: s.vendors.map((v) => ({ relation: v.relation, notes: v.notes, vendor: v.vendor })),
     raciEnabled: s.raciEnabled,
     stakeholders: s.stakeholders.map((l) => ({
       id: l.id,

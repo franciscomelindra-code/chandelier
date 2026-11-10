@@ -86,6 +86,7 @@ export interface AiSystemListItem {
   nextReviewDate: string | null;
   tags: TagRef[];
   vendors: string[];
+  models: { id: string; name: string; version: string }[];
   isDemo: boolean;
   archivedAt: string | null;
   updatedAt: string;
@@ -129,6 +130,12 @@ export interface AiSystemDetail extends Omit<AiSystemListItem, 'owner' | 'busine
   completenessChecks: CompletenessCheck[];
   valueDetails: Record<string, string>;
   raciEnabled: boolean;
+  modelLinks: ModelLink[];
+  vendorLinks: {
+    relation: string;
+    notes: string;
+    vendor: { id: string; name: string; country: string; dpaSigned: string };
+  }[];
   stakeholders: {
     id: string;
     function: string;
@@ -162,6 +169,77 @@ export interface AiSystemDetail extends Omit<AiSystemListItem, 'owner' | 'busine
   dataCategories: { id: string; label: string; isSpecial: boolean; isCriminal: boolean }[];
   dataSubjects: { id: string; label: string; isVulnerable: boolean; volumeEstimate: string; consequences: string }[];
   permissions: { updatableSections: string[]; canArchive: boolean; canExport: boolean };
+}
+
+export interface Vendor {
+  id: string;
+  name: string;
+  legalName: string;
+  country: string;
+  website: string;
+  description: string;
+  dpaSigned: string;
+  isActive: boolean;
+  usage: number;
+  modelCount: number;
+}
+
+export interface AiModel {
+  id: string;
+  name: string;
+  vendorId: string | null;
+  vendor: { id: string; name: string } | null;
+  family: string;
+  version: string;
+  type: string;
+  description: string;
+  capabilities: string;
+  knownLimitations: string;
+  accessMode: string;
+  hosting: string;
+  regions: string[];
+  documentationUrl: string;
+  knowledgeDate: string | null;
+  versionDate: string | null;
+  status: string;
+  isGpai: string;
+  gpaiSystemicRisk: string;
+  gpaiNotes: string;
+  license: string;
+  isDemo: boolean;
+  usage: number;
+}
+
+export interface AiModelDetail extends AiModel {
+  systems: {
+    linkId: string;
+    usageDescription: string;
+    versionUsed: string;
+    hostingMode: string | null;
+    isPrimary: boolean;
+    system: { id: string; reference: string; name: string; status: string; archivedAt: string | null };
+  }[];
+  hiddenSystems: number;
+}
+
+export interface ModelLink {
+  id: string;
+  usageDescription: string;
+  versionUsed: string;
+  hostingMode: string | null;
+  integrationDate: string | null;
+  isPrimary: boolean;
+  model: {
+    id: string;
+    name: string;
+    version: string;
+    type: string;
+    accessMode: string;
+    status: string;
+    isGpai: string;
+    gpaiSystemicRisk: string;
+    vendor: { id: string; name: string } | null;
+  };
 }
 
 export interface Stakeholder {

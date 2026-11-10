@@ -59,4 +59,15 @@ Chaque route de section vérifie la visibilité du SIA, l’absence d’archivag
 Référentiels (lecture : session ; écriture : `catalog:manage` ; suppression refusée si rattaché à un SIA — 409) :
 `/api/v1/stakeholders`, `/api/v1/assets`, `/api/v1/datasets`, `/api/v1/processing-activities` (GET, POST, PATCH `/:id`, DELETE `/:id`) ; `/api/v1/data-categories`, `/api/v1/data-subject-categories` (GET) ; `/api/v1/system-templates` (GET, POST depuis un SIA, POST `/:id/deactivate`).
 
+## Routes livrées (S4 — modèles d’IA et fournisseurs)
+
+| Méthode | Route | Contrôle |
+|---|---|---|
+| GET, POST, PATCH, DELETE | `/api/v1/vendors[/:id]` | lecture : session ; écriture : `catalog:manage` ; suppression refusée si lié à un SIA, un modèle ou un actif |
+| GET, POST, PATCH, DELETE | `/api/v1/ai-models[/:id]` | idem ; unicité nom + version + fournisseur (409) ; URL de documentation `http(s)` uniquement, jamais récupérée par le serveur |
+| GET | `/api/v1/ai-models/:id` | fiche + SIA utilisateurs **limités au périmètre** (`hiddenSystems` = nombre hors périmètre), avec la description d’usage de chaque lien |
+| POST / PATCH / DELETE | `/api/v1/ai-systems/:id/models[/:linkId]` | section `models` ; `usageDescription` ≥ 10 caractères ; un seul modèle principal |
+| POST / DELETE | `/api/v1/ai-systems/:id/vendors[/:vendorId/:relation]` | section `responsibility` |
+| GET | `/api/v1/ai-systems?vendorId=…&modelId=…` | `vendorId` couvre le fournisseur déclaré **et** l’éditeur d’un modèle utilisé |
+
 Webhooks et intégrations Microsoft 365 : non implémentés (phase 3).

@@ -2,7 +2,7 @@
 
 Application de gouvernance et de pilotage des systèmes d'intelligence artificielle (SIA) de GLS France : registre, référentiel des modèles, qualification AI Act (règlement (UE) 2024/1689), risques, FRIA, articulation RGPD, preuves et traçabilité.
 
-> **État : tranches S1 (socle), S2 (registre des SIA) et S3 (fiche en 12 étapes, référentiels) livrées.** Authentification, utilisateurs, unités organisationnelles, RBAC avec périmètres, journal d'audit immuable, registre des SIA (recherche plein texte, filtres, vues, actions de masse, export, archivage motivé), API OpenAPI, Docker et CI. Les modules métier (registre, qualification, risques…) arrivent par tranches : voir [Fonctionnalités](#fonctionnalités) et [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md). Les écrans non livrés affichent « Fonctionnalité non implémentée ».
+> **État : tranches S1 (socle), S2 (registre des SIA), S3 (fiche en 12 étapes, référentiels) et S4 (modèles d'IA, fournisseurs) livrées.** Authentification, utilisateurs, unités organisationnelles, RBAC avec périmètres, journal d'audit immuable, registre des SIA (recherche plein texte, filtres, vues, actions de masse, export, archivage motivé), API OpenAPI, Docker et CI. Les modules métier (registre, qualification, risques…) arrivent par tranches : voir [Fonctionnalités](#fonctionnalités) et [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md). Les écrans non livrés affichent « Fonctionnalité non implémentée ».
 
 Le dépôt ne contient **aucune donnée réelle de GLS France** ni aucun secret. Le seul jeu de données facultatif est marqué `[DEMO]`.
 
@@ -143,6 +143,12 @@ docs            Architecture, données, AI Act, sécurité, déploiement…
 - Responsabilités et parties prenantes (RACI facultatif), actifs, traitements RGPD, jeux de données et usages, catégories de données et de personnes, valeur ajoutée détaillée.
 - Référentiels partagés (parties prenantes, actifs, traitements, datasets, catégories, gabarits) et création à partir d'un gabarit.
 - Affectation de sections aux contributeurs avec contrôle serveur.
+
+### Implémentées et testées (S4)
+
+- Référentiel des modèles d'IA et des fournisseurs ; fiche modèle avec les SIA utilisateurs du périmètre.
+- Lien SIA ↔ modèle avec description de l'utilisation propre à chaque lien, version, hébergement, modèle principal.
+- Fournisseurs, intégrateurs et hébergeurs d'un SIA ; filtres du registre par fournisseur et par modèle.
 
 ### Restant à développer
 

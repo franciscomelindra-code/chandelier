@@ -3,6 +3,10 @@ import type { FastifyPluginAsyncZod, ZodTypeProvider } from 'fastify-type-provid
 import { z, type ZodType } from 'zod';
 import {
   TEMPLATE_FIELDS,
+  aiModelSchema,
+  aiModelUpdateSchema,
+  vendorSchema,
+  vendorUpdateSchema,
   assetSchema,
   assetUpdateSchema,
   datasetSchema,
@@ -17,7 +21,7 @@ import type { Prisma } from '@prisma/client';
 import { diff, recordAudit } from '../audit/audit.js';
 import { badRequest, conflict, notFound } from '../errors.js';
 import { actorOf, requireAuth, requirePermission } from '../http.js';
-import { loadVisible } from './ai-systems/service.js';
+import { loadVisible, scopeWhere } from './ai-systems/service.js';
 
 type Tx = Prisma.TransactionClient;
 type Row = { id: string } & Record<string, unknown>;
@@ -313,6 +317,165 @@ export const catalogRoutes: FastifyPluginAsyncZod = async (app) => {
     },
     usage: (tx, id) => tx.aiSystemProcessingActivity.count({ where: { processingActivityId: id } }),
   });
+
+  // ── Fournisseurs / éditeurs ──
+  registerCatalog(app, {
+    prefix: '/vendors',
+    tag: 'Modèles et fournisseurs',
+    entityType: 'Vendor',
+    label: 'Fournisseurs',
+    createSchema: vendorSchema,
+    updateSchema: vendorUpdateSchema,
+    tracked: ['name', 'legalName', 'country', 'website', 'description', 'dpaSigned', 'isActive'],
+    list: async (tx, q) =>
+      (
+        await tx.vendor.findMany({
+          where: ci(q, ['name', 'legalName']),
+          orderBy: { name: 'asc' },
+          include: { _count: { select: { systems: true, models: true, assets: true } } },
+          take: 500,
+        })
+      ).map(({ _count, ...v }) => ({
+        ...v,
+        usage: _count.systems,
+        modelCount: _count.models,
+        linkedTotal: _count.systems + _count.models + _count.assets,
+      })),
+    find: (tx, id) => tx.vendor.findUnique({ where: { id } }),
+    create: (tx, data, actorId) => tx.vendor.create({ data: { ...data, createdById: actorId, updatedById: actorId } }),
+    update: (tx, id, data, actorId) => tx.vendor.update({ where: { id }, data: { ...data, updatedById: actorId } }),
+    remove: async (tx, id) => void (await tx.vendor.delete({ where: { id } })),
+    // Un fournisseur référencé par un SIA, un modèle ou un actif n'est pas supprimable (désactivation possible).
+    usage: async (tx, id) =>
+      (await tx.aiSystemVendor.count({ where: { vendorId: id } })) +
+      (await tx.aiModel.count({ where: { vendorId: id } })) +
+      (await tx.asset.count({ where: { vendorId: id } })),
+  });
+
+  // ── Modèles d'IA ──
+  const modelInclude = {
+    vendor: { select: { id: true, name: true } },
+    _count: { select: { systems: true } },
+  } as const;
+  type ModelRow = Prisma.AiModelGetPayload<{ include: typeof modelInclude }>;
+  const day = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : null);
+  const modelOut = ({ _count, ...m }: ModelRow) => ({
+    ...m,
+    knowledgeDate: day(m.knowledgeDate),
+    versionDate: day(m.versionDate),
+    usage: _count.systems,
+  });
+  const toDate = (v: string | null | undefined) =>
+    v === undefined ? undefined : v ? new Date(`${v}T00:00:00Z`) : null;
+  async function assertVendor(tx: Tx, vendorId: string | null | undefined) {
+    if (vendorId && !(await tx.vendor.findUnique({ where: { id: vendorId } }))) throw badRequest('Fournisseur inconnu');
+  }
+  registerCatalog(app, {
+    prefix: '/ai-models',
+    tag: 'Modèles et fournisseurs',
+    entityType: 'AiModel',
+    label: 'Modèles d’IA',
+    createSchema: aiModelSchema,
+    updateSchema: aiModelUpdateSchema,
+    tracked: [
+      'name',
+      'vendorId',
+      'family',
+      'version',
+      'type',
+      'description',
+      'capabilities',
+      'knownLimitations',
+      'accessMode',
+      'hosting',
+      'regions',
+      'documentationUrl',
+      'knowledgeDate',
+      'versionDate',
+      'status',
+      'isGpai',
+      'gpaiSystemicRisk',
+      'gpaiNotes',
+      'license',
+    ],
+    list: async (tx, q) =>
+      (
+        await tx.aiModel.findMany({
+          where: ci(q, ['name', 'family', 'version']),
+          orderBy: [{ name: 'asc' }, { version: 'asc' }],
+          include: modelInclude,
+          take: 500,
+        })
+      ).map(modelOut),
+    find: async (tx, id) => {
+      const m = await tx.aiModel.findUnique({ where: { id }, include: modelInclude });
+      return m ? modelOut(m) : null;
+    },
+    create: async (tx, data, actorId) => {
+      await assertVendor(tx, data.vendorId);
+      const m = await tx.aiModel.create({
+        data: {
+          ...data,
+          knowledgeDate: toDate(data.knowledgeDate),
+          versionDate: toDate(data.versionDate),
+          createdById: actorId,
+          updatedById: actorId,
+        },
+        include: modelInclude,
+      });
+      return modelOut(m);
+    },
+    update: async (tx, id, data, actorId) => {
+      await assertVendor(tx, data.vendorId);
+      const m = await tx.aiModel.update({
+        where: { id },
+        data: {
+          ...data,
+          knowledgeDate: toDate(data.knowledgeDate),
+          versionDate: toDate(data.versionDate),
+          updatedById: actorId,
+        },
+        include: modelInclude,
+      });
+      return modelOut(m);
+    },
+    remove: async (tx, id) => void (await tx.aiModel.delete({ where: { id } })),
+    usage: (tx, id) => tx.aiSystemModel.count({ where: { aiModelId: id } }),
+  });
+
+  // Fiche modèle : SIA utilisateurs visibles dans le périmètre de l'utilisateur, avec la description d'usage propre à chaque lien.
+  app.withTypeProvider<ZodTypeProvider>().get(
+    '/ai-models/:id',
+    {
+      schema: {
+        tags: ['Modèles et fournisseurs'],
+        summary: 'Fiche d’un modèle et SIA qui l’utilisent (limités au périmètre)',
+        params: z.object({ id: z.uuid() }),
+      },
+    },
+    async (request) => {
+      const ctx = requirePermission(request, 'aiSystem:read');
+      const m = await prisma.aiModel.findUnique({ where: { id: request.params.id }, include: modelInclude });
+      if (!m) throw notFound('Modèle introuvable');
+      const links = await prisma.aiSystemModel.findMany({
+        where: { aiModelId: m.id, aiSystem: scopeWhere(ctx) },
+        include: { aiSystem: { select: { id: true, reference: true, name: true, status: true, archivedAt: true } } },
+        orderBy: { aiSystem: { reference: 'asc' } },
+      });
+      return {
+        ...modelOut(m),
+        systems: links.map((l) => ({
+          linkId: l.id,
+          usageDescription: l.usageDescription,
+          versionUsed: l.versionUsed,
+          hostingMode: l.hostingMode,
+          isPrimary: l.isPrimary,
+          system: { ...l.aiSystem, archivedAt: l.aiSystem.archivedAt?.toISOString() ?? null },
+        })),
+        hiddenSystems: m._count.systems - links.length,
+      };
+    },
+  );
 
   // ── Référentiels RGPD en lecture ──
   app.get(

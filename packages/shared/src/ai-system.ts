@@ -225,6 +225,8 @@ export const aiSystemListQuerySchema = z.object({
   orgUnitId: uuid.optional(),
   ownerId: uuid.optional(),
   tagId: uuid.optional(),
+  vendorId: uuid.optional(),
+  modelId: uuid.optional(),
   personalData: triState.optional(),
   reviewBefore: z.iso.date().optional(),
   archived: z.enum(['exclude', 'only', 'include']).default('exclude'),
@@ -304,6 +306,7 @@ export interface CompletenessInput {
 
 export interface CompletenessRelations {
   functions: string[];
+  models: number;
   stakeholders: number;
   assets: number;
   processing: number;
@@ -386,6 +389,12 @@ export function computeCompleteness(s: CompletenessInput): { percent: number; ch
         ok: r.functions.includes('DPO_LEGAL'),
       },
       { key: 'itLead', label: 'Référent DSI désigné', section: 'responsibility', ok: r.functions.includes('IT_LEAD') },
+      {
+        key: 'models',
+        label: 'Au moins un modèle d’IA lié (avec description de l’usage)',
+        section: 'models',
+        ok: r.models > 0,
+      },
       { key: 'stakeholders', label: 'Au moins une partie prenante', section: 'stakeholders', ok: r.stakeholders > 0 },
       { key: 'assets', label: 'Au moins un actif / dépendance', section: 'assets', ok: r.assets > 0 },
       {

@@ -99,5 +99,50 @@ export async function seedDemo(prisma: PrismaClient): Promise<void> {
         },
       );
     }
+
+    // Fournisseur et modèle génériques manifestement fictifs (CDC §18), liés à SIA-DEMO-001.
+    const vendor =
+      (await tx.vendor.findUnique({ where: { name: '[DEMO] Éditeur fictif' } })) ??
+      (await tx.vendor.create({
+        data: { name: '[DEMO] Éditeur fictif', country: 'FR', description: 'Donnée de démonstration.', isDemo: true },
+      }));
+    const modelName = '[DEMO] Modèle de langage générique fictif';
+    const model =
+      (await tx.aiModel.findFirst({ where: { name: modelName } })) ??
+      (await tx.aiModel.create({
+        data: {
+          name: modelName,
+          version: '0.1-demo',
+          vendorId: vendor.id,
+          type: 'LLM',
+          accessMode: 'API',
+          description: 'Donnée de démonstration : modèle fictif, sans lien avec un produit réel.',
+          regions: ['UE'],
+          isGpai: 'UNKNOWN',
+          isDemo: true,
+        },
+      }));
+    const sys = await tx.aiSystem.findUnique({ where: { reference: 'SIA-DEMO-001' } });
+    if (sys && !(await tx.aiSystemModel.findFirst({ where: { aiSystemId: sys.id, aiModelId: model.id } }))) {
+      await tx.aiSystemModel.create({
+        data: {
+          aiSystemId: sys.id,
+          aiModelId: model.id,
+          usageDescription: 'Exemple fictif : génération de réponses à partir des documents retrouvés (RAG).',
+          isPrimary: true,
+        },
+      });
+      await recordAudit(
+        tx,
+        { id: null, label: 'système (jeu de démonstration)', origin: 'SYSTEM' },
+        {
+          action: 'link_model',
+          entityType: 'AiSystem',
+          entityId: sys.id,
+          aiSystemId: sys.id,
+          changes: { models: { old: null, new: modelName } },
+        },
+      );
+    }
   });
 }

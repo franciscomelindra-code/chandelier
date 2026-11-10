@@ -2,6 +2,17 @@
 
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versionnement sémantique.
 
+## [0.4.0] — 2026-11-10 — Slice S4 : modèles d’IA et fournisseurs
+
+### Ajouté
+- Référentiel des fournisseurs (pays, DPA, activation) et des modèles d’IA (type, accès, hébergement, zones, dates, statut, GPAI et risque systémique, licence, capacités, limites, documentation).
+- Liaison N-N SIA ↔ modèle portant la description de l’utilisation propre à chaque lien, la version utilisée, le mode d’hébergement, la date d’intégration et un modèle principal unique.
+- Fiche modèle listant les SIA utilisateurs du périmètre de l’utilisateur (les autres sont seulement dénombrés).
+- Étape 3 de la fiche opérationnelle ; fournisseurs / intégrateurs / hébergeurs à l’étape 2 ; signalement GPAI.
+- Registre : filtres par fournisseur (déclaré ou via un modèle) et par modèle, colonne « Modèles ».
+- Jeu DEMO : fournisseur et modèle génériques fictifs liés à `SIA-DEMO-001`.
+- 8 tests d’intégration supplémentaires (80 au total).
+
 ## [0.3.0] — 2026-11-10 — Slice S3 : fiche en 12 étapes
 
 ### Ajouté

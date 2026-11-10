@@ -13,6 +13,7 @@ import { AuditPanel } from '../features/admin/AuditPanel';
 import { RegistryPage } from '../features/ai-systems/RegistryPage';
 import { SystemPage } from '../features/ai-systems/SystemPage';
 import { ReferentialsPage } from '../features/referentials/ReferentialsPage';
+import { ModelPage, ModelsPage } from '../features/models/ModelsPage';
 
 function RequireAuth() {
   const { me, loading } = useAuth();
@@ -50,13 +51,8 @@ export const router = createBrowserRouter([
           },
           { path: '/systemes', element: <RegistryPage /> },
           { path: '/systemes/:id', element: <SystemPage /> },
-          {
-            path: '/modeles',
-            element: planned('Modèles d’IA', 'S4', [
-              'Référentiel des modèles et fournisseurs',
-              'Liaison N-N avec les SIA et description de l’utilisation propre à chaque lien',
-            ]),
-          },
+          { path: '/modeles', element: <ModelsPage /> },
+          { path: '/modeles/:id', element: <ModelPage /> },
           {
             path: '/evaluations',
             element: planned('Évaluations', 'S5', [

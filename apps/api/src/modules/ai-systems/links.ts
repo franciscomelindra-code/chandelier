@@ -4,6 +4,11 @@ import { z } from 'zod';
 import {
   PARTY_FUNCTION_LABELS,
   SECTION_LABELS,
+  VENDOR_RELATIONS,
+  VENDOR_RELATION_LABELS,
+  systemModelSchema,
+  systemModelUpdateSchema,
+  systemVendorSchema,
   sectionAssignmentSchema,
   sectionOfFunction,
   systemAssetSchema,
@@ -163,6 +168,132 @@ export const aiSystemLinkRoutes: FastifyPluginAsyncZod = async (app) => {
         },
       );
     },
+  );
+
+  // ── Étape 3 : modèles d'IA (N-N avec description de l'utilisation propre au lien) ──
+  const modelLabel = (m: { name: string; version: string }, v?: string) =>
+    `${m.name}${v || m.version ? ` ${v || m.version}` : ''}`;
+  const dateOrNull = (v: string | null | undefined) =>
+    v === undefined ? undefined : v ? new Date(`${v}T00:00:00Z`) : null;
+
+  app.post(
+    '/:id/models',
+    {
+      schema: {
+        tags,
+        summary: 'Lier un modèle d’IA (description de l’utilisation obligatoire)',
+        params: z.object({ id }),
+        body: systemModelSchema,
+      },
+    },
+    async (request) =>
+      mutateSection(request, request.params.id, 'models', 'link_model', async (tx, s) => {
+        const b = request.body;
+        const m = await tx.aiModel.findUnique({ where: { id: b.aiModelId } });
+        if (!m) throw badRequest('Modèle inconnu');
+        if (s.models.some((l) => l.aiModelId === m.id && l.versionUsed === b.versionUsed)) {
+          throw conflict('Ce modèle (dans cette version) est déjà lié à ce SIA');
+        }
+        // Un seul modèle principal par SIA.
+        if (b.isPrimary) await tx.aiSystemModel.updateMany({ where: { aiSystemId: s.id }, data: { isPrimary: false } });
+        await tx.aiSystemModel.create({
+          data: {
+            ...b,
+            aiSystemId: s.id,
+            integrationDate: dateOrNull(b.integrationDate) ?? null,
+            createdById: actorOf(request).id,
+            updatedById: actorOf(request).id,
+          },
+        });
+        return { models: { old: null, new: `${modelLabel(m, b.versionUsed)} — ${b.usageDescription}` } };
+      }),
+  );
+
+  app.patch(
+    '/:id/models/:linkId',
+    {
+      schema: {
+        tags,
+        summary: 'Modifier un lien SIA ↔ modèle',
+        params: z.object({ id, linkId: id }),
+        body: systemModelUpdateSchema,
+      },
+    },
+    async (request) =>
+      mutateSection(request, request.params.id, 'models', 'update_model_link', async (tx, s) => {
+        const link = s.models.find((l) => l.id === request.params.linkId);
+        if (!link) throw notFound();
+        const b = request.body;
+        if (b.isPrimary) await tx.aiSystemModel.updateMany({ where: { aiSystemId: s.id }, data: { isPrimary: false } });
+        await tx.aiSystemModel.update({
+          where: { id: link.id },
+          data: { ...b, integrationDate: dateOrNull(b.integrationDate), updatedById: actorOf(request).id },
+        });
+        const changes: Changes = {};
+        for (const [k, v] of Object.entries(b)) {
+          const old = (link as unknown as Record<string, unknown>)[k];
+          const oldNorm = old instanceof Date ? old.toISOString().slice(0, 10) : old;
+          if (v !== undefined && v !== oldNorm) changes[`${link.aiModel.name}.${k}`] = { old: oldNorm, new: v };
+        }
+        return changes;
+      }),
+  );
+
+  app.delete(
+    '/:id/models/:linkId',
+    { schema: { tags, summary: 'Retirer un modèle', params: z.object({ id, linkId: id }) } },
+    async (request) =>
+      mutateSection(request, request.params.id, 'models', 'unlink_model', async (tx, s) => {
+        const link = s.models.find((l) => l.id === request.params.linkId);
+        if (!link) throw notFound();
+        await tx.aiSystemModel.delete({ where: { id: link.id } });
+        return { models: { old: modelLabel(link.aiModel, link.versionUsed), new: null } };
+      }),
+  );
+
+  // ── Étape 2 : fournisseurs, intégrateurs, hébergeurs ──
+  app.post(
+    '/:id/vendors',
+    {
+      schema: {
+        tags,
+        summary: 'Rattacher un fournisseur (rôle : éditeur, intégrateur, hébergeur…)',
+        params: z.object({ id }),
+        body: systemVendorSchema,
+      },
+    },
+    async (request) =>
+      mutateSection(request, request.params.id, 'responsibility', 'link_vendor', async (tx, s) => {
+        const v = await tx.vendor.findUnique({ where: { id: request.body.vendorId } });
+        if (!v) throw badRequest('Fournisseur inconnu');
+        if (s.vendors.some((l) => l.vendorId === v.id && l.relation === request.body.relation)) {
+          throw conflict('Ce fournisseur a déjà ce rôle sur ce SIA');
+        }
+        await tx.aiSystemVendor.create({ data: { aiSystemId: s.id, ...request.body } });
+        return { vendors: { old: null, new: `${v.name} — ${VENDOR_RELATION_LABELS[request.body.relation]}` } };
+      }),
+  );
+
+  app.delete(
+    '/:id/vendors/:vendorId/:relation',
+    {
+      schema: {
+        tags,
+        summary: 'Retirer un fournisseur',
+        params: z.object({ id, vendorId: id, relation: z.enum(VENDOR_RELATIONS) }),
+      },
+    },
+    async (request) =>
+      mutateSection(request, request.params.id, 'responsibility', 'unlink_vendor', async (tx, s) => {
+        const l = s.vendors.find(
+          (x) => x.vendorId === request.params.vendorId && x.relation === request.params.relation,
+        );
+        if (!l) throw notFound();
+        await tx.aiSystemVendor.delete({
+          where: { aiSystemId_vendorId_relation: { aiSystemId: s.id, vendorId: l.vendorId, relation: l.relation } },
+        });
+        return { vendors: { old: `${l.vendor.name} — ${VENDOR_RELATION_LABELS[l.relation]}`, new: null } };
+      }),
   );
 
   // ── Étape 5 : actifs ──

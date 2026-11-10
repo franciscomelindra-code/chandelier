@@ -35,6 +35,8 @@ import {
   DatasetLinks,
   ProcessingLinks,
   StakeholderLinks,
+  ModelLinks,
+  VendorLinks,
 } from './links';
 
 export interface StepProps {
@@ -288,6 +290,9 @@ export function ResponsibilityStep({ s, editable, reload }: StepProps) {
       <StepCard title="Fonctions clés (sponsor, DSI, RSSI, DPO / juridique, fournisseur, intégrateur)" editable={ed}>
         <StakeholderLinks s={s} editable={ed} scope="responsibility" />
       </StepCard>
+      <StepCard title="Fournisseurs, intégrateurs, hébergeurs" editable={ed}>
+        <VendorLinks s={s} editable={ed} />
+      </StepCard>
       <StepCard title="Affectation des sections à des contributeurs" editable={ed}>
         <Assignments s={s} canManage={ed && !s.archivedAt} />
       </StepCard>
@@ -307,12 +312,25 @@ function Planned({ title, slice, children }: { title: string; slice: string; chi
   );
 }
 
-export const ModelsStep = () => (
-  <Planned title="3. Modèles d’IA" slice="S4 (référentiel des modèles et fournisseurs)">
-    Elle permettra de lier un ou plusieurs modèles, avec pour chacun la description de son utilisation dans ce SIA, la
-    version, l’hébergement et les informations GPAI.
-  </Planned>
-);
+export function ModelsStep({ s, editable }: StepProps) {
+  const gpai = s.modelLinks.filter((l) => l.model.isGpai === 'YES');
+  return (
+    <StepCard
+      title="3. Modèles d’IA"
+      editable={editable('models')}
+      intro="Un système d’IA n’est pas son modèle : chaque modèle lié porte la description de son utilisation propre à ce SIA, sa version et son mode d’hébergement."
+    >
+      {gpai.length > 0 && (
+        <div className="mb-3">
+          <Alert tone="blue" title="Repose sur un modèle d’IA à usage général (GPAI)">
+            {gpai.map((g) => g.model.name).join(', ')}. Cette information alimentera la qualification AI Act (S5).
+          </Alert>
+        </div>
+      )}
+      <ModelLinks s={s} editable={editable('models')} />
+    </StepCard>
+  );
+}
 
 export function StakeholdersStep({ s, editable }: StepProps) {
   return (
@@ -669,6 +687,13 @@ export function SummaryStep({ s }: StepProps) {
       <section className="mb-6">
         <h3 className="mb-2 text-base">Périmètre technique et données</h3>
         <dl>
+          {dl(
+            'Modèles d’IA (usage)',
+            s.modelLinks
+              .map((l) => `${l.model.name} ${l.versionUsed || l.model.version} : ${l.usageDescription}`)
+              .join(' ; '),
+          )}
+          {dl('Fournisseurs', s.vendorLinks.map((l) => l.vendor.name).join(', '))}
           {dl('Actifs', s.assets.map((a) => a.asset.name).join(', '))}
           {dl(
             'Traitements RGPD',
