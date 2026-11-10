@@ -1,10 +1,8 @@
 # Chandelier
 
-Application de gouvernance et de pilotage des systèmes d'intelligence artificielle (SIA) de GLS France : registre, référentiel des modèles, qualification AI Act (règlement (UE) 2024/1689), risques, FRIA, articulation RGPD, preuves et traçabilité.
+Application de gouvernance et de pilotage des systèmes d'intelligence artificielle (SIA) : registre, référentiel des modèles, qualification AI Act (règlement (UE) 2024/1689), risques, FRIA, articulation RGPD, preuves et traçabilité.
 
 > **État : les dix tranches S1 à S10 sont livrées** (socle, registre, fiche en 12 étapes, modèles, qualification AI Act, risques et actions, documents et validations, tableau de bord, FRIA / DPIA / notices, rapports, import, assistant IA, Entra ID). Ce qui reste non implémenté est listé dans [Restant à développer](#restant-à-développer) ; les écrans concernés affichent « Fonctionnalité non implémentée ».
-
-Le dépôt ne contient **aucune donnée réelle de GLS France** ni aucun secret. Le seul jeu de données facultatif est marqué `[DEMO]`.
 
 ## Démarrage (Docker / OrbStack)
 
