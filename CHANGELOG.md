@@ -2,6 +2,14 @@
 
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versionnement sémantique.
 
+## [0.8.0] — 2026-11-10 — Slice S8 : tableau de bord
+
+### Ajouté
+- API `GET /dashboard` : indicateurs calculés à la demande sur le périmètre et les filtres du registre (SIA, haut risque, potentiellement interdits, non qualifiés, FRIA et notices manquantes, risques critiques, actions échues, revues en retard, validations en attente, versions validées, complétude), matrice risque AI Act × valeur, répartitions (catégorie, statut, valeur, conformité, unité), évolution sur 12 mois, alertes hiérarchisées avec lien.
+- Registre : filtres d’exploration `completenessMax`, `noOwner`, `qualified`, `createdFrom`, `createdTo`, affichés comme filtres actifs.
+- Interface « Tableau de bord » : filtres dans l’URL, tuiles et cellules cliquables ouvrant la liste filtrée, tableau de données pour l’évolution.
+- 1 test d’intégration (périmètre, matrice, alertes, cohérence des liens).
+
 ## [0.7.0] — 2026-11-10 — Slice S7 : documents, preuves, validations, revues, collaboration
 
 ### Ajouté

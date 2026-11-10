@@ -12,7 +12,7 @@ interface NavItem {
 }
 
 export const NAV: NavItem[] = [
-  { to: '/tableau-de-bord', label: 'Tableau de bord', live: false },
+  { to: '/tableau-de-bord', label: 'Tableau de bord', permission: 'aiSystem:read', live: true },
   { to: '/systemes', label: 'Systèmes d’IA', permission: 'aiSystem:read', live: true },
   { to: '/modeles', label: 'Modèles d’IA', permission: 'aiSystem:read', live: true },
   { to: '/evaluations', label: 'Évaluations', permission: 'aiSystem:read', live: true },

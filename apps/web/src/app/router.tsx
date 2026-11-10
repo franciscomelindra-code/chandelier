@@ -22,6 +22,7 @@ import { MethodologyPanel } from '../features/admin/MethodologyPanel';
 import { ReviewSettingsPanel } from '../features/admin/ReviewSettingsPanel';
 import { DocumentationPage } from '../features/documents/DocumentationPage';
 import { NotificationsPage } from '../features/workflow/NotificationsPage';
+import { DashboardPage } from '../features/dashboard/DashboardPage';
 
 function RequireAuth() {
   const { me, loading } = useAuth();
@@ -48,15 +49,7 @@ export const router = createBrowserRouter([
         element: <Layout />,
         children: [
           { index: true, element: <Navigate to="/tableau-de-bord" replace /> },
-          {
-            path: '/tableau-de-bord',
-            element: planned('Tableau de bord', 'S8', [
-              'KPI calculés depuis les données (aucune valeur en dur)',
-              'SIA par statut, niveau de risque, unité, valeur ajoutée',
-              'Matrice risque × valeur, FRIA, notices manquantes, échéances',
-              'Widgets cliquables ouvrant la liste filtrée',
-            ]),
-          },
+          { path: '/tableau-de-bord', element: <DashboardPage /> },
           { path: '/systemes', element: <RegistryPage /> },
           { path: '/systemes/:id', element: <SystemPage /> },
           { path: '/modeles', element: <ModelsPage /> },

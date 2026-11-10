@@ -7,6 +7,7 @@ import {
   AI_ACT_ROLE_LABELS,
   AI_SYSTEM_STATUSES,
   AI_SYSTEM_STATUS_META,
+  COMPLIANCE_STATUS_META,
   EDITABLE_STATUSES,
   RISK_CATEGORIES,
   RISK_CATEGORY_META,
@@ -143,12 +144,36 @@ const API_PARAMS = [
   'tagId',
   'vendorId',
   'modelId',
+  'compliance',
+  'personalData',
+  'reviewBefore',
+  'completenessMax',
+  'noOwner',
+  'qualified',
+  'createdFrom',
+  'createdTo',
   'archived',
   'demo',
   'sort',
   'dir',
   'page',
 ];
+
+/** Filtres ouverts depuis le tableau de bord, sans contrôle dédié dans la barre de filtres : affichés explicitement. */
+const EXTRA_FILTERS: Record<string, (v: string) => string> = {
+  compliance: (v) =>
+    `conformité : ${v
+      .split(',')
+      .map((x) => COMPLIANCE_STATUS_META[x as keyof typeof COMPLIANCE_STATUS_META]?.label ?? x)
+      .join(', ')}`,
+  personalData: (v) => `données personnelles : ${v}`,
+  reviewBefore: (v) => `prochaine revue au plus tard le ${v}`,
+  completenessMax: (v) => `complétude ≤ ${v} %`,
+  noOwner: () => 'sans propriétaire',
+  qualified: (v) => (v === 'no' ? 'sans qualification AI Act' : 'qualifiés AI Act'),
+  createdFrom: (v) => `créés depuis le ${v}`,
+  createdTo: (v) => `créés jusqu’au ${v}`,
+};
 
 function apiQuery(sp: URLSearchParams): string {
   const out = new URLSearchParams();
@@ -742,6 +767,27 @@ export function RegistryPage() {
       {notice && (
         <div className="mb-3">
           <Alert tone="green">{notice}</Alert>
+        </div>
+      )}
+      {Object.keys(EXTRA_FILTERS).some((k) => sp.get(k)) && (
+        <div className="mb-3">
+          <Alert tone="blue" title="Filtres complémentaires actifs">
+            {Object.entries(EXTRA_FILTERS)
+              .filter(([k]) => sp.get(k))
+              .map(([k, f]) => f(sp.get(k)!))
+              .join(' · ')}{' '}
+            <button
+              type="button"
+              className="font-bold underline"
+              onClick={() => {
+                const next = new URLSearchParams(sp);
+                for (const k of Object.keys(EXTRA_FILTERS)) next.delete(k);
+                setSp(next, { replace: true });
+              }}
+            >
+              Retirer
+            </button>
+          </Alert>
         </div>
       )}
 

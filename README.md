@@ -2,7 +2,7 @@
 
 Application de gouvernance et de pilotage des systèmes d'intelligence artificielle (SIA) de GLS France : registre, référentiel des modèles, qualification AI Act (règlement (UE) 2024/1689), risques, FRIA, articulation RGPD, preuves et traçabilité.
 
-> **État : tranches S1 (socle), S2 (registre des SIA), S3 (fiche en 12 étapes, référentiels), S4 (modèles d'IA, fournisseurs), S5 (moteur de qualification AI Act), S6 (risques, mesures, plans d'action) et S7 (documents, validations, revues, collaboration) livrées.** Authentification, utilisateurs, unités organisationnelles, RBAC avec périmètres, journal d'audit immuable, registre des SIA (recherche plein texte, filtres, vues, actions de masse, export, archivage motivé), API OpenAPI, Docker et CI. Les modules métier (registre, qualification, risques…) arrivent par tranches : voir [Fonctionnalités](#fonctionnalités) et [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md). Les écrans non livrés affichent « Fonctionnalité non implémentée ».
+> **État : tranches S1 (socle), S2 (registre des SIA), S3 (fiche en 12 étapes, référentiels), S4 (modèles d'IA, fournisseurs), S5 (moteur de qualification AI Act), S6 (risques, mesures, plans d'action) S7 (documents, validations, revues, collaboration) et S8 (tableau de bord) livrées.** Authentification, utilisateurs, unités organisationnelles, RBAC avec périmètres, journal d'audit immuable, registre des SIA (recherche plein texte, filtres, vues, actions de masse, export, archivage motivé), API OpenAPI, Docker et CI. Les modules métier (registre, qualification, risques…) arrivent par tranches : voir [Fonctionnalités](#fonctionnalités) et [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md). Les écrans non livrés affichent « Fonctionnalité non implémentée ».
 
 Le dépôt ne contient **aucune donnée réelle de GLS France** ni aucun secret. Le seul jeu de données facultatif est marqué `[DEMO]`.
 
@@ -168,9 +168,13 @@ docs            Architecture, données, AI Act, sécurité, déploiement…
 - Validation par domaine d'une version de la fiche (quatre yeux), revue exceptionnelle automatique sur modification substantielle, revues périodiques paramétrables, comparaison et restauration de versions.
 - Commentaires avec mentions, notifications in-app et rappels d'échéance 90/60/30/7 jours.
 
+### Implémentées et testées (S8)
+
+- Tableau de bord calculé à la demande : indicateurs, alertes, matrice risque × valeur, répartitions et évolution, tous cliquables vers la liste filtrée.
+
 ### Restant à développer
 
-Voir [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) (statut par exigence) : tableau de bord (S8), FRIA/DPIA/notices (S9), assistant IA, import/export, rapports, Entra ID (S10), Trust Center et intégrations Microsoft 365 (phase 3).
+Voir [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) (statut par exigence) : FRIA/DPIA/notices (S9), assistant IA, import/export, rapports, Entra ID (S10), Trust Center et intégrations Microsoft 365 (phase 3).
 
 ## Licence
 

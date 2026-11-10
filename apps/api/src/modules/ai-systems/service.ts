@@ -208,6 +208,12 @@ export async function buildListWhere(
   }
   if (q.personalData) and.push({ processesPersonalData: q.personalData });
   if (q.reviewBefore) and.push({ nextReviewDate: { lte: new Date(`${q.reviewBefore}T00:00:00Z`) } });
+  if (q.completenessMax !== undefined) and.push({ completeness: { lte: q.completenessMax } });
+  if (q.noOwner) and.push({ ownerId: null });
+  if (q.qualified === 'yes') and.push({ currentAssessmentId: { not: null } });
+  if (q.qualified === 'no') and.push({ currentAssessmentId: null });
+  if (q.createdFrom) and.push({ createdAt: { gte: new Date(`${q.createdFrom}T00:00:00Z`) } });
+  if (q.createdTo) and.push({ createdAt: { lt: new Date(Date.parse(`${q.createdTo}T00:00:00Z`) + 86_400_000) } });
   if (q.orgUnitId) {
     const unit = await db.organizationUnit.findUnique({ where: { id: q.orgUnitId }, select: { path: true } });
     and.push(unit ? { orgUnit: { path: { startsWith: unit.path } } } : { id: { in: [] } });

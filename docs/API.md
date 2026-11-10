@@ -134,4 +134,11 @@ Référentiels (lecture : session ; écriture : `catalog:manage` ; suppression r
 | POST | `/api/v1/ai-systems/:id/versions/:v/restore` | `aiSystem:update` (sans qualificatif de section) ; motif ≥ 10 ; champs uniquement |
 | POST | `/api/v1/ai-systems/bulk` `{ action: "startReview", ids, dueDate, reviewerId? }` | `review:manage` sur chaque SIA, tout ou rien |
 
+## Routes livrées (S8 — tableau de bord)
+
+| Méthode | Route | Contrôle |
+|---|---|---|
+| GET | `/api/v1/dashboard?orgUnitId&ownerId&vendorId&modelId&risk&role&status&tagId&createdFrom&createdTo&demo…` | `aiSystem:read` ; mêmes filtres que le registre ; SIA non archivés du périmètre ; indicateurs, matrice risque × valeur, répartitions, évolution, alertes avec lien |
+| GET | `/api/v1/ai-systems?completenessMax&noOwner=true&qualified=yes\|no&createdFrom&createdTo` | filtres d’exploration ajoutés au registre (S8) |
+
 Webhooks et intégrations Microsoft 365 : non implémentés (phase 3).

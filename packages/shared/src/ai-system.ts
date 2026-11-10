@@ -229,6 +229,12 @@ export const aiSystemListQuerySchema = z.object({
   modelId: uuid.optional(),
   personalData: triState.optional(),
   reviewBefore: z.iso.date().optional(),
+  /** Filtres ouverts par le tableau de bord (S8). */
+  completenessMax: z.coerce.number().int().min(0).max(100).optional(),
+  noOwner: z.enum(['true']).optional(),
+  qualified: z.enum(['yes', 'no']).optional(),
+  createdFrom: z.iso.date().optional(),
+  createdTo: z.iso.date().optional(),
   archived: z.enum(['exclude', 'only', 'include']).default('exclude'),
   demo: z.enum(['include', 'exclude', 'only']).default('include'),
   sort: z.enum(AI_SYSTEM_SORT_FIELDS).default('updatedAt'),
@@ -238,7 +244,15 @@ export const aiSystemListQuerySchema = z.object({
 });
 export type AiSystemListQuery = z.infer<typeof aiSystemListQuerySchema>;
 
-export const BULK_ACTIONS = ['assignOwner', 'setOrgUnit', 'setStatus', 'addTags', 'removeTags', 'archive'] as const;
+export const BULK_ACTIONS = [
+  'assignOwner',
+  'setOrgUnit',
+  'setStatus',
+  'addTags',
+  'removeTags',
+  'startReview',
+  'archive',
+] as const;
 export const bulkSchema = z.discriminatedUnion('action', [
   z.strictObject({ action: z.literal('assignOwner'), ids: z.array(uuid).min(1).max(200), ownerId: uuid }),
   z.strictObject({ action: z.literal('setOrgUnit'), ids: z.array(uuid).min(1).max(200), orgUnitId: uuid }),
