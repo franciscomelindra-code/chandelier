@@ -4,6 +4,7 @@ import { errorMessage, post } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth';
 import { AssessmentPanel } from '../../assessments/AssessmentPanel';
 import { DocumentsPanel } from '../../documents/DocumentsPanel';
+import { DpiaPanel, FriaPanel, NoticePanel } from '../../compliance/SystemCompliance';
 import clsx from 'clsx';
 import {
   AI_ACT_ROLES,
@@ -561,6 +562,9 @@ export function ValueStep({ s, editable, reload }: StepProps) {
 export const DocumentationStep = ({ s }: StepProps) => (
   <div className="space-y-4">
     <DocumentsPanel ownerPath={`ai-systems/${s.id}`} title="11. Documentation — pièces justificatives" />
+    <NoticePanel systemId={s.id} />
+    <FriaPanel systemId={s.id} />
+    <DpiaPanel systemId={s.id} />
   </div>
 );
 

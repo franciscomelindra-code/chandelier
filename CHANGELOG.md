@@ -2,6 +2,19 @@
 
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versionnement sémantique.
 
+## [0.9.0] — 2026-11-10 — Slice S9 : FRIA, DPIA, notices de transparence
+
+### Ajouté
+- Migration `s9_fria_dpia_notices` : DPIA rattachée à un SIA, lien notice → pièce générée.
+- FRIA versionnée (art. 27(1) a)-f)) : propositions issues de la fiche insérées à la demande, réutilisation des thèmes traités par une DPIA (art. 27(4)), soumission contrôlée, validation à quatre yeux, notification à l’autorité (art. 27(3)).
+- Références DPIA / AIPD (réalisées ici ou dans un outil tiers) avec thèmes réutilisables.
+- Notices de transparence générées sans IA depuis les données structurées, blocs conditionnels proposés d’après la qualification, mentions « [À compléter] » bloquantes, édition, versions, validation à quatre yeux, ajout automatique aux pièces, export Markdown et HTML échappé, retrait.
+- Mentions par défaut des notices (Administration), portefeuilles FRIA / DPIA / notices (page Documentation), panneaux de l’étape 11.
+- 5 tests unitaires et 2 tests d’intégration.
+
+### Explicitement non livré
+- Export PDF et DOCX des notices.
+
 ## [0.8.0] — 2026-11-10 — Slice S8 : tableau de bord
 
 ### Ajouté

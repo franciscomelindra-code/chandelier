@@ -141,4 +141,20 @@ Référentiels (lecture : session ; écriture : `catalog:manage` ; suppression r
 | GET | `/api/v1/dashboard?orgUnitId&ownerId&vendorId&modelId&risk&role&status&tagId&createdFrom&createdTo&demo…` | `aiSystem:read` ; mêmes filtres que le registre ; SIA non archivés du périmètre ; indicateurs, matrice risque × valeur, répartitions, évolution, alertes avec lien |
 | GET | `/api/v1/ai-systems?completenessMax&noOwner=true&qualified=yes\|no&createdFrom&createdTo` | filtres d’exploration ajoutés au registre (S8) |
 
+## Routes livrées (S9 — FRIA, DPIA, notices de transparence)
+
+| Méthode | Route | Contrôle |
+|---|---|---|
+| GET / POST | `/api/v1/ai-systems/:id/frias` | lecture (exigence issue de la qualification effective, propositions issues de la fiche) ; nouvelle version `fria:manage` (409 si une version est en cours) |
+| PATCH | `/api/v1/frias/:id` | brouillon ; sections art. 27(1) a)-f), DPIA liée (même SIA), sections couvertes ⊆ thèmes de la DPIA |
+| POST | `/api/v1/frias/:id/submit` \| `return` \| `validate` | soumission : sections complètes (≥ 30 car.) ou couvertes + conclusion ; validation : validateur ≠ dernier rédacteur ; l’ancienne version validée passe « retirée » |
+| POST | `/api/v1/frias/:id/authority-notification` | date de notification à l’autorité (art. 27(3)) |
+| GET / POST | `/api/v1/ai-systems/:id/dpias` ; PATCH `/api/v1/dpias/:id` | `dpia:manage` ; URL externe http(s) jamais appelée ; thème revendiqué par une FRIA non retirable (409) |
+| GET / POST | `/api/v1/ai-systems/:id/notices` | génération déterministe depuis la fiche, blocs proposés d’après la qualification ; `notice:manage` |
+| PATCH | `/api/v1/notices/:id` ; POST `…/regenerate` | brouillon uniquement |
+| POST | `/api/v1/notices/:id/submit` \| `return` \| `validate` \| `withdraw` | soumission refusée s’il reste « [À compléter : …] » ; validation `notice:validate`, validateur ≠ dernier rédacteur ; la version validée est ajoutée aux pièces (document `TRANSPARENCY_NOTICE`) |
+| GET | `/api/v1/notices/:id/export?format=md\|html` | pièce jointe ; HTML entièrement échappé, CSP `sandbox` ; PDF / DOCX non implémentés |
+| GET / PUT | `/api/v1/settings/notice` | mentions par défaut (organisation, contact) ; modification `settings:manage` |
+| GET | `/api/v1/compliance-portfolio` | FRIA, DPIA et notices des SIA du périmètre |
+
 Webhooks et intégrations Microsoft 365 : non implémentés (phase 3).

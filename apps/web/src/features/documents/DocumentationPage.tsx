@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { Link, NavLink, useParams, useSearchParams } from 'react-router';
+import clsx from 'clsx';
+import { CompliancePortfolio } from '../compliance/CompliancePortfolio';
 import { useQuery } from '@tanstack/react-query';
 import { DOCUMENT_TYPE_LABELS, DOCUMENT_TYPES } from '@chandelier/shared';
 import { errorMessage, get, qs } from '../../lib/api';
@@ -160,15 +162,44 @@ export function DocumentsList() {
   );
 }
 
+const TABS = [
+  ['', 'Pièces justificatives'],
+  ['notices', 'Notices de transparence'],
+  ['fria', 'FRIA'],
+  ['dpia', 'DPIA / AIPD'],
+] as const;
+
 export function DocumentationPage() {
+  const { '*': sub = '' } = useParams();
+  const tab = TABS.some(([k]) => k === sub) ? sub : '';
   return (
     <>
       <PageHeader
         eyebrow="Conformité"
         title="Documentation"
-        description="Pièces justificatives versionnées de vos systèmes et modèles d’IA, et preuves rattachées aux obligations et aux risques."
+        description="Pièces justificatives versionnées, notices de transparence, FRIA et DPIA de vos systèmes d’IA. La rédaction se fait depuis l’étape 11 de chaque fiche."
       />
-      <DocumentsList />
+      <nav
+        aria-label="Sections de la documentation"
+        className="mb-4 flex flex-wrap gap-2 border-b border-grey-200 pb-3"
+      >
+        {TABS.map(([k, l]) => (
+          <NavLink
+            key={k}
+            to={k ? `/documentation/${k}` : '/documentation'}
+            end
+            className={({ isActive }) =>
+              clsx(
+                'rounded-full px-4 py-1.5 text-sm font-bold',
+                isActive ? 'bg-gls-blue text-white' : 'text-gls-blue hover:bg-gls-blue-050',
+              )
+            }
+          >
+            {l}
+          </NavLink>
+        ))}
+      </nav>
+      {tab === '' ? <DocumentsList /> : <CompliancePortfolio kind={tab as 'fria' | 'dpia' | 'notices'} />}
     </>
   );
 }

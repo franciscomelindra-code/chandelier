@@ -5,4 +5,5 @@ export * from './ai-system.js';
 export * from './catalog.js';
 export * from './risk.js';
 export * from './workflow.js';
+export * from './compliance.js';
 export * from './ai-act/index.js';

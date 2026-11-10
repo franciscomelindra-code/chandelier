@@ -34,6 +34,7 @@ import { actionRoutes } from './modules/actions.js';
 import { documentRoutes } from './modules/documents.js';
 import { workflowRoutes } from './modules/workflow.js';
 import { dashboardRoutes } from './modules/dashboard.js';
+import { complianceRoutes } from './modules/compliance.js';
 
 export interface AppDeps {
   config: AppConfig;
@@ -195,6 +196,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
       await v1.register(documentRoutes);
       await v1.register(workflowRoutes);
       await v1.register(dashboardRoutes);
+      await v1.register(complianceRoutes);
       await v1.register(tagRoutes, { prefix: '/tags' });
       await v1.register(savedViewRoutes, { prefix: '/saved-views' });
     },

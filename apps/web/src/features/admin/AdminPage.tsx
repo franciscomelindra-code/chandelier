@@ -12,6 +12,7 @@ export function AdminPage() {
     { to: 'journal', label: 'Journal d’audit', show: can('audit:read') },
     { to: 'methodologie', label: 'Méthodologie de risque', show: true },
     { to: 'revues', label: 'Périodicité des revues', show: true },
+    { to: 'notices', label: 'Mentions des notices', show: true },
   ].filter((t) => t.show);
   return (
     <>

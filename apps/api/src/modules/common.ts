@@ -26,13 +26,17 @@ export async function requireActiveUser(db: Db, id: string | null | undefined, l
 }
 
 /** Prochaine référence séquentielle PREFIX-#### (unicité garantie par contrainte ; collision → 409). */
-export async function nextSeqReference(db: Db, table: 'risk' | 'action', prefix: string): Promise<string> {
+export async function nextSeqReference(db: Db, table: 'risk' | 'action' | 'dpia', prefix: string): Promise<string> {
   const pattern = `^${prefix}-([0-9]+)$`;
+  // Nom de table issu d'une liste fermée (jamais d'une entrée utilisateur) ; le motif reste paramétré.
   const rows =
     table === 'risk'
       ? await db.$queryRaw<{ n: number | null }[]>`
           SELECT max(substring("reference" from ${pattern})::int) AS n FROM "risk"`
-      : await db.$queryRaw<{ n: number | null }[]>`
-          SELECT max(substring("reference" from ${pattern})::int) AS n FROM "action"`;
+      : table === 'action'
+        ? await db.$queryRaw<{ n: number | null }[]>`
+          SELECT max(substring("reference" from ${pattern})::int) AS n FROM "action"`
+        : await db.$queryRaw<{ n: number | null }[]>`
+          SELECT max(substring("reference" from ${pattern})::int) AS n FROM "dpia"`;
   return `${prefix}-${String((rows[0]?.n ?? 0) + 1).padStart(4, '0')}`;
 }

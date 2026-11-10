@@ -1288,8 +1288,8 @@ model Dpia {
   id                   String              @id @default(uuid()) @db.Uuid
   reference            String              @unique
   title                String
-  aiSystemId           String?             @db.Uuid
-  aiSystem             AiSystem?           @relation(fields: [aiSystemId], references: [id], onDelete: SetNull)
+  aiSystemId           String              @db.Uuid
+  aiSystem             AiSystem            @relation(fields: [aiSystemId], references: [id], onDelete: Cascade)
   processingActivityId String?             @db.Uuid
   processingActivity   ProcessingActivity? @relation(fields: [processingActivityId], references: [id], onDelete: SetNull)
   status               WorkStatus          @default(NOT_STARTED)
@@ -1325,6 +1325,8 @@ model TransparencyNotice {
   validatedById   String?    @db.Uuid
   publishedAt     DateTime?
   withdrawnAt     DateTime?
+  /// Document (pièce justificative) créé à la validation de la notice.
+  documentId      String?    @db.Uuid
   createdAt       DateTime   @default(now())
   createdById     String?    @db.Uuid
   updatedAt       DateTime   @updatedAt

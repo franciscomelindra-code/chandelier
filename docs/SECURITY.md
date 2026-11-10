@@ -80,6 +80,8 @@ Règles complémentaires (S7) :
 - **Téléchargement** : toujours en pièce jointe (`Content-Disposition: attachment`), type MIME issu de la liste blanche (jamais du client), `X-Content-Type-Options: nosniff`, `Content-Security-Policy: default-src 'none'; sandbox`, journalisé.
 - **Validation** : permission `approval:decide` **et** rôle habilité pour le domaine (voir H-17) ; le demandeur ne peut pas décider ; une demande devient caduque si la fiche change.
 - **Commentaires** : nouvelle permission `comment:write` (tous les rôles sauf READER et AUDITOR) ; une mention n’est acceptée que si la personne mentionnée peut lire le SIA (pas de fuite par notification).
+- **Notices (S9)** : rendu à l’écran par un analyseur Markdown restreint sans HTML (aucun `dangerouslySetInnerHTML`) ; export HTML entièrement échappé avec CSP `default-src 'none'; sandbox` ; liens DPIA externes limités à http(s), ouverts côté navigateur en `noopener noreferrer`, jamais appelés par le serveur (pas de SSRF).
+- **FRIA et notices** : validation par une autre personne que le dernier rédacteur.
 - **Restauration de version** : `aiSystem:update` sans qualificatif de section (propriétaire ou gouvernance) ; un contributeur ne peut pas restaurer.
 
 ## 4. Points de vigilance connus

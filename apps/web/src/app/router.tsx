@@ -20,6 +20,7 @@ import { RiskPage } from '../features/risks/RiskPage';
 import { ActionsPage } from '../features/actions/ActionsPage';
 import { MethodologyPanel } from '../features/admin/MethodologyPanel';
 import { ReviewSettingsPanel } from '../features/admin/ReviewSettingsPanel';
+import { NoticeSettingsPanel } from '../features/admin/NoticeSettingsPanel';
 import { DocumentationPage } from '../features/documents/DocumentationPage';
 import { NotificationsPage } from '../features/workflow/NotificationsPage';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
@@ -79,6 +80,7 @@ export const router = createBrowserRouter([
               { path: 'journal', element: <AuditPanel /> },
               { path: 'methodologie', element: <MethodologyPanel /> },
               { path: 'revues', element: <ReviewSettingsPanel /> },
+              { path: 'notices', element: <NoticeSettingsPanel /> },
             ],
           },
           {
