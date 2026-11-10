@@ -38,7 +38,7 @@ jobs:
         run: |
           cp .env.example .env
           docker compose up -d --build
-          ./scripts/wait-healthy.sh 300
+          bash ./scripts/wait-healthy.sh 300
       - name: Contrôles de santé et persistance
         run: |
           set -e
@@ -49,8 +49,7 @@ jobs:
           docker compose exec -T api test -s /run/chandelier-secrets/initial_admin_password
           docker compose down
           docker compose up -d
-          ./scripts/wait-healthy.sh 180
-          # L'admin initial existe toujours après redémarrage : les données ont persisté.
+          bash ./scripts/wait-healthy.sh 180
           docker compose logs api | grep -q "un super administrateur existe déjà"
       - name: Journaux en cas d'échec
         if: failure()
