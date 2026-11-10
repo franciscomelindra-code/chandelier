@@ -20,18 +20,18 @@ jobs:
       postgres:
         image: postgres:17-alpine
         env:
-          POSTGRES_DB: chandelier_test
+          POSTGRES_DB: chandelier_ci
           POSTGRES_USER: chandelier
           POSTGRES_PASSWORD: ci-only-not-a-secret
         ports: ['5432:5432']
         options: >-
-          --health-cmd "pg_isready -U chandelier -d chandelier_test"
+          --health-cmd "pg_isready -U chandelier -d chandelier_ci"
           --health-interval 5s --health-timeout 5s --health-retries 20
     env:
       CHECKPOINT_DISABLE: '1'
-      # Base éphémère du conteneur de service CI, détruite à la fin du job.
-      DATABASE_URL: postgresql://chandelier:ci-only-not-a-secret@localhost:5432/chandelier_test
+      DATABASE_URL: postgresql://chandelier:ci-only-not-a-secret@localhost:5432/chandelier_ci
       DATABASE_URL_TEST: postgresql://chandelier:ci-only-not-a-secret@localhost:5432/chandelier_test
+      SHADOW_DATABASE_URL: postgresql://chandelier:ci-only-not-a-secret@localhost:5432/chandelier_shadow
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -48,15 +48,22 @@ jobs:
         run: npm run format:check
       - name: Typecheck
         run: npm run typecheck
+      - name: Setup test databases
+        env:
+          PGPASSWORD: ci-only-not-a-secret
+        run: |
+          createdb -h localhost -U chandelier chandelier_test
+          createdb -h localhost -U chandelier chandelier_shadow
       - name: Tests (unitaires + intégration PostgreSQL)
         run: npm test
       - name: Migrations — application sur base vierge et absence de dérive
         run: |
           npx prisma migrate reset --force --skip-seed
           npx prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma \
-            --shadow-database-url "$DATABASE_URL" --exit-code
+            --shadow-database-url "$SHADOW_DATABASE_URL" --exit-code
       - name: Build
         run: npm run build
+
   secrets-scan:
     runs-on: ubuntu-latest
     timeout-minutes: 10
