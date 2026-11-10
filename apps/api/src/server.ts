@@ -6,6 +6,7 @@ import { seedDemo } from './seed/demo.js';
 import { bootstrapAdmin } from './bootstrap.js';
 import { purgeExpiredSessions } from './auth/session.js';
 import { recomputeAllCompleteness } from './modules/ai-systems/service.js';
+import { importFrameworks } from './referentials/loader.js';
 
 async function main() {
   const config = loadConfig();
@@ -18,6 +19,8 @@ async function main() {
     `Mode d’accès distant déclaré : ${config.REMOTE_ACCESS_MODE} (voir docs/REMOTE_ACCESS.md) — URL : ${config.APP_URL}`,
   );
   await seedBase(prisma);
+  const fw = await importFrameworks(prisma);
+  if (fw.imported.length) app.log.info(`Référentiel(s) importé(s) : ${fw.imported.join(', ')}`);
   if (config.SEED_DEMO) {
     await seedDemo(prisma);
     app.log.warn('Jeu de démonstration FICTIF chargé (SEED_DEMO=true)');

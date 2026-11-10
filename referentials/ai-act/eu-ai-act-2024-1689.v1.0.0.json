@@ -1,0 +1,1661 @@
+{
+  "key": "EU_AI_ACT",
+  "version": "1.0.0",
+  "label": "Règlement (UE) 2024/1689 (AI Act) — référentiel Chandelier v1.0.0 (projet)",
+  "status": "ACTIVE",
+  "effectiveFrom": "2024-08-01",
+  "legalText": {
+    "title": "Règlement (UE) 2024/1689 du 13 juin 2024 établissant des règles harmonisées concernant l’intelligence artificielle",
+    "url": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+  },
+  "disclaimer": "Projet de référentiel — validation juridique requise. Aide à la qualification fondée sur le texte publié au JOUE le 12 juillet 2024 ; il ne remplace pas l’analyse de la Direction juridique. Les modifications ultérieures du règlement (notamment la proposition « Digital Omnibus » de novembre 2025 sur le calendrier haut risque) ne sont pas intégrées et doivent être vérifiées.",
+  "sections": [
+    {
+      "id": "context",
+      "title": "Contexte",
+      "description": "Éléments de contexte utiles aux obligations (préremplis depuis la fiche lorsque c’est possible, à confirmer)."
+    },
+    {
+      "id": "definition",
+      "title": "Définition et champ d’application",
+      "description": "Art. 3(1) (définition d’un système d’IA) et art. 2 (exclusions)."
+    },
+    {
+      "id": "roles",
+      "title": "Rôle de l’organisation",
+      "description": "Art. 3 (définitions des opérateurs) et art. 25 (requalification en fournisseur)."
+    },
+    {
+      "id": "prohibited",
+      "title": "Pratiques interdites",
+      "description": "Art. 5(1) — applicable depuis le 2 février 2025."
+    },
+    {
+      "id": "highrisk",
+      "title": "Haut risque",
+      "description": "Art. 6(1) et annexe I, art. 6(2) et annexe III, dérogation de l’art. 6(3)."
+    },
+    { "id": "transparency", "title": "Transparence", "description": "Art. 50 — indépendant du niveau de risque." },
+    {
+      "id": "gpai_fria",
+      "title": "IA à usage général et FRIA",
+      "description": "Art. 53 (GPAI) et art. 27 (analyse d’impact sur les droits fondamentaux)."
+    }
+  ],
+  "definitions": {
+    "in_scope": {
+      "all": [
+        { "eq": ["D_MACHINE", "YES"] },
+        { "eq": ["D_INFERENCE", "YES"] },
+        { "eq": ["D_AUTONOMY", "YES"] },
+        { "eq": ["D_INFLUENCE", "YES"] },
+        { "eq": ["X_MILITARY", "NO"] },
+        { "eq": ["X_RESEARCH", "NO"] },
+        { "eq": ["X_PRE_MARKET", "NO"] }
+      ]
+    },
+    "annex3_candidate": {
+      "includesAny": [
+        "H_ANNEX_III",
+        [
+          "BIOMETRICS",
+          "CRITICAL_INFRA",
+          "EDUCATION",
+          "EMPLOYMENT",
+          "ESSENTIAL_SERVICES",
+          "LAW_ENFORCEMENT",
+          "MIGRATION",
+          "JUSTICE_DEMOCRACY"
+        ]
+      ]
+    },
+    "annex3_simple": {
+      "includesAny": [
+        "H_ANNEX_III",
+        ["BIOMETRICS", "CRITICAL_INFRA", "EDUCATION", "LAW_ENFORCEMENT", "MIGRATION", "JUSTICE_DEMOCRACY"]
+      ]
+    },
+    "annex3_employment": {
+      "all": [{ "includes": ["H_ANNEX_III", "EMPLOYMENT"] }, { "eq": ["H_EMPLOYMENT_USE", "YES"] }]
+    },
+    "annex3_essential": {
+      "all": [
+        { "includes": ["H_ANNEX_III", "ESSENTIAL_SERVICES"] },
+        {
+          "includesAny": [
+            "H_ESSENTIAL_USE",
+            ["PUBLIC_BENEFITS", "CREDITWORTHINESS", "LIFE_HEALTH_INSURANCE", "EMERGENCY_TRIAGE"]
+          ]
+        }
+      ]
+    },
+    "annex3_effective": {
+      "any": [{ "ref": "annex3_simple" }, { "ref": "annex3_employment" }, { "ref": "annex3_essential" }]
+    },
+    "derogation_valid": { "all": [{ "eq": ["H_DEROGATION", "YES"] }, { "eq": ["H_PROFILING", "NO"] }] },
+    "annex3_high": { "all": [{ "ref": "annex3_effective" }, { "not": { "ref": "derogation_valid" } }] },
+    "annex3_high_excl_infra": {
+      "all": [
+        { "ref": "annex3_high" },
+        {
+          "any": [
+            { "ref": "annex3_employment" },
+            { "ref": "annex3_essential" },
+            {
+              "includesAny": [
+                "H_ANNEX_III",
+                ["BIOMETRICS", "EDUCATION", "LAW_ENFORCEMENT", "MIGRATION", "JUSTICE_DEMOCRACY"]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "high_any": { "any": [{ "eq": ["H_ANNEX_I", "YES"] }, { "ref": "annex3_high" }] },
+    "annex3_subunknown": {
+      "any": [
+        { "all": [{ "includes": ["H_ANNEX_III", "EMPLOYMENT"] }, { "unknown": "H_EMPLOYMENT_USE" }] },
+        { "all": [{ "includes": ["H_ANNEX_III", "ESSENTIAL_SERVICES"] }, { "unknown": "H_ESSENTIAL_USE" }] }
+      ]
+    },
+    "fria_candidate": { "all": [{ "eq": ["R_USES", "YES"] }, { "ref": "annex3_high_excl_infra" }] }
+  },
+  "questions": [
+    {
+      "id": "C_PERSONAL_DATA",
+      "section": "context",
+      "type": "tri",
+      "text": "Le système traite-t-il des données à caractère personnel ?",
+      "help": "Prérempli depuis l’étape « Personnes concernées » de la fiche ; à confirmer.",
+      "legalBasis": "RGPD art. 4(1) ; AI Act art. 26(9)",
+      "prefill": "personalData"
+    },
+    {
+      "id": "C_WORKPLACE",
+      "section": "context",
+      "type": "tri",
+      "text": "Le système est-il mis en service ou utilisé sur le lieu de travail, avec un effet sur des salariés ?",
+      "help": "Utile pour l’obligation d’information des représentants du personnel et des salariés concernés (déployeur d’un système à haut risque).",
+      "legalBasis": "Art. 26(7)",
+      "determinant": false
+    },
+
+    {
+      "id": "D_MACHINE",
+      "section": "definition",
+      "type": "tri",
+      "text": "Le dispositif est-il un système fondé sur une machine ?",
+      "legalBasis": "Art. 3(1)"
+    },
+    {
+      "id": "D_INFERENCE",
+      "section": "definition",
+      "type": "tri",
+      "text": "Infère-t-il, à partir des entrées qu’il reçoit, la manière de générer des sorties (prédictions, contenus, recommandations ou décisions) ?",
+      "help": "Un logiciel reposant uniquement sur des règles définies par des personnes physiques pour exécuter automatiquement des opérations n’est en principe pas visé (considérant 12). En cas de doute, répondre « Je ne sais pas ».",
+      "legalBasis": "Art. 3(1), considérant 12"
+    },
+    {
+      "id": "D_AUTONOMY",
+      "section": "definition",
+      "type": "tri",
+      "text": "Fonctionne-t-il avec un certain niveau d’autonomie ?",
+      "legalBasis": "Art. 3(1)"
+    },
+    {
+      "id": "D_INFLUENCE",
+      "section": "definition",
+      "type": "tri",
+      "text": "Ses sorties peuvent-elles influencer des environnements physiques ou virtuels ?",
+      "legalBasis": "Art. 3(1)"
+    },
+    {
+      "id": "X_MILITARY",
+      "section": "definition",
+      "type": "tri",
+      "text": "Le système est-il utilisé exclusivement à des fins militaires, de défense ou de sécurité nationale ?",
+      "legalBasis": "Art. 2(3)"
+    },
+    {
+      "id": "X_RESEARCH",
+      "section": "definition",
+      "type": "tri",
+      "text": "Est-il développé et mis en service uniquement à des fins de recherche et de développement scientifiques ?",
+      "legalBasis": "Art. 2(6)"
+    },
+    {
+      "id": "X_PRE_MARKET",
+      "section": "definition",
+      "type": "tri",
+      "text": "S’agit-il uniquement d’une activité de recherche, d’essai ou de développement avant mise sur le marché ou mise en service (hors essais en conditions réelles) ?",
+      "legalBasis": "Art. 2(8)"
+    },
+
+    {
+      "id": "R_DEVELOPS",
+      "section": "roles",
+      "type": "tri",
+      "text": "L’organisation développe-t-elle (ou fait-elle développer) le système et le met-elle sur le marché ou en service sous son propre nom ou sa propre marque ?",
+      "help": "Prérempli si le rôle « Fournisseur » est déclaré à l’étape 2 ; à confirmer.",
+      "legalBasis": "Art. 3(3)",
+      "prefill": "declaredProvider"
+    },
+    {
+      "id": "R_USES",
+      "section": "roles",
+      "type": "tri",
+      "text": "L’organisation utilise-t-elle le système sous sa propre autorité dans le cadre d’une activité professionnelle ?",
+      "help": "Prérempli si le rôle « Déployeur » est déclaré à l’étape 2 ; à confirmer.",
+      "legalBasis": "Art. 3(4)",
+      "prefill": "declaredDeployer"
+    },
+    {
+      "id": "R_IMPORTS",
+      "section": "roles",
+      "type": "tri",
+      "text": "L’organisation met-elle sur le marché de l’Union un système portant le nom ou la marque d’une personne établie hors de l’Union ?",
+      "legalBasis": "Art. 3(6)"
+    },
+    {
+      "id": "R_DISTRIBUTES",
+      "section": "roles",
+      "type": "tri",
+      "text": "L’organisation met-elle le système à disposition d’autres acteurs sur le marché de l’Union, sans en être le fournisseur ni l’importateur ?",
+      "legalBasis": "Art. 3(7)"
+    },
+    {
+      "id": "R_REBRAND",
+      "section": "roles",
+      "type": "tri",
+      "text": "L’organisation appose-t-elle son nom ou sa marque sur un système d’IA à haut risque déjà mis sur le marché ou en service ?",
+      "legalBasis": "Art. 25(1)(a)"
+    },
+    {
+      "id": "R_SUBST_MOD",
+      "section": "roles",
+      "type": "tri",
+      "text": "L’organisation apporte-t-elle une modification substantielle à un système d’IA à haut risque déjà mis sur le marché ou en service ?",
+      "legalBasis": "Art. 25(1)(b)"
+    },
+    {
+      "id": "R_PURPOSE_CHANGE",
+      "section": "roles",
+      "type": "tri",
+      "text": "L’organisation modifie-t-elle la destination d’un système d’IA (y compris à usage général) de sorte qu’il devient un système à haut risque ?",
+      "legalBasis": "Art. 25(1)(c)"
+    },
+
+    {
+      "id": "P_MANIPULATION",
+      "section": "prohibited",
+      "type": "tri",
+      "text": "Le système recourt-il à des techniques subliminales, manipulatrices ou trompeuses ayant pour objet ou effet d’altérer substantiellement le comportement de personnes, en causant ou en étant susceptible de causer un préjudice important ?",
+      "legalBasis": "Art. 5(1)(a)"
+    },
+    {
+      "id": "P_VULNERABILITY",
+      "section": "prohibited",
+      "type": "tri",
+      "text": "Exploite-t-il les vulnérabilités de personnes dues à leur âge, à leur handicap ou à leur situation sociale ou économique, avec un effet similaire ?",
+      "legalBasis": "Art. 5(1)(b)"
+    },
+    {
+      "id": "P_SOCIAL_SCORING",
+      "section": "prohibited",
+      "type": "tri",
+      "text": "Évalue-t-il ou classe-t-il des personnes en fonction de leur comportement social ou de caractéristiques personnelles, conduisant à un traitement préjudiciable ou défavorable injustifié ou disproportionné (notation sociale) ?",
+      "legalBasis": "Art. 5(1)(c)"
+    },
+    {
+      "id": "P_CRIME_PREDICTION",
+      "section": "prohibited",
+      "type": "tri",
+      "text": "Évalue-t-il le risque qu’une personne commette une infraction pénale uniquement sur la base d’un profilage ou de traits de personnalité ?",
+      "legalBasis": "Art. 5(1)(d)"
+    },
+    {
+      "id": "P_FACE_SCRAPING",
+      "section": "prohibited",
+      "type": "tri",
+      "text": "Crée-t-il ou développe-t-il des bases de données de reconnaissance faciale par moissonnage non ciblé d’images faciales (internet, vidéosurveillance) ?",
+      "legalBasis": "Art. 5(1)(e)"
+    },
+    {
+      "id": "P_EMOTION_WORK_EDU",
+      "section": "prohibited",
+      "type": "tri",
+      "text": "Infère-t-il les émotions de personnes sur le lieu de travail ou dans un établissement d’enseignement, hors raisons médicales ou de sécurité ?",
+      "legalBasis": "Art. 5(1)(f)"
+    },
+    {
+      "id": "P_BIOMETRIC_CATEG",
+      "section": "prohibited",
+      "type": "tri",
+      "text": "Catégorise-t-il des personnes sur la base de données biométriques pour déduire leur race, leurs opinions politiques, leur appartenance syndicale, leurs convictions religieuses ou philosophiques, leur vie sexuelle ou leur orientation sexuelle ?",
+      "legalBasis": "Art. 5(1)(g)"
+    },
+    {
+      "id": "P_RT_RBI_LE",
+      "section": "prohibited",
+      "type": "tri",
+      "text": "Réalise-t-il une identification biométrique à distance en temps réel dans des espaces accessibles au public à des fins répressives ?",
+      "legalBasis": "Art. 5(1)(h)"
+    },
+
+    {
+      "id": "H_ANNEX_I",
+      "section": "highrisk",
+      "type": "tri",
+      "text": "Le système est-il un produit, ou un composant de sécurité d’un produit, couvert par la législation d’harmonisation de l’annexe I et soumis à une évaluation de la conformité par un tiers ?",
+      "help": "Ex. : machines, jouets, ascenseurs, équipements radio, dispositifs médicaux, véhicules… Applicable à compter du 2 août 2027.",
+      "legalBasis": "Art. 6(1), annexe I"
+    },
+    {
+      "id": "H_ANNEX_III",
+      "section": "highrisk",
+      "type": "multi",
+      "text": "Le système est-il destiné à être utilisé dans l’un des domaines de l’annexe III ?",
+      "legalBasis": "Art. 6(2), annexe III",
+      "help": "Cochez « Aucun » si aucun domaine ne correspond. Les usages précis visés figurent à l’annexe III ; en logistique, le domaine « Emploi » (gestion des travailleurs) est le plus fréquent.",
+      "options": [
+        {
+          "value": "BIOMETRICS",
+          "label": "1 — Biométrie (identification à distance, catégorisation biométrique, reconnaissance des émotions)"
+        },
+        {
+          "value": "CRITICAL_INFRA",
+          "label": "2 — Infrastructures critiques (composant de sécurité : infrastructures numériques critiques, trafic routier, eau, gaz, chauffage, électricité)"
+        },
+        { "value": "EDUCATION", "label": "3 — Éducation et formation professionnelle" },
+        { "value": "EMPLOYMENT", "label": "4 — Emploi, gestion des travailleurs, accès à l’emploi indépendant" },
+        {
+          "value": "ESSENTIAL_SERVICES",
+          "label": "5 — Accès aux services privés essentiels et aux services et prestations publics"
+        },
+        { "value": "LAW_ENFORCEMENT", "label": "6 — Répression" },
+        { "value": "MIGRATION", "label": "7 — Migration, asile, contrôle aux frontières" },
+        { "value": "JUSTICE_DEMOCRACY", "label": "8 — Administration de la justice et processus démocratiques" },
+        { "value": "NONE", "label": "Aucun de ces domaines" }
+      ]
+    },
+    {
+      "id": "H_EMPLOYMENT_USE",
+      "section": "highrisk",
+      "type": "tri",
+      "showIf": { "includes": ["H_ANNEX_III", "EMPLOYMENT"] },
+      "text": "Le système sert-il au recrutement ou à la sélection (annonces ciblées, tri des candidatures, évaluation des candidats), à des décisions sur les conditions de travail, la promotion ou la rupture, à l’attribution des tâches sur la base du comportement ou de traits personnels, ou au suivi et à l’évaluation des performances et du comportement ?",
+      "legalBasis": "Annexe III, point 4"
+    },
+    {
+      "id": "H_ESSENTIAL_USE",
+      "section": "highrisk",
+      "type": "multi",
+      "showIf": { "includes": ["H_ANNEX_III", "ESSENTIAL_SERVICES"] },
+      "text": "Quel usage du domaine « services essentiels » ?",
+      "legalBasis": "Annexe III, point 5",
+      "options": [
+        {
+          "value": "PUBLIC_BENEFITS",
+          "label": "5(a) — Éligibilité aux prestations et services d’aide sociale publics"
+        },
+        { "value": "CREDITWORTHINESS", "label": "5(b) — Solvabilité ou note de crédit (hors détection de fraude)" },
+        {
+          "value": "LIFE_HEALTH_INSURANCE",
+          "label": "5(c) — Évaluation des risques et tarification en assurance vie et santé"
+        },
+        {
+          "value": "EMERGENCY_TRIAGE",
+          "label": "5(d) — Évaluation et classement des appels d’urgence, triage des patients"
+        },
+        { "value": "NONE", "label": "Aucun de ces usages" }
+      ]
+    },
+    {
+      "id": "H_PROFILING",
+      "section": "highrisk",
+      "type": "tri",
+      "showIf": { "ref": "annex3_candidate" },
+      "text": "Le système effectue-t-il un profilage de personnes physiques ?",
+      "help": "Un système de l’annexe III qui effectue un profilage est toujours considéré à haut risque, même si une dérogation semblait possible.",
+      "legalBasis": "Art. 6(3), dernier alinéa ; RGPD art. 4(4)"
+    },
+    {
+      "id": "H_DEROGATION",
+      "section": "highrisk",
+      "type": "tri",
+      "showIf": { "ref": "annex3_candidate" },
+      "text": "Le système ne présente-t-il pas de risque important de préjudice, parce qu’il accomplit seulement une tâche procédurale étroite, améliore le résultat d’une activité humaine déjà réalisée, détecte des schémas de décision sans remplacer ni influencer l’évaluation humaine sans examen humain approprié, ou exécute une tâche préparatoire ?",
+      "help": "Dérogation à documenter par le fournisseur avant mise sur le marché (art. 6(4)) et à enregistrer (art. 49(2)). Validation juridique requise.",
+      "legalBasis": "Art. 6(3)"
+    },
+    {
+      "id": "H_DECISIONS_PERSONS",
+      "section": "highrisk",
+      "type": "tri",
+      "showIf": { "all": [{ "ref": "annex3_candidate" }, { "eq": ["R_USES", "YES"] }] },
+      "text": "Le système prend-il, ou aide-t-il à prendre, des décisions concernant des personnes physiques ?",
+      "legalBasis": "Art. 26(11), art. 86",
+      "determinant": false
+    },
+
+    {
+      "id": "T_INTERACTS",
+      "section": "transparency",
+      "type": "tri",
+      "text": "Le système est-il destiné à interagir directement avec des personnes physiques (agent conversationnel, assistant vocal…) ?",
+      "legalBasis": "Art. 50(1)"
+    },
+    {
+      "id": "T_SYNTHETIC",
+      "section": "transparency",
+      "type": "tri",
+      "text": "Le système génère-t-il des contenus de synthèse de type audio, image, vidéo ou texte ?",
+      "legalBasis": "Art. 50(2)"
+    },
+    {
+      "id": "T_EMOTION_BIOMETRIC",
+      "section": "transparency",
+      "type": "tri",
+      "text": "S’agit-il d’un système de reconnaissance des émotions ou de catégorisation biométrique (hors cas interdits) ?",
+      "legalBasis": "Art. 50(3)"
+    },
+    {
+      "id": "T_DEEPFAKE",
+      "section": "transparency",
+      "type": "tri",
+      "text": "Le système génère-t-il ou manipule-t-il des images, contenus audio ou vidéo constituant un hypertrucage (deepfake) ?",
+      "legalBasis": "Art. 50(4), premier alinéa"
+    },
+    {
+      "id": "T_PUBLIC_TEXT",
+      "section": "transparency",
+      "type": "tri",
+      "text": "Le système génère-t-il ou manipule-t-il un texte publié dans le but d’informer le public sur des questions d’intérêt public, sans examen humain ni responsabilité éditoriale ?",
+      "legalBasis": "Art. 50(4), second alinéa"
+    },
+
+    {
+      "id": "G_USES_GPAI",
+      "section": "gpai_fria",
+      "type": "tri",
+      "text": "Le système repose-t-il sur un modèle d’IA à usage général ?",
+      "help": "Prérempli depuis les modèles liés à l’étape 3 (indicateur GPAI) ; à confirmer.",
+      "legalBasis": "Art. 3(63), art. 53(1)(b)",
+      "prefill": "usesGpai"
+    },
+    {
+      "id": "G_PROVIDES_GPAI",
+      "section": "gpai_fria",
+      "type": "tri",
+      "text": "L’organisation fournit-elle elle-même un modèle d’IA à usage général (mise sur le marché) ?",
+      "legalBasis": "Art. 3(63), art. 53"
+    },
+    {
+      "id": "F_PUBLIC_SERVICE",
+      "section": "gpai_fria",
+      "type": "tri",
+      "showIf": { "ref": "fria_candidate" },
+      "text": "Pour ce système, l’organisation agit-elle en tant qu’organisme de droit public ou en tant qu’entité privée fournissant des services publics ?",
+      "help": "Validation juridique requise : la notion de « services publics » doit être appréciée au cas par cas.",
+      "legalBasis": "Art. 27(1)"
+    }
+  ],
+  "rules": [
+    {
+      "ruleId": "SC-NOT-AI",
+      "legalBasis": "Art. 3(1)",
+      "version": "1.0.0",
+      "effectiveFrom": "2024-08-01",
+      "effectiveTo": null,
+      "condition": {
+        "any": [
+          { "eq": ["D_MACHINE", "NO"] },
+          { "eq": ["D_INFERENCE", "NO"] },
+          { "eq": ["D_AUTONOMY", "NO"] },
+          { "eq": ["D_INFLUENCE", "NO"] }
+        ]
+      },
+      "output": { "dimension": "scope", "value": "OUT_OF_SCOPE", "obligations": [] },
+      "severity": "INFO",
+      "explanation": "Un des éléments de la définition d’un système d’IA n’est pas réuni : le dispositif n’est pas un système d’IA au sens de l’art. 3(1).",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "SC-EXCLUDED",
+      "legalBasis": "Art. 2(3), 2(6), 2(8)",
+      "version": "1.0.0",
+      "effectiveFrom": "2024-08-01",
+      "effectiveTo": null,
+      "condition": {
+        "any": [{ "eq": ["X_MILITARY", "YES"] }, { "eq": ["X_RESEARCH", "YES"] }, { "eq": ["X_PRE_MARKET", "YES"] }]
+      },
+      "output": { "dimension": "scope", "value": "OUT_OF_SCOPE", "obligations": [] },
+      "severity": "INFO",
+      "explanation": "Une exclusion du champ d’application de l’art. 2 est déclarée (défense et sécurité nationale, recherche scientifique, ou activité antérieure à la mise sur le marché).",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "SC-UNKNOWN",
+      "legalBasis": "Art. 2, art. 3(1)",
+      "version": "1.0.0",
+      "effectiveFrom": "2024-08-01",
+      "effectiveTo": null,
+      "condition": {
+        "any": [
+          { "unknown": "D_MACHINE" },
+          { "unknown": "D_INFERENCE" },
+          { "unknown": "D_AUTONOMY" },
+          { "unknown": "D_INFLUENCE" },
+          { "unknown": "X_MILITARY" },
+          { "unknown": "X_RESEARCH" },
+          { "unknown": "X_PRE_MARKET" }
+        ]
+      },
+      "output": { "dimension": "scope", "value": "UNDETERMINED", "obligations": [] },
+      "severity": "MEDIUM",
+      "explanation": "Le champ d’application ne peut pas être établi : au moins un critère de définition ou d’exclusion est inconnu.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "SC-IN",
+      "legalBasis": "Art. 2, art. 3(1), art. 4",
+      "version": "1.0.0",
+      "effectiveFrom": "2024-08-01",
+      "effectiveTo": null,
+      "condition": { "ref": "in_scope" },
+      "output": { "dimension": "scope", "value": "IN_SCOPE", "obligations": ["AIA-OBL-LITERACY"] },
+      "severity": "INFO",
+      "explanation": "Tous les éléments de la définition sont réunis et aucune exclusion n’est déclarée : le système relève du règlement. La maîtrise de l’IA (art. 4) s’applique à tout fournisseur et déployeur.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "SC-IN-GDPR",
+      "legalBasis": "RGPD ; art. 2(7) AI Act",
+      "version": "1.0.0",
+      "effectiveFrom": "2024-08-01",
+      "effectiveTo": null,
+      "condition": { "all": [{ "ref": "in_scope" }, { "eq": ["C_PERSONAL_DATA", "YES"] }] },
+      "output": { "dimension": "scope", "value": "IN_SCOPE", "obligations": ["AIA-OBL-RGPD-LINK"] },
+      "severity": "INFO",
+      "explanation": "Le système traite des données personnelles : le RGPD s’applique en parallèle de l’AI Act (art. 2(7)).",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+
+    {
+      "ruleId": "RL-PROVIDER",
+      "legalBasis": "Art. 3(3)",
+      "version": "1.0.0",
+      "effectiveFrom": "2024-08-01",
+      "effectiveTo": null,
+      "condition": { "eq": ["R_DEVELOPS", "YES"] },
+      "output": { "dimension": "roles", "value": "PROVIDER", "obligations": [] },
+      "severity": "INFO",
+      "explanation": "L’organisation développe ou fait développer le système et le met sur le marché ou en service sous son nom : elle est fournisseur.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "RL-PROVIDER-ART25",
+      "legalBasis": "Art. 25(1)",
+      "version": "1.0.0",
+      "effectiveFrom": "2024-08-01",
+      "effectiveTo": null,
+      "condition": {
+        "any": [{ "eq": ["R_REBRAND", "YES"] }, { "eq": ["R_SUBST_MOD", "YES"] }, { "eq": ["R_PURPOSE_CHANGE", "YES"] }]
+      },
+      "output": { "dimension": "roles", "value": "PROVIDER", "obligations": [] },
+      "severity": "HIGH",
+      "explanation": "Requalification : l’organisation est considérée comme fournisseur d’un système à haut risque (marque apposée, modification substantielle ou changement de destination).",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "RL-DEPLOYER",
+      "legalBasis": "Art. 3(4)",
+      "version": "1.0.0",
+      "effectiveFrom": "2024-08-01",
+      "effectiveTo": null,
+      "condition": { "eq": ["R_USES", "YES"] },
+      "output": { "dimension": "roles", "value": "DEPLOYER", "obligations": [] },
+      "severity": "INFO",
+      "explanation": "L’organisation utilise le système sous sa propre autorité dans un cadre professionnel : elle est déployeur.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "RL-IMPORTER",
+      "legalBasis": "Art. 3(6)",
+      "version": "1.0.0",
+      "effectiveFrom": "2024-08-01",
+      "effectiveTo": null,
+      "condition": { "eq": ["R_IMPORTS", "YES"] },
+      "output": { "dimension": "roles", "value": "IMPORTER", "obligations": [] },
+      "severity": "INFO",
+      "explanation": "L’organisation met sur le marché de l’Union un système d’un fournisseur établi hors de l’Union : elle est importateur.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "RL-DISTRIBUTOR",
+      "legalBasis": "Art. 3(7)",
+      "version": "1.0.0",
+      "effectiveFrom": "2024-08-01",
+      "effectiveTo": null,
+      "condition": { "eq": ["R_DISTRIBUTES", "YES"] },
+      "output": { "dimension": "roles", "value": "DISTRIBUTOR", "obligations": [] },
+      "severity": "INFO",
+      "explanation": "L’organisation met le système à disposition sur le marché sans en être fournisseur ni importateur : elle est distributeur.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+
+    {
+      "ruleId": "PR-5-1-A",
+      "legalBasis": "Art. 5(1)(a)",
+      "version": "1.0.0",
+      "effectiveFrom": "2025-02-02",
+      "effectiveTo": null,
+      "condition": { "eq": ["P_MANIPULATION", "YES"] },
+      "output": { "dimension": "prohibited", "value": "POTENTIAL", "obligations": ["AIA-OBL-PROH-STOP"] },
+      "severity": "CRITICAL",
+      "explanation": "Techniques subliminales, manipulatrices ou trompeuses altérant substantiellement le comportement et causant un préjudice important.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "PR-5-1-B",
+      "legalBasis": "Art. 5(1)(b)",
+      "version": "1.0.0",
+      "effectiveFrom": "2025-02-02",
+      "effectiveTo": null,
+      "condition": { "eq": ["P_VULNERABILITY", "YES"] },
+      "output": { "dimension": "prohibited", "value": "POTENTIAL", "obligations": ["AIA-OBL-PROH-STOP"] },
+      "severity": "CRITICAL",
+      "explanation": "Exploitation des vulnérabilités liées à l’âge, au handicap ou à la situation sociale ou économique.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "PR-5-1-C",
+      "legalBasis": "Art. 5(1)(c)",
+      "version": "1.0.0",
+      "effectiveFrom": "2025-02-02",
+      "effectiveTo": null,
+      "condition": { "eq": ["P_SOCIAL_SCORING", "YES"] },
+      "output": { "dimension": "prohibited", "value": "POTENTIAL", "obligations": ["AIA-OBL-PROH-STOP"] },
+      "severity": "CRITICAL",
+      "explanation": "Notation sociale conduisant à un traitement préjudiciable ou défavorable.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "PR-5-1-D",
+      "legalBasis": "Art. 5(1)(d)",
+      "version": "1.0.0",
+      "effectiveFrom": "2025-02-02",
+      "effectiveTo": null,
+      "condition": { "eq": ["P_CRIME_PREDICTION", "YES"] },
+      "output": { "dimension": "prohibited", "value": "POTENTIAL", "obligations": ["AIA-OBL-PROH-STOP"] },
+      "severity": "CRITICAL",
+      "explanation": "Évaluation du risque d’infraction pénale fondée uniquement sur le profilage ou les traits de personnalité.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "PR-5-1-E",
+      "legalBasis": "Art. 5(1)(e)",
+      "version": "1.0.0",
+      "effectiveFrom": "2025-02-02",
+      "effectiveTo": null,
+      "condition": { "eq": ["P_FACE_SCRAPING", "YES"] },
+      "output": { "dimension": "prohibited", "value": "POTENTIAL", "obligations": ["AIA-OBL-PROH-STOP"] },
+      "severity": "CRITICAL",
+      "explanation": "Constitution de bases de reconnaissance faciale par moissonnage non ciblé.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "PR-5-1-F",
+      "legalBasis": "Art. 5(1)(f)",
+      "version": "1.0.0",
+      "effectiveFrom": "2025-02-02",
+      "effectiveTo": null,
+      "condition": { "eq": ["P_EMOTION_WORK_EDU", "YES"] },
+      "output": { "dimension": "prohibited", "value": "POTENTIAL", "obligations": ["AIA-OBL-PROH-STOP"] },
+      "severity": "CRITICAL",
+      "explanation": "Reconnaissance des émotions sur le lieu de travail ou dans l’enseignement, hors raisons médicales ou de sécurité.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "PR-5-1-G",
+      "legalBasis": "Art. 5(1)(g)",
+      "version": "1.0.0",
+      "effectiveFrom": "2025-02-02",
+      "effectiveTo": null,
+      "condition": { "eq": ["P_BIOMETRIC_CATEG", "YES"] },
+      "output": { "dimension": "prohibited", "value": "POTENTIAL", "obligations": ["AIA-OBL-PROH-STOP"] },
+      "severity": "CRITICAL",
+      "explanation": "Catégorisation biométrique déduisant des caractéristiques sensibles (race, opinions, appartenance syndicale, convictions, vie ou orientation sexuelle).",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "PR-5-1-H",
+      "legalBasis": "Art. 5(1)(h)",
+      "version": "1.0.0",
+      "effectiveFrom": "2025-02-02",
+      "effectiveTo": null,
+      "condition": { "eq": ["P_RT_RBI_LE", "YES"] },
+      "output": { "dimension": "prohibited", "value": "POTENTIAL", "obligations": ["AIA-OBL-PROH-STOP"] },
+      "severity": "CRITICAL",
+      "explanation": "Identification biométrique à distance en temps réel dans des espaces publics à des fins répressives (sauf exceptions strictes).",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "PR-UNKNOWN",
+      "legalBasis": "Art. 5(1)",
+      "version": "1.0.0",
+      "effectiveFrom": "2025-02-02",
+      "effectiveTo": null,
+      "condition": {
+        "any": [
+          { "unknown": "P_MANIPULATION" },
+          { "unknown": "P_VULNERABILITY" },
+          { "unknown": "P_SOCIAL_SCORING" },
+          { "unknown": "P_CRIME_PREDICTION" },
+          { "unknown": "P_FACE_SCRAPING" },
+          { "unknown": "P_EMOTION_WORK_EDU" },
+          { "unknown": "P_BIOMETRIC_CATEG" },
+          { "unknown": "P_RT_RBI_LE" }
+        ]
+      },
+      "output": { "dimension": "prohibited", "value": "UNDETERMINED", "obligations": [] },
+      "severity": "HIGH",
+      "explanation": "Au moins une hypothèse d’interdiction n’est pas renseignée : l’absence de pratique interdite ne peut pas être affirmée.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "PR-NONE",
+      "legalBasis": "Art. 5(1)",
+      "version": "1.0.0",
+      "effectiveFrom": "2025-02-02",
+      "effectiveTo": null,
+      "condition": {
+        "all": [
+          { "eq": ["P_MANIPULATION", "NO"] },
+          { "eq": ["P_VULNERABILITY", "NO"] },
+          { "eq": ["P_SOCIAL_SCORING", "NO"] },
+          { "eq": ["P_CRIME_PREDICTION", "NO"] },
+          { "eq": ["P_FACE_SCRAPING", "NO"] },
+          { "eq": ["P_EMOTION_WORK_EDU", "NO"] },
+          { "eq": ["P_BIOMETRIC_CATEG", "NO"] },
+          { "eq": ["P_RT_RBI_LE", "NO"] }
+        ]
+      },
+      "output": { "dimension": "prohibited", "value": "NOT_IDENTIFIED", "obligations": [] },
+      "severity": "INFO",
+      "explanation": "Aucune des huit hypothèses de l’art. 5(1) n’est déclarée.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+
+    {
+      "ruleId": "HR-ANNEX-I",
+      "legalBasis": "Art. 6(1), annexe I",
+      "version": "1.0.0",
+      "effectiveFrom": "2027-08-02",
+      "effectiveTo": null,
+      "condition": { "eq": ["H_ANNEX_I", "YES"] },
+      "output": {
+        "dimension": "highRisk",
+        "value": "HIGH_RISK",
+        "obligations": [
+          "AIA-OBL-PRV-RMS",
+          "AIA-OBL-PRV-DATA",
+          "AIA-OBL-PRV-TECHDOC",
+          "AIA-OBL-PRV-LOGGING",
+          "AIA-OBL-PRV-INSTRUCTIONS",
+          "AIA-OBL-PRV-OVERSIGHT",
+          "AIA-OBL-PRV-ROBUST",
+          "AIA-OBL-PRV-QMS",
+          "AIA-OBL-PRV-CONFORMITY",
+          "AIA-OBL-PRV-REGISTRATION",
+          "AIA-OBL-PRV-PMM",
+          "AIA-OBL-PRV-INCIDENTS",
+          "AIA-OBL-DEP-INSTR",
+          "AIA-OBL-DEP-OVERSIGHT",
+          "AIA-OBL-DEP-INPUT",
+          "AIA-OBL-DEP-MONITOR",
+          "AIA-OBL-DEP-LOGS",
+          "AIA-OBL-IMP",
+          "AIA-OBL-DIST"
+        ]
+      },
+      "severity": "HIGH",
+      "explanation": "Produit ou composant de sécurité d’un produit couvert par l’annexe I et soumis à évaluation de la conformité par un tiers : haut risque (applicable au 2 août 2027).",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "HR-ANNEX-III-1",
+      "legalBasis": "Art. 6(2), annexe III pt 1",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": { "all": [{ "includes": ["H_ANNEX_III", "BIOMETRICS"] }, { "not": { "ref": "derogation_valid" } }] },
+      "output": {
+        "dimension": "highRisk",
+        "value": "HIGH_RISK",
+        "obligations": [
+          "AIA-OBL-PRV-RMS",
+          "AIA-OBL-PRV-DATA",
+          "AIA-OBL-PRV-TECHDOC",
+          "AIA-OBL-PRV-LOGGING",
+          "AIA-OBL-PRV-INSTRUCTIONS",
+          "AIA-OBL-PRV-OVERSIGHT",
+          "AIA-OBL-PRV-ROBUST",
+          "AIA-OBL-PRV-QMS",
+          "AIA-OBL-PRV-CONFORMITY",
+          "AIA-OBL-PRV-REGISTRATION",
+          "AIA-OBL-PRV-PMM",
+          "AIA-OBL-PRV-INCIDENTS",
+          "AIA-OBL-DEP-INSTR",
+          "AIA-OBL-DEP-OVERSIGHT",
+          "AIA-OBL-DEP-INPUT",
+          "AIA-OBL-DEP-MONITOR",
+          "AIA-OBL-DEP-LOGS",
+          "AIA-OBL-IMP",
+          "AIA-OBL-DIST"
+        ]
+      },
+      "severity": "HIGH",
+      "explanation": "Domaine de l’annexe III point 1 (biométrie) sans dérogation établie : haut risque.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "HR-ANNEX-III-2",
+      "legalBasis": "Art. 6(2), annexe III pt 2",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": {
+        "all": [{ "includes": ["H_ANNEX_III", "CRITICAL_INFRA"] }, { "not": { "ref": "derogation_valid" } }]
+      },
+      "output": {
+        "dimension": "highRisk",
+        "value": "HIGH_RISK",
+        "obligations": [
+          "AIA-OBL-PRV-RMS",
+          "AIA-OBL-PRV-DATA",
+          "AIA-OBL-PRV-TECHDOC",
+          "AIA-OBL-PRV-LOGGING",
+          "AIA-OBL-PRV-INSTRUCTIONS",
+          "AIA-OBL-PRV-OVERSIGHT",
+          "AIA-OBL-PRV-ROBUST",
+          "AIA-OBL-PRV-QMS",
+          "AIA-OBL-PRV-CONFORMITY",
+          "AIA-OBL-PRV-REGISTRATION",
+          "AIA-OBL-PRV-PMM",
+          "AIA-OBL-PRV-INCIDENTS",
+          "AIA-OBL-DEP-INSTR",
+          "AIA-OBL-DEP-OVERSIGHT",
+          "AIA-OBL-DEP-INPUT",
+          "AIA-OBL-DEP-MONITOR",
+          "AIA-OBL-DEP-LOGS",
+          "AIA-OBL-IMP",
+          "AIA-OBL-DIST"
+        ]
+      },
+      "severity": "HIGH",
+      "explanation": "Composant de sécurité dans la gestion d’infrastructures critiques (annexe III point 2) sans dérogation établie : haut risque.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "HR-ANNEX-III-3",
+      "legalBasis": "Art. 6(2), annexe III pt 3",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": { "all": [{ "includes": ["H_ANNEX_III", "EDUCATION"] }, { "not": { "ref": "derogation_valid" } }] },
+      "output": {
+        "dimension": "highRisk",
+        "value": "HIGH_RISK",
+        "obligations": [
+          "AIA-OBL-PRV-RMS",
+          "AIA-OBL-PRV-DATA",
+          "AIA-OBL-PRV-TECHDOC",
+          "AIA-OBL-PRV-LOGGING",
+          "AIA-OBL-PRV-INSTRUCTIONS",
+          "AIA-OBL-PRV-OVERSIGHT",
+          "AIA-OBL-PRV-ROBUST",
+          "AIA-OBL-PRV-QMS",
+          "AIA-OBL-PRV-CONFORMITY",
+          "AIA-OBL-PRV-REGISTRATION",
+          "AIA-OBL-PRV-PMM",
+          "AIA-OBL-PRV-INCIDENTS",
+          "AIA-OBL-DEP-INSTR",
+          "AIA-OBL-DEP-OVERSIGHT",
+          "AIA-OBL-DEP-INPUT",
+          "AIA-OBL-DEP-MONITOR",
+          "AIA-OBL-DEP-LOGS",
+          "AIA-OBL-IMP",
+          "AIA-OBL-DIST"
+        ]
+      },
+      "severity": "HIGH",
+      "explanation": "Éducation et formation professionnelle (annexe III point 3) sans dérogation établie : haut risque.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "HR-ANNEX-III-4",
+      "legalBasis": "Art. 6(2), annexe III pt 4",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": { "all": [{ "ref": "annex3_employment" }, { "not": { "ref": "derogation_valid" } }] },
+      "output": {
+        "dimension": "highRisk",
+        "value": "HIGH_RISK",
+        "obligations": [
+          "AIA-OBL-PRV-RMS",
+          "AIA-OBL-PRV-DATA",
+          "AIA-OBL-PRV-TECHDOC",
+          "AIA-OBL-PRV-LOGGING",
+          "AIA-OBL-PRV-INSTRUCTIONS",
+          "AIA-OBL-PRV-OVERSIGHT",
+          "AIA-OBL-PRV-ROBUST",
+          "AIA-OBL-PRV-QMS",
+          "AIA-OBL-PRV-CONFORMITY",
+          "AIA-OBL-PRV-REGISTRATION",
+          "AIA-OBL-PRV-PMM",
+          "AIA-OBL-PRV-INCIDENTS",
+          "AIA-OBL-DEP-INSTR",
+          "AIA-OBL-DEP-OVERSIGHT",
+          "AIA-OBL-DEP-INPUT",
+          "AIA-OBL-DEP-MONITOR",
+          "AIA-OBL-DEP-LOGS",
+          "AIA-OBL-IMP",
+          "AIA-OBL-DIST"
+        ]
+      },
+      "severity": "HIGH",
+      "explanation": "Emploi et gestion des travailleurs (annexe III point 4 : recrutement, décisions sur la relation de travail, attribution des tâches, suivi des performances) sans dérogation établie : haut risque.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "HR-ANNEX-III-5",
+      "legalBasis": "Art. 6(2), annexe III pt 5",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": { "all": [{ "ref": "annex3_essential" }, { "not": { "ref": "derogation_valid" } }] },
+      "output": {
+        "dimension": "highRisk",
+        "value": "HIGH_RISK",
+        "obligations": [
+          "AIA-OBL-PRV-RMS",
+          "AIA-OBL-PRV-DATA",
+          "AIA-OBL-PRV-TECHDOC",
+          "AIA-OBL-PRV-LOGGING",
+          "AIA-OBL-PRV-INSTRUCTIONS",
+          "AIA-OBL-PRV-OVERSIGHT",
+          "AIA-OBL-PRV-ROBUST",
+          "AIA-OBL-PRV-QMS",
+          "AIA-OBL-PRV-CONFORMITY",
+          "AIA-OBL-PRV-REGISTRATION",
+          "AIA-OBL-PRV-PMM",
+          "AIA-OBL-PRV-INCIDENTS",
+          "AIA-OBL-DEP-INSTR",
+          "AIA-OBL-DEP-OVERSIGHT",
+          "AIA-OBL-DEP-INPUT",
+          "AIA-OBL-DEP-MONITOR",
+          "AIA-OBL-DEP-LOGS",
+          "AIA-OBL-IMP",
+          "AIA-OBL-DIST"
+        ]
+      },
+      "severity": "HIGH",
+      "explanation": "Accès aux services essentiels (annexe III point 5) sans dérogation établie : haut risque.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "HR-ANNEX-III-6-8",
+      "legalBasis": "Art. 6(2), annexe III pts 6, 7, 8",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": {
+        "all": [
+          { "includesAny": ["H_ANNEX_III", ["LAW_ENFORCEMENT", "MIGRATION", "JUSTICE_DEMOCRACY"]] },
+          { "not": { "ref": "derogation_valid" } }
+        ]
+      },
+      "output": {
+        "dimension": "highRisk",
+        "value": "HIGH_RISK",
+        "obligations": [
+          "AIA-OBL-PRV-RMS",
+          "AIA-OBL-PRV-DATA",
+          "AIA-OBL-PRV-TECHDOC",
+          "AIA-OBL-PRV-LOGGING",
+          "AIA-OBL-PRV-INSTRUCTIONS",
+          "AIA-OBL-PRV-OVERSIGHT",
+          "AIA-OBL-PRV-ROBUST",
+          "AIA-OBL-PRV-QMS",
+          "AIA-OBL-PRV-CONFORMITY",
+          "AIA-OBL-PRV-REGISTRATION",
+          "AIA-OBL-PRV-PMM",
+          "AIA-OBL-PRV-INCIDENTS",
+          "AIA-OBL-DEP-INSTR",
+          "AIA-OBL-DEP-OVERSIGHT",
+          "AIA-OBL-DEP-INPUT",
+          "AIA-OBL-DEP-MONITOR",
+          "AIA-OBL-DEP-LOGS",
+          "AIA-OBL-IMP",
+          "AIA-OBL-DIST"
+        ]
+      },
+      "severity": "HIGH",
+      "explanation": "Répression, migration ou administration de la justice et processus démocratiques (annexe III points 6 à 8) sans dérogation établie : haut risque.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "HR-INFORM-PERSONS",
+      "legalBasis": "Art. 26(11)",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": { "all": [{ "ref": "annex3_high" }, { "eq": ["H_DECISIONS_PERSONS", "YES"] }] },
+      "output": { "dimension": "highRisk", "value": "HIGH_RISK", "obligations": ["AIA-OBL-DEP-INFORM"] },
+      "severity": "HIGH",
+      "explanation": "Système à haut risque de l’annexe III prenant ou aidant à prendre des décisions concernant des personnes : information des personnes concernées.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "HR-EXPLANATION",
+      "legalBasis": "Art. 86",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": { "all": [{ "ref": "annex3_high_excl_infra" }, { "eq": ["H_DECISIONS_PERSONS", "YES"] }] },
+      "output": { "dimension": "highRisk", "value": "HIGH_RISK", "obligations": ["AIA-OBL-DEP-EXPLAIN"] },
+      "severity": "HIGH",
+      "explanation": "Droit à l’explication des décisions individuelles fondées sur un système à haut risque de l’annexe III (hors point 2).",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "HR-WORKPLACE",
+      "legalBasis": "Art. 26(7)",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": { "all": [{ "ref": "high_any" }, { "eq": ["C_WORKPLACE", "YES"] }] },
+      "output": { "dimension": "highRisk", "value": "HIGH_RISK", "obligations": ["AIA-OBL-DEP-WORKERS"] },
+      "severity": "HIGH",
+      "explanation": "Système à haut risque utilisé sur le lieu de travail : information préalable des représentants du personnel et des salariés concernés.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "HR-GDPR-DPIA",
+      "legalBasis": "Art. 26(9) ; RGPD art. 35",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": { "all": [{ "ref": "high_any" }, { "eq": ["C_PERSONAL_DATA", "YES"] }] },
+      "output": { "dimension": "highRisk", "value": "HIGH_RISK", "obligations": ["AIA-OBL-DEP-DPIA"] },
+      "severity": "HIGH",
+      "explanation": "Système à haut risque traitant des données personnelles : les informations du fournisseur servent à l’analyse d’impact RGPD (AIPD).",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "HR-DEROGATION",
+      "legalBasis": "Art. 6(3), 6(4), 49(2)",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": { "all": [{ "ref": "annex3_effective" }, { "ref": "derogation_valid" }] },
+      "output": { "dimension": "highRisk", "value": "NOT_HIGH_RISK_DEROGATION", "obligations": ["AIA-OBL-DEROG-DOC"] },
+      "severity": "MEDIUM",
+      "explanation": "Domaine de l’annexe III, mais dérogation de l’art. 6(3) déclarée et absence de profilage : non haut risque, sous réserve de documenter l’évaluation et d’enregistrer le système. Validation juridique requise.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "HR-UNKNOWN",
+      "legalBasis": "Art. 6",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": {
+        "any": [{ "unknown": "H_ANNEX_I" }, { "unknown": "H_ANNEX_III" }, { "ref": "annex3_subunknown" }]
+      },
+      "output": { "dimension": "highRisk", "value": "UNDETERMINED", "obligations": [] },
+      "severity": "HIGH",
+      "explanation": "Le caractère haut risque ne peut pas être établi : annexe I, domaine de l’annexe III ou usage précis non renseigné.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "HR-NONE",
+      "legalBasis": "Art. 6",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": { "all": [{ "eq": ["H_ANNEX_I", "NO"] }, { "answered": "H_ANNEX_III" }] },
+      "output": { "dimension": "highRisk", "value": "NOT_IDENTIFIED", "obligations": [] },
+      "severity": "INFO",
+      "explanation": "Ni l’annexe I ni un usage visé à l’annexe III ne sont déclarés : pas de haut risque identifié.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+
+    {
+      "ruleId": "TR-50-1",
+      "legalBasis": "Art. 50(1)",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": { "eq": ["T_INTERACTS", "YES"] },
+      "output": { "dimension": "transparency", "value": "APPLICABLE", "obligations": ["AIA-OBL-T-50-1"] },
+      "severity": "MEDIUM",
+      "explanation": "Système destiné à interagir directement avec des personnes : elles doivent être informées qu’elles interagissent avec une IA, sauf évidence.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "TR-50-2",
+      "legalBasis": "Art. 50(2)",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": { "eq": ["T_SYNTHETIC", "YES"] },
+      "output": { "dimension": "transparency", "value": "APPLICABLE", "obligations": ["AIA-OBL-T-50-2"] },
+      "severity": "MEDIUM",
+      "explanation": "Génération de contenus de synthèse : marquage lisible par machine et détectable des sorties.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "TR-50-3",
+      "legalBasis": "Art. 50(3)",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": { "eq": ["T_EMOTION_BIOMETRIC", "YES"] },
+      "output": { "dimension": "transparency", "value": "APPLICABLE", "obligations": ["AIA-OBL-T-50-3"] },
+      "severity": "MEDIUM",
+      "explanation": "Reconnaissance des émotions ou catégorisation biométrique : information des personnes exposées.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "TR-50-4-DEEPFAKE",
+      "legalBasis": "Art. 50(4), premier alinéa",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": { "eq": ["T_DEEPFAKE", "YES"] },
+      "output": { "dimension": "transparency", "value": "APPLICABLE", "obligations": ["AIA-OBL-T-50-4A"] },
+      "severity": "MEDIUM",
+      "explanation": "Hypertrucage : indiquer que le contenu a été généré ou manipulé artificiellement.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "TR-50-4-TEXT",
+      "legalBasis": "Art. 50(4), second alinéa",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": { "eq": ["T_PUBLIC_TEXT", "YES"] },
+      "output": { "dimension": "transparency", "value": "APPLICABLE", "obligations": ["AIA-OBL-T-50-4B"] },
+      "severity": "MEDIUM",
+      "explanation": "Texte généré publié pour informer le public sans contrôle éditorial humain : indiquer qu’il a été généré artificiellement.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "TR-UNKNOWN",
+      "legalBasis": "Art. 50",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": {
+        "any": [
+          { "unknown": "T_INTERACTS" },
+          { "unknown": "T_SYNTHETIC" },
+          { "unknown": "T_EMOTION_BIOMETRIC" },
+          { "unknown": "T_DEEPFAKE" },
+          { "unknown": "T_PUBLIC_TEXT" }
+        ]
+      },
+      "output": { "dimension": "transparency", "value": "UNDETERMINED", "obligations": [] },
+      "severity": "MEDIUM",
+      "explanation": "Au moins une hypothèse de transparence n’est pas renseignée.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "TR-NONE",
+      "legalBasis": "Art. 50",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": {
+        "all": [
+          { "eq": ["T_INTERACTS", "NO"] },
+          { "eq": ["T_SYNTHETIC", "NO"] },
+          { "eq": ["T_EMOTION_BIOMETRIC", "NO"] },
+          { "eq": ["T_DEEPFAKE", "NO"] },
+          { "eq": ["T_PUBLIC_TEXT", "NO"] }
+        ]
+      },
+      "output": { "dimension": "transparency", "value": "NONE", "obligations": [] },
+      "severity": "INFO",
+      "explanation": "Aucune hypothèse de l’art. 50 n’est déclarée.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+
+    {
+      "ruleId": "GP-USES",
+      "legalBasis": "Art. 3(63), art. 53(1)(b)",
+      "version": "1.0.0",
+      "effectiveFrom": "2025-08-02",
+      "effectiveTo": null,
+      "condition": { "eq": ["G_USES_GPAI", "YES"] },
+      "output": { "dimension": "gpai", "value": "USES_GPAI", "obligations": ["AIA-OBL-GPAI-DOWNSTREAM"] },
+      "severity": "INFO",
+      "explanation": "Le système repose sur un modèle d’IA à usage général : la documentation fournie par le fournisseur du modèle doit être obtenue et exploitée.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "GP-PROVIDES",
+      "legalBasis": "Art. 53, art. 55",
+      "version": "1.0.0",
+      "effectiveFrom": "2025-08-02",
+      "effectiveTo": null,
+      "condition": { "eq": ["G_PROVIDES_GPAI", "YES"] },
+      "output": { "dimension": "gpai", "value": "PROVIDES_GPAI", "obligations": ["AIA-OBL-GPAI-PRV"] },
+      "severity": "HIGH",
+      "explanation": "L’organisation fournit un modèle d’IA à usage général : obligations du chapitre V (art. 53, et art. 55 en cas de risque systémique).",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "GP-UNKNOWN",
+      "legalBasis": "Art. 3(63)",
+      "version": "1.0.0",
+      "effectiveFrom": "2025-08-02",
+      "effectiveTo": null,
+      "condition": { "any": [{ "unknown": "G_USES_GPAI" }, { "unknown": "G_PROVIDES_GPAI" }] },
+      "output": { "dimension": "gpai", "value": "UNDETERMINED", "obligations": [] },
+      "severity": "INFO",
+      "explanation": "Le recours à un modèle d’IA à usage général n’est pas renseigné.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "GP-NONE",
+      "legalBasis": "Art. 3(63)",
+      "version": "1.0.0",
+      "effectiveFrom": "2025-08-02",
+      "effectiveTo": null,
+      "condition": { "all": [{ "eq": ["G_USES_GPAI", "NO"] }, { "eq": ["G_PROVIDES_GPAI", "NO"] }] },
+      "output": { "dimension": "gpai", "value": "NONE", "obligations": [] },
+      "severity": "INFO",
+      "explanation": "Aucun modèle d’IA à usage général n’est utilisé ni fourni.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+
+    {
+      "ruleId": "FR-PUBLIC",
+      "legalBasis": "Art. 27(1)",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": { "all": [{ "ref": "fria_candidate" }, { "eq": ["F_PUBLIC_SERVICE", "YES"] }] },
+      "output": { "dimension": "fria", "value": "REQUIRED", "obligations": ["AIA-OBL-FRIA"] },
+      "severity": "HIGH",
+      "explanation": "Déployeur organisme public ou entité privée fournissant des services publics, utilisant un système à haut risque de l’annexe III (hors point 2) : FRIA requise avant la première utilisation.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "FR-CREDIT-INSURANCE",
+      "legalBasis": "Art. 27(1), annexe III pt 5(b) et 5(c)",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": {
+        "all": [
+          { "eq": ["R_USES", "YES"] },
+          { "ref": "annex3_high" },
+          { "includes": ["H_ANNEX_III", "ESSENTIAL_SERVICES"] },
+          { "includesAny": ["H_ESSENTIAL_USE", ["CREDITWORTHINESS", "LIFE_HEALTH_INSURANCE"]] }
+        ]
+      },
+      "output": { "dimension": "fria", "value": "REQUIRED", "obligations": ["AIA-OBL-FRIA"] },
+      "severity": "HIGH",
+      "explanation": "Déployeur d’un système à haut risque d’évaluation de solvabilité ou de tarification en assurance vie et santé : FRIA requise.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "FR-TO-CONFIRM",
+      "legalBasis": "Art. 27(1)",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": {
+        "any": [
+          { "all": [{ "ref": "fria_candidate" }, { "unknown": "F_PUBLIC_SERVICE" }] },
+          { "unknown": "R_USES" },
+          { "unknown": "H_ANNEX_III" },
+          { "ref": "annex3_subunknown" }
+        ]
+      },
+      "output": { "dimension": "fria", "value": "TO_CONFIRM", "obligations": [] },
+      "severity": "MEDIUM",
+      "explanation": "La nécessité d’une FRIA ne peut pas être établie (qualité de déployeur, usage annexe III ou mission de service public non renseignés).",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "ruleId": "FR-NOT-REQUIRED",
+      "legalBasis": "Art. 27(1)",
+      "version": "1.0.0",
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null,
+      "condition": { "always": true },
+      "output": { "dimension": "fria", "value": "NOT_REQUIRED", "obligations": [] },
+      "severity": "INFO",
+      "explanation": "Les conditions de l’art. 27(1) ne sont pas réunies selon les réponses fournies.",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    }
+  ],
+  "obligations": [
+    {
+      "key": "AIA-OBL-LITERACY",
+      "title": "Maîtrise de l’IA du personnel",
+      "description": "Prendre des mesures pour garantir un niveau suffisant de maîtrise de l’IA des personnes qui exploitent ou utilisent le système (formation, sensibilisation adaptées au contexte).",
+      "legalBasis": "Art. 4",
+      "category": "AI_LITERACY",
+      "roles": ["ANY"],
+      "effectiveFrom": "2025-02-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-PROH-STOP",
+      "title": "Analyse juridique immédiate d’une pratique potentiellement interdite",
+      "description": "Une hypothèse de pratique interdite est déclarée : analyse juridique immédiate, suspension ou abandon envisagés, décision documentée.",
+      "legalBasis": "Art. 5",
+      "category": "PROHIBITION",
+      "roles": ["ANY"],
+      "effectiveFrom": "2025-02-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-RGPD-LINK",
+      "title": "Rattachement au registre RGPD et analyse de la nécessité d’une AIPD",
+      "description": "Lier le système aux traitements du registre RGPD et vérifier si une analyse d’impact relative à la protection des données (AIPD) est requise.",
+      "legalBasis": "RGPD art. 30 et 35 ; AI Act art. 2(7)",
+      "category": "DPIA",
+      "roles": ["ANY"],
+      "effectiveFrom": "2024-08-01",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2016/679/oj"
+    },
+    {
+      "key": "AIA-OBL-PRV-RMS",
+      "title": "Système de gestion des risques",
+      "description": "Établir, mettre en œuvre, documenter et tenir à jour un système de gestion des risques sur tout le cycle de vie.",
+      "legalBasis": "Art. 9",
+      "category": "GOVERNANCE_RISK",
+      "roles": ["PROVIDER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-PRV-DATA",
+      "title": "Données et gouvernance des données",
+      "description": "Jeux de données d’entraînement, de validation et de test soumis à des pratiques de gouvernance adaptées (pertinence, représentativité, biais).",
+      "legalBasis": "Art. 10",
+      "category": "DATA_GOVERNANCE",
+      "roles": ["PROVIDER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-PRV-TECHDOC",
+      "title": "Documentation technique",
+      "description": "Établir la documentation technique (annexe IV) avant la mise sur le marché et la tenir à jour.",
+      "legalBasis": "Art. 11, annexe IV",
+      "category": "DOCUMENTATION",
+      "roles": ["PROVIDER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-PRV-LOGGING",
+      "title": "Enregistrement automatique des événements",
+      "description": "Permettre techniquement l’enregistrement automatique des événements (journaux) pendant la durée de vie du système.",
+      "legalBasis": "Art. 12",
+      "category": "LOGGING",
+      "roles": ["PROVIDER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-PRV-INSTRUCTIONS",
+      "title": "Transparence et notice d’utilisation",
+      "description": "Concevoir le système de façon suffisamment transparente et fournir une notice d’utilisation aux déployeurs.",
+      "legalBasis": "Art. 13",
+      "category": "TRANSPARENCY",
+      "roles": ["PROVIDER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-PRV-OVERSIGHT",
+      "title": "Conception permettant le contrôle humain",
+      "description": "Concevoir le système de manière à permettre un contrôle effectif par des personnes physiques.",
+      "legalBasis": "Art. 14",
+      "category": "HUMAN_OVERSIGHT",
+      "roles": ["PROVIDER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-PRV-ROBUST",
+      "title": "Exactitude, robustesse et cybersécurité",
+      "description": "Atteindre un niveau approprié d’exactitude, de robustesse et de cybersécurité, constant sur le cycle de vie.",
+      "legalBasis": "Art. 15",
+      "category": "ACCURACY_ROBUSTNESS_SECURITY",
+      "roles": ["PROVIDER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-PRV-QMS",
+      "title": "Système de gestion de la qualité",
+      "description": "Mettre en place un système de gestion de la qualité documenté.",
+      "legalBasis": "Art. 16, art. 17",
+      "category": "GOVERNANCE_RISK",
+      "roles": ["PROVIDER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-PRV-CONFORMITY",
+      "title": "Évaluation de la conformité, déclaration UE et marquage CE",
+      "description": "Réaliser la procédure d’évaluation de la conformité applicable, établir la déclaration UE de conformité et apposer le marquage CE.",
+      "legalBasis": "Art. 43, 47, 48",
+      "category": "DOCUMENTATION",
+      "roles": ["PROVIDER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-PRV-REGISTRATION",
+      "title": "Enregistrement dans la base de données de l’UE",
+      "description": "Enregistrer le système dans la base de données de l’UE avant sa mise sur le marché ou sa mise en service.",
+      "legalBasis": "Art. 49",
+      "category": "REGISTRATION",
+      "roles": ["PROVIDER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-PRV-PMM",
+      "title": "Surveillance après commercialisation",
+      "description": "Établir et documenter un système de surveillance après commercialisation proportionné.",
+      "legalBasis": "Art. 72",
+      "category": "MONITORING_INCIDENTS",
+      "roles": ["PROVIDER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-PRV-INCIDENTS",
+      "title": "Signalement des incidents graves",
+      "description": "Signaler tout incident grave aux autorités de surveillance du marché compétentes dans les délais prévus.",
+      "legalBasis": "Art. 73",
+      "category": "MONITORING_INCIDENTS",
+      "roles": ["PROVIDER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-DEP-INSTR",
+      "title": "Utilisation conforme à la notice",
+      "description": "Prendre des mesures techniques et organisationnelles appropriées pour utiliser le système conformément à sa notice d’utilisation.",
+      "legalBasis": "Art. 26(1)",
+      "category": "DEPLOYER",
+      "roles": ["DEPLOYER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-DEP-OVERSIGHT",
+      "title": "Contrôle humain par des personnes compétentes",
+      "description": "Confier le contrôle humain à des personnes disposant de la compétence, de la formation et de l’autorité nécessaires, et du soutien adéquat.",
+      "legalBasis": "Art. 26(2)",
+      "category": "HUMAN_OVERSIGHT",
+      "roles": ["DEPLOYER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-DEP-INPUT",
+      "title": "Pertinence des données d’entrée",
+      "description": "Dans la mesure où le déployeur exerce un contrôle sur les données d’entrée, veiller à leur pertinence et à leur représentativité au regard de la destination.",
+      "legalBasis": "Art. 26(4)",
+      "category": "DATA_GOVERNANCE",
+      "roles": ["DEPLOYER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-DEP-MONITOR",
+      "title": "Surveillance du fonctionnement et information du fournisseur",
+      "description": "Surveiller le fonctionnement sur la base de la notice, informer le fournisseur et, le cas échéant, suspendre l’utilisation ; signaler les incidents graves.",
+      "legalBasis": "Art. 26(5)",
+      "category": "MONITORING_INCIDENTS",
+      "roles": ["DEPLOYER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-DEP-LOGS",
+      "title": "Conservation des journaux",
+      "description": "Conserver les journaux générés automatiquement, sous le contrôle du déployeur, pendant au moins six mois (sauf disposition contraire).",
+      "legalBasis": "Art. 26(6)",
+      "category": "LOGGING",
+      "roles": ["DEPLOYER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-DEP-WORKERS",
+      "title": "Information des représentants du personnel et des salariés",
+      "description": "Avant la mise en service ou l’utilisation sur le lieu de travail, informer les représentants des travailleurs et les travailleurs concernés.",
+      "legalBasis": "Art. 26(7)",
+      "category": "WORKER_INFORMATION",
+      "roles": ["DEPLOYER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-DEP-DPIA",
+      "title": "Analyse d’impact RGPD (AIPD) à partir des informations du fournisseur",
+      "description": "Utiliser les informations fournies au titre de l’art. 13 pour réaliser, le cas échéant, l’AIPD prévue par le RGPD.",
+      "legalBasis": "Art. 26(9) ; RGPD art. 35",
+      "category": "DPIA",
+      "roles": ["DEPLOYER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-DEP-INFORM",
+      "title": "Information des personnes faisant l’objet de décisions",
+      "description": "Informer les personnes physiques qu’elles sont soumises à l’utilisation d’un système à haut risque de l’annexe III qui prend ou aide à prendre des décisions les concernant.",
+      "legalBasis": "Art. 26(11)",
+      "category": "TRANSPARENCY",
+      "roles": ["DEPLOYER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-DEP-EXPLAIN",
+      "title": "Explication des décisions individuelles",
+      "description": "Être en mesure de fournir, sur demande, une explication claire et pertinente du rôle du système dans la décision et des principaux éléments de celle-ci.",
+      "legalBasis": "Art. 86",
+      "category": "TRANSPARENCY",
+      "roles": ["DEPLOYER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-IMP",
+      "title": "Obligations de l’importateur",
+      "description": "Vérifier, avant la mise sur le marché, la conformité du système (évaluation de conformité, documentation, marquage CE, mandataire).",
+      "legalBasis": "Art. 23",
+      "category": "OTHER",
+      "roles": ["IMPORTER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-DIST",
+      "title": "Obligations du distributeur",
+      "description": "Vérifier, avant la mise à disposition, la présence du marquage CE, de la déclaration de conformité et de la notice d’utilisation.",
+      "legalBasis": "Art. 24",
+      "category": "OTHER",
+      "roles": ["DISTRIBUTOR"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-DEROG-DOC",
+      "title": "Documentation et enregistrement de la dérogation de l’art. 6(3)",
+      "description": "Documenter l’évaluation concluant que le système n’est pas à haut risque avant sa mise sur le marché ou en service, et enregistrer le système. Validation juridique requise.",
+      "legalBasis": "Art. 6(4), art. 49(2)",
+      "category": "DOCUMENTATION",
+      "roles": ["PROVIDER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-T-50-1",
+      "title": "Information sur l’interaction avec une IA",
+      "description": "Concevoir le système de sorte que les personnes soient informées qu’elles interagissent avec un système d’IA, sauf si cela ressort clairement du contexte.",
+      "legalBasis": "Art. 50(1)",
+      "category": "TRANSPARENCY",
+      "roles": ["PROVIDER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-T-50-2",
+      "title": "Marquage des contenus de synthèse",
+      "description": "Marquer les sorties (audio, image, vidéo, texte) dans un format lisible par machine et identifiable comme généré ou manipulé artificiellement.",
+      "legalBasis": "Art. 50(2)",
+      "category": "TRANSPARENCY",
+      "roles": ["PROVIDER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-T-50-3",
+      "title": "Information des personnes exposées (émotions / biométrie)",
+      "description": "Informer les personnes exposées du fonctionnement du système de reconnaissance des émotions ou de catégorisation biométrique, et traiter les données conformément au RGPD.",
+      "legalBasis": "Art. 50(3)",
+      "category": "TRANSPARENCY",
+      "roles": ["DEPLOYER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-T-50-4A",
+      "title": "Signalement des hypertrucages",
+      "description": "Indiquer que le contenu (image, audio, vidéo) a été généré ou manipulé artificiellement.",
+      "legalBasis": "Art. 50(4), premier alinéa",
+      "category": "TRANSPARENCY",
+      "roles": ["DEPLOYER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-T-50-4B",
+      "title": "Signalement des textes générés d’intérêt public",
+      "description": "Indiquer que le texte publié pour informer le public sur des questions d’intérêt public a été généré ou manipulé artificiellement, sauf examen humain et responsabilité éditoriale.",
+      "legalBasis": "Art. 50(4), second alinéa",
+      "category": "TRANSPARENCY",
+      "roles": ["DEPLOYER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-GPAI-DOWNSTREAM",
+      "title": "Exploitation de la documentation du fournisseur du modèle GPAI",
+      "description": "Obtenir et conserver les informations et la documentation mises à disposition par le fournisseur du modèle d’IA à usage général, et les exploiter pour la conformité du système. Validation juridique requise.",
+      "legalBasis": "Art. 53(1)(b)",
+      "category": "GPAI",
+      "roles": ["PROVIDER"],
+      "effectiveFrom": "2025-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-GPAI-PRV",
+      "title": "Obligations du fournisseur de modèle d’IA à usage général",
+      "description": "Documentation technique du modèle, informations aux fournisseurs en aval, politique de respect du droit d’auteur, résumé des contenus d’entraînement ; obligations renforcées en cas de risque systémique (art. 55).",
+      "legalBasis": "Art. 53, art. 55",
+      "category": "GPAI",
+      "roles": ["ANY"],
+      "effectiveFrom": "2025-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    },
+    {
+      "key": "AIA-OBL-FRIA",
+      "title": "Analyse d’impact sur les droits fondamentaux (FRIA)",
+      "description": "Réaliser, avant la première utilisation, une analyse d’impact sur les droits fondamentaux (art. 27(1) a à f), notifier ses résultats à l’autorité de surveillance du marché et la tenir à jour ; réutiliser l’AIPD existante le cas échéant (art. 27(4)).",
+      "legalBasis": "Art. 27",
+      "category": "FRIA",
+      "roles": ["DEPLOYER"],
+      "effectiveFrom": "2026-08-02",
+      "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    }
+  ]
+}

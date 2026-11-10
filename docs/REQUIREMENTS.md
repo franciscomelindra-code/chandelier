@@ -10,14 +10,14 @@ Slice = tranche verticale du plan (`IMPLEMENTATION_PLAN.md`). Le statut est tenu
 | ID | Réf. CDC | Exigence | Slice | Critère d'acceptation | Statut |
 |---|---|---|---|---|---|
 | F-001 | §2.1, §5.2 | Registre central des SIA persisté en BDD | S2 | Un SIA créé via l'UI est relu après redémarrage des conteneurs | Fait (S2) — persistance après redémarrage Docker à valider |
-| F-002 | §5.2 | Champs minimum du registre (UUID, référence, nom, description, finalité, unité, propriétaire, resp. métier, statut 9 valeurs, dates, fournisseurs, rôles AI Act, niveau de risque, justification, valeur, tags, prochaine revue, complétude, conformité) | S2/S3 | Chaque champ est saisissable, persisté, visible dans la fiche | Partiel (S4) — tous les champs saisissables sauf niveau de risque (S5) et conformité globale (S5) |
+| F-002 | §5.2 | Champs minimum du registre (UUID, référence, nom, description, finalité, unité, propriétaire, resp. métier, statut 9 valeurs, dates, fournisseurs, rôles AI Act, niveau de risque, justification, valeur, tags, prochaine revue, complétude, conformité) | S2/S3 | Chaque champ est saisissable, persisté, visible dans la fiche | Fait (S5) — tous les champs du registre sont alimentés (risque et conformité par la qualification) |
 | F-003 | §5.2 | Vue table + vue cartes, tri, filtres combinés, recherche plein texte, pagination serveur | S2 | Filtres reflétés dans l'URL ; pagination côté API (`page`, `pageSize`, `total`) | Fait (S2) |
 | F-004 | §5.2, §5.14 | Colonnes personnalisables, vues sauvegardées personnelles et partagées | S2 | Une vue sauvegardée restaure filtres + colonnes | Fait (S2) |
 | F-005 | §5.2 | Actions de masse : assigner propriétaire, unité, tags, statut, lancer revue, exporter, archiver | S2/S7 | Opération transactionnelle, journalisée par objet, refusée si droit manquant sur un seul objet | Partiel (S2) — tout sauf « lancer revue » (S7) |
 | F-006 | §5.3 | Création : fiche vierge | S2 | — | Fait (S2) |
 | F-007 | §5.3 | Création : à partir d'un modèle interne (gabarit) | S3 | Gabarit administrable ; la copie ne reprend ni historique ni validations | Fait (S3) |
 | F-008 | §5.3, §10 | Création : assistant IA, préremplissage sourcé, statut « À vérifier » | S10 | Aucune valeur IA n'est écrite dans les champs validés sans action humaine | À faire |
-| F-009 | §5.3 | Wizard 12 sections (Général → Récapitulatif) avec sauvegarde progressive | S3 | Chaque section s'enregistre indépendamment ; quitter puis revenir conserve la saisie | Fait (S3/S4) — étapes 9 et 11 renvoient à S5 et S7 |
+| F-009 | §5.3 | Wizard 12 sections (Général → Récapitulatif) avec sauvegarde progressive | S3 | Chaque section s'enregistre indépendamment ; quitter puis revenir conserve la saisie | Fait (S3–S5) — étape 11 renvoie à S7 |
 | F-010 | §5.3 ét.2 | Responsabilités : propriétaire, sponsor, resp. métier, DSI, RSSI, DPO/juridique, fournisseur, intégrateur, rôles AI Act, RACI facultatif | S3 | — | Fait (S3) |
 | F-011 | §5.3 ét.3, §5.7 | Liaison N-N SIA ↔ modèles avec « description de l'utilisation » propre à la relation | S4 | Un modèle lié à 2 SIA affiche 2 descriptions distinctes | Fait (S4) |
 | F-012 | §5.3 ét.4 | Parties prenantes internes/externes | S3 | — | Fait (S3) |
@@ -28,16 +28,16 @@ Slice = tranche verticale du plan (`IMPLEMENTATION_PLAN.md`). Le statut est tenu
 | F-017 | §5.3 ét.10 | Valeur ajoutée Faible/Moyen/Élevé + bénéfices, KPI, gains | S3 | — | Fait (S3) — matrice de portefeuille en S8 |
 | F-018 | §5.3 ét.11 | Documentation rattachée à la fiche | S7 | — | À faire |
 | F-019 | §5.3 ét.12 | Récapitulatif consolidé imprimable | S3/S7 | Impression navigateur propre (CSS print) | Fait (S3) — récapitulatif imprimable ; obligations/documents/validations après S5/S7 |
-| F-020 | §5.4 | Questionnaire décisionnel AI Act versionné | S5 | Le référentiel est une donnée (JSON importé en BDD), pas du code d'écran | À faire |
-| F-021 | §5.4.1 | Définition de SIA (art. 3(1)) et exclusions (art. 2) | S5 | — | À faire |
-| F-022 | §5.4.2 | Pratiques interdites (art. 5) | S5 | Toute réponse « Oui » produit « Potentiellement interdit — validation juridique requise » | À faire |
-| F-023 | §5.4.3 | Haut risque (art. 6(1), 6(2), annexe III, dérogation 6(3), profilage) | S5 | — | À faire |
-| F-024 | §5.4.4 | Transparence (art. 50) | S5 | Dimension distincte du niveau de risque | À faire |
-| F-025 | §5.4.5 | Rôle de l'organisation (fournisseur, déployeur, importateur, distributeur, mandataire, fabricant de produit ; requalification art. 25) | S5 | — | À faire |
-| F-026 | §5.4.6, §3.3 | Résultat explicable : résultat, justification, règles déclenchées, fondement, réponses, informations manquantes, version, date, auteur | S5 | Chaque conclusion affiche ces 9 éléments | À faire |
-| F-027 | §5.4.9 | Surcharge juriste avec justification obligatoire + historique | S5 | Surcharge sans justification refusée par l'API (400) ; surcharge visible dans l'historique | À faire |
-| F-028 | §5.4 | Catégories d'affichage Minimal / Transparence / Haut risque / Interdit / À déterminer (+ Hors champ) distinctes du raisonnement | S5 | — | À faire |
-| F-029 | §5.5 | Checklist d'obligations générée depuis la classification (article, description, applicable Oui/Non/À confirmer, responsable, statut, preuve, date cible, date de validation, commentaire) | S5 | Régénération idempotente, sans perte des statuts déjà saisis | À faire |
+| F-020 | §5.4 | Questionnaire décisionnel AI Act versionné | S5 | Le référentiel est une donnée (JSON importé en BDD), pas du code d'écran | Fait (S5) |
+| F-021 | §5.4.1 | Définition de SIA (art. 3(1)) et exclusions (art. 2) | S5 | — | Fait (S5) |
+| F-022 | §5.4.2 | Pratiques interdites (art. 5) | S5 | Toute réponse « Oui » produit « Potentiellement interdit — validation juridique requise » | Fait (S5) |
+| F-023 | §5.4.3 | Haut risque (art. 6(1), 6(2), annexe III, dérogation 6(3), profilage) | S5 | — | Fait (S5) |
+| F-024 | §5.4.4 | Transparence (art. 50) | S5 | Dimension distincte du niveau de risque | Fait (S5) |
+| F-025 | §5.4.5 | Rôle de l'organisation (fournisseur, déployeur, importateur, distributeur, mandataire, fabricant de produit ; requalification art. 25) | S5 | — | Fait (S5) |
+| F-026 | §5.4.6, §3.3 | Résultat explicable : résultat, justification, règles déclenchées, fondement, réponses, informations manquantes, version, date, auteur | S5 | Chaque conclusion affiche ces 9 éléments | Fait (S5) |
+| F-027 | §5.4.9 | Surcharge juriste avec justification obligatoire + historique | S5 | Surcharge sans justification refusée par l'API (400) ; surcharge visible dans l'historique | Fait (S5) |
+| F-028 | §5.4 | Catégories d'affichage Minimal / Transparence / Haut risque / Interdit / À déterminer (+ Hors champ) distinctes du raisonnement | S5 | — | Fait (S5) |
+| F-029 | §5.5 | Checklist d'obligations générée depuis la classification (article, description, applicable Oui/Non/À confirmer, responsable, statut, preuve, date cible, date de validation, commentaire) | S5 | Régénération idempotente, sans perte des statuts déjà saisis | Fait (S5) |
 | F-030 | §5.6 | FRIA liée au SIA, sections art. 27, conclusion, validation, versions | S9 | — | À faire |
 | F-031 | §5.6 | Réutilisation d'une DPIA/AIPD sans double saisie, périmètre couvert | S9 | — | À faire |
 | F-032 | §5.7 | Référentiel modèles (nom, fournisseur, famille, version, type, capacités, limites, accès, hébergement, zones, URL, date de connaissance, statut, GPAI, licence, pièces) | S4 | — | Partiel (S4) — pièces justificatives du modèle en S7 ; préremplissage IA en S10 |
@@ -85,7 +85,7 @@ Slice = tranche verticale du plan (`IMPLEMENTATION_PLAN.md`). Le statut est tenu
 | N-001 | §8 | React + TS, Node TS, PostgreSQL, Prisma, Tailwind, REST + OpenAPI | S1 | Fait (S1) |
 | N-002 | §6 | `id`, `createdAt`, `createdById`, `updatedAt`, `updatedById` sur chaque entité ; objets sensibles versionnés | S1 | Fait (S1) |
 | N-003 | §15 | TypeScript strict, lint/format, migrations, `.env.example`, index BDD, transactions | S1 | Fait (S1) |
-| N-004 | §15 | Couverture des règles critiques (moteur AI Act, RBAC, scoring) | S1, S5, S6 | Partiel (S1) |
+| N-004 | §15 | Couverture des règles critiques (moteur AI Act, RBAC, scoring) | S1, S5, S6 | Fait (S5) — moteur AI Act : chaque règle testée ; RBAC ; complétude |
 | N-005 | §7 | WCAG 2.1 AA, responsive desktop/tablette | S1→ | Partiel (S1) |
 | N-006 | §9 | Sécurité (voir `SECURITY.md`) : OIDC-ready, MFA via IdP, CSRF/XSS/SQLi/SSRF, CSP, validation serveur, upload contrôlé, sessions, secrets, pas de télémétrie | S1→ | Partiel (S1) |
 | N-007 | §8, ajout 3 | Docker multi-stage, non-root, healthchecks, arm64 + amd64 | S1 | Écrit, non exécuté localement (pas de Docker) — vérifié par CI |

@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { errorMessage, post } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth';
+import { AssessmentPanel } from '../../assessments/AssessmentPanel';
 import clsx from 'clsx';
 import {
   AI_ACT_ROLES,
@@ -453,18 +454,7 @@ export function SubjectsStep({ s, editable, reload }: StepProps) {
 }
 
 export function ClassificationStep({ s }: StepProps) {
-  return (
-    <Planned title="9. Classification AI Act" slice="S5 (moteur réglementaire)">
-      <p>
-        Situation actuelle : <RiskBadge value={s.riskCategory} /> — rôles déclarés : {rolesLabel(s.aiActRoles)}.
-      </p>
-      <p className="mt-2">
-        Le questionnaire décisionnel versionné (définition, rôle, pratiques interdites, haut risque, transparence, GPAI,
-        FRIA) produira un résultat explicable et les obligations applicables. Aucun niveau n’est attribué arbitrairement
-        d’ici là.
-      </p>
-    </Planned>
-  );
+  return <AssessmentPanel s={s} />;
 }
 
 // ── 10. Valeur ajoutée ──────────────────────────────────────────────────────

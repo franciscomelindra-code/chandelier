@@ -37,6 +37,7 @@ import {
   TextField,
 } from '../../components/ui';
 import { TRI_OPTIONS, TextArea, triLabel } from '../ai-systems/wizard/form';
+import { FrameworkView } from '../assessments/FrameworkView';
 
 // ── Formulaire générique piloté par une description de champs ──────────────
 export type FieldDef =
@@ -654,16 +655,7 @@ const TABS = [
   ['jeux-de-donnees', 'Jeux de données', <DatasetsPanel key="d" />],
   ['categories', 'Catégories RGPD', <CategoriesPanel key="c" />],
   ['gabarits', 'Gabarits', <TemplatesPanel key="g" />],
-  [
-    'ai-act',
-    'Référentiel AI Act',
-    <Card key="r">
-      <Alert tone="gray" title="Fonctionnalité non implémentée">
-        Le référentiel réglementaire versionné (questions, règles, obligations) sera livré avec le moteur AI Act
-        (tranche S5). Sa conception est décrite dans docs/AI_ACT_RULES.md.
-      </Alert>
-    </Card>,
-  ],
+  ['ai-act', 'Référentiel AI Act', <FrameworkView key="r" />],
 ] as const;
 
 export function ReferentialsPage() {

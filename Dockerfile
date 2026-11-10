@@ -51,6 +51,9 @@ COPY --from=prod-deps --chown=root:root /app/node_modules ./node_modules
 COPY --from=prod-deps --chown=root:root /app/prisma ./prisma
 COPY --from=build --chown=root:root /app/apps/api/dist ./dist
 COPY --chown=root:root package.json ./
+# Référentiels réglementaires versionnés (données, importées au démarrage avec contrôle d'empreinte).
+COPY --chown=root:root referentials ./referentials
+ENV REFERENTIALS_DIR=/app/referentials
 COPY --chown=root:root docker/api-entrypoint.sh /usr/local/bin/api-entrypoint.sh
 RUN chmod 0755 /usr/local/bin/api-entrypoint.sh
 USER node

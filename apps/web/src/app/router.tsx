@@ -14,6 +14,7 @@ import { RegistryPage } from '../features/ai-systems/RegistryPage';
 import { SystemPage } from '../features/ai-systems/SystemPage';
 import { ReferentialsPage } from '../features/referentials/ReferentialsPage';
 import { ModelPage, ModelsPage } from '../features/models/ModelsPage';
+import { EvaluationsPage } from '../features/assessments/EvaluationsPage';
 
 function RequireAuth() {
   const { me, loading } = useAuth();
@@ -53,14 +54,7 @@ export const router = createBrowserRouter([
           { path: '/systemes/:id', element: <SystemPage /> },
           { path: '/modeles', element: <ModelsPage /> },
           { path: '/modeles/:id', element: <ModelPage /> },
-          {
-            path: '/evaluations',
-            element: planned('Évaluations', 'S5', [
-              'Questionnaire AI Act versionné (définition, rôles, art. 5, art. 6 / annexe III, art. 50, FRIA)',
-              'Résultat explicable, surcharge juriste motivée et historisée',
-              'Génération des obligations applicables',
-            ]),
-          },
+          { path: '/evaluations', element: <EvaluationsPage /> },
           {
             path: '/risques',
             element: planned('Risques', 'S6', [

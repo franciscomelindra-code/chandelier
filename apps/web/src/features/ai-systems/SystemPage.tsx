@@ -25,7 +25,7 @@ import {
 } from './wizard/steps';
 
 /** Étapes dont le contenu dépend d'une tranche ultérieure. */
-const PLANNED: Partial<Record<SectionKey, string>> = { classification: 'S5', documentation: 'S7' };
+const PLANNED: Partial<Record<SectionKey, string>> = { documentation: 'S7' };
 
 const STEP_COMPONENTS: Record<SectionKey, ComponentType<StepProps>> = {
   general: GeneralStep,

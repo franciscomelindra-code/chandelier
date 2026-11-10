@@ -2,7 +2,7 @@
 
 Application de gouvernance et de pilotage des systèmes d'intelligence artificielle (SIA) de GLS France : registre, référentiel des modèles, qualification AI Act (règlement (UE) 2024/1689), risques, FRIA, articulation RGPD, preuves et traçabilité.
 
-> **État : tranches S1 (socle), S2 (registre des SIA), S3 (fiche en 12 étapes, référentiels) et S4 (modèles d'IA, fournisseurs) livrées.** Authentification, utilisateurs, unités organisationnelles, RBAC avec périmètres, journal d'audit immuable, registre des SIA (recherche plein texte, filtres, vues, actions de masse, export, archivage motivé), API OpenAPI, Docker et CI. Les modules métier (registre, qualification, risques…) arrivent par tranches : voir [Fonctionnalités](#fonctionnalités) et [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md). Les écrans non livrés affichent « Fonctionnalité non implémentée ».
+> **État : tranches S1 (socle), S2 (registre des SIA), S3 (fiche en 12 étapes, référentiels) S4 (modèles d'IA, fournisseurs) et S5 (moteur de qualification AI Act) livrées.** Authentification, utilisateurs, unités organisationnelles, RBAC avec périmètres, journal d'audit immuable, registre des SIA (recherche plein texte, filtres, vues, actions de masse, export, archivage motivé), API OpenAPI, Docker et CI. Les modules métier (registre, qualification, risques…) arrivent par tranches : voir [Fonctionnalités](#fonctionnalités) et [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md). Les écrans non livrés affichent « Fonctionnalité non implémentée ».
 
 Le dépôt ne contient **aucune donnée réelle de GLS France** ni aucun secret. Le seul jeu de données facultatif est marqué `[DEMO]`.
 
@@ -150,9 +150,15 @@ docs            Architecture, données, AI Act, sécurité, déploiement…
 - Lien SIA ↔ modèle avec description de l'utilisation propre à chaque lien, version, hébergement, modèle principal.
 - Fournisseurs, intégrateurs et hébergeurs d'un SIA ; filtres du registre par fournisseur et par modèle.
 
+### Implémentées et testées (S5)
+
+- Référentiel AI Act versionné en données (projet v1.0.0, **validation juridique requise**) et moteur de qualification explicable, testé règle par règle.
+- Questionnaire décisionnel avec enregistrement progressif et aperçu en direct ; résultat par dimension (champ, rôles, interdictions, haut risque, transparence, GPAI, FRIA) avec règles, articles et réponses déterminantes.
+- Surcharge juriste motivée et immuable ; validation selon le principe des quatre yeux ; obligations générées et suivies ; conformité globale.
+
 ### Restant à développer
 
-Voir [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) (statut par exigence) : modèles et fournisseurs (S4), moteur AI Act (S5), risques et actions (S6), documents, versions et validations (S7), tableau de bord (S8), FRIA/DPIA/notices (S9), assistant IA, import/export, rapports, Entra ID (S10), Trust Center et intégrations Microsoft 365 (phase 3).
+Voir [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) (statut par exigence) : risques et actions (S6), documents, versions et validations (S7), tableau de bord (S8), FRIA/DPIA/notices (S9), assistant IA, import/export, rapports, Entra ID (S10), Trust Center et intégrations Microsoft 365 (phase 3).
 
 ## Licence
 

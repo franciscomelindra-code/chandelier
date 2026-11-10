@@ -27,6 +27,7 @@ import { aiSystemRoutes } from './modules/ai-systems/routes.js';
 import { savedViewRoutes, tagRoutes } from './modules/tags.js';
 import { aiSystemLinkRoutes } from './modules/ai-systems/links.js';
 import { catalogRoutes } from './modules/catalog.js';
+import { assessmentRoutes } from './modules/assessments.js';
 
 export interface AppDeps {
   config: AppConfig;
@@ -178,6 +179,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
       await v1.register(aiSystemRoutes, { prefix: '/ai-systems' });
       await v1.register(aiSystemLinkRoutes, { prefix: '/ai-systems' });
       await v1.register(catalogRoutes);
+      await v1.register(assessmentRoutes);
       await v1.register(tagRoutes, { prefix: '/tags' });
       await v1.register(savedViewRoutes, { prefix: '/saved-views' });
     },

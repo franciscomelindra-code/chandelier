@@ -2,6 +2,17 @@
 
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versionnement sémantique.
 
+## [0.5.0] — 2026-11-10 — Slice S5 : moteur de qualification AI Act
+
+### Ajouté
+- Référentiel réglementaire v1.0.0 en données (projet à valider par la Direction juridique) : 39 questions, 49 règles avec article, date d’application et explication, 35 modèles d’obligations.
+- Moteur pur et déterministe partagé serveur / interface : dimensions séparées (champ, rôles, interdictions, haut risque, transparence, GPAI, FRIA), catégorie d’affichage dérivée, informations manquantes, obligations filtrées par rôle et datées.
+- Import au démarrage avec empreinte SHA-256 ; une version importée est immuable.
+- Qualification : brouillon avec enregistrement progressif et aperçu en direct, propositions issues de la fiche à confirmer, calcul enregistré (version, date, auteur, règles, réponses), réévaluation, surcharge juriste motivée et immuable, validation selon le principe des quatre yeux.
+- Obligations par SIA, générées de façon idempotente ; suivi (applicabilité, statut, responsable, échéance, commentaire) ; conformité globale dérivée.
+- Pages « Évaluations » (portefeuille) et « Référentiels › Référentiel AI Act » (consultation des questions, règles et obligations).
+- 33 tests du moteur (couverture de toutes les règles) et 11 tests d’intégration (124 tests au total).
+
 ## [0.4.0] — 2026-11-10 — Slice S4 : modèles d’IA et fournisseurs
 
 ### Ajouté

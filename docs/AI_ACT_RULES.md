@@ -155,6 +155,29 @@ Chaque obligation générée porte la clé, le fondement, la version du référe
 | 2 août 2026 | Application générale (dont annexe III et art. 50) |
 | 2 août 2027 | Art. 6(1) (produits annexe I) |
 
-## 7. Tests
+## 7. Implémentation (S5)
 
-Chaque règle a au moins un test positif et un test négatif ; les cas limites (dérogation + profilage, réponses inconnues, rôle multiple) sont couverts. Fichier : `packages/shared/src/ai-act/engine.test.ts` (S5).
+| Élément | Emplacement |
+|---|---|
+| Référentiel v1.0.0 (39 questions, 49 règles, 35 modèles d'obligations, 12 définitions réutilisables) | `referentials/ai-act/eu-ai-act-2024-1689.v1.0.0.json` |
+| Schéma du référentiel et contrôles de cohérence (questions, définitions, valeurs, obligations référencées) | `packages/shared/src/ai-act/types.ts`, `validateFramework()` |
+| Moteur pur `evaluate()`, catégorie d'affichage, surcharges `applyOverrides()` | `packages/shared/src/ai-act/engine.ts` (même code côté serveur et pour l'aperçu en direct de l'interface) |
+| Import au démarrage, empreinte SHA-256, immuabilité des versions | `apps/api/src/referentials/loader.ts` |
+| Évaluations, surcharges, validation, obligations | `apps/api/src/modules/assessments.ts` |
+
+Règles de fonctionnement retenues :
+
+- **Brouillon unique** par SIA ; une réévaluation reprend les réponses de la qualification courante. L'enregistrement remplace (statut « remplacée ») la qualification précédente, sans la supprimer.
+- **Questions masquées** : leurs réponses éventuelles sont écartées du calcul et signalées dans le journal (`ignoredAnswers`).
+- **Préremplissage** depuis la fiche (données personnelles, rôle déclaré, modèles GPAI) : uniquement sous forme de **proposition** à appliquer explicitement.
+- **Précédence** dans chaque dimension (ex. haut risque : `HIGH_RISK` › `UNDETERMINED` › `NOT_HIGH_RISK_DEROGATION` › `NOT_IDENTIFIED`) ; rôles et GPAI sont cumulatifs.
+- **Hors champ** : les autres dimensions passent à « sans objet » et aucune obligation n'est générée.
+- **Obligations filtrées par rôle** (`roles` du modèle) ; si aucun rôle n'est établi, elles sont créées « à confirmer ». Date d'application = la plus tardive entre la règle et le modèle ; « à venir » si postérieure à la date d'évaluation.
+- **Génération idempotente** : statut, responsable et preuves conservés ; une obligation qui n'est plus déclenchée passe « à confirmer » avec un commentaire système (jamais supprimée). L'applicabilité saisie par un utilisateur est conservée.
+- **Surcharges** (`assessment:override`, DPO / juridique) : dimensions `displayCategory`, `scope`, `prohibited`, `highRisk`, `transparency`, `fria` ; justification ≥ 20 caractères ; table immuable (trigger) ; le résultat calculé reste affiché à côté du résultat effectif ; une surcharge invalide la validation. Les obligations ne sont pas recalculées par une surcharge : l'applicabilité se corrige obligation par obligation, avec commentaire obligatoire pour « non applicable ».
+- **Validation** (`assessment:validate`) selon le **principe des quatre yeux** : le validateur doit être différent de l'auteur du calcul.
+- **Conformité globale du SIA** dérivée des obligations applicables : non évaluée (aucune obligation), non conforme (au moins une), conforme (toutes), sinon partielle.
+
+## 8. Tests
+
+`packages/shared/src/ai-act/engine.test.ts` : schéma et cohérence du référentiel ; **chaque règle est déclenchée par au moins un scénario** (test de couverture) ; cas positifs et négatifs par dimension ; cas limites (dérogation + profilage, réponses inconnues, questions masquées, requalification art. 25, rôle indéterminé, coexistence transparence / haut risque, FRIA en infrastructure critique, dates d'application). `apps/api/test/assessments.test.ts` : import immuable, brouillon, calcul, obligations idempotentes, surcharges, quatre yeux, droits.

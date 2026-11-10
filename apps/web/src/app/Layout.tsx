@@ -14,7 +14,7 @@ export const NAV: NavItem[] = [
   { to: '/tableau-de-bord', label: 'Tableau de bord', live: false },
   { to: '/systemes', label: 'Systèmes d’IA', permission: 'aiSystem:read', live: true },
   { to: '/modeles', label: 'Modèles d’IA', permission: 'aiSystem:read', live: true },
-  { to: '/evaluations', label: 'Évaluations', permission: 'aiSystem:read', live: false },
+  { to: '/evaluations', label: 'Évaluations', permission: 'aiSystem:read', live: true },
   { to: '/risques', label: 'Risques', permission: 'aiSystem:read', live: false },
   { to: '/actions', label: 'Actions', permission: 'aiSystem:read', live: false },
   { to: '/documentation', label: 'Documentation', permission: 'aiSystem:read', live: false },

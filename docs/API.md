@@ -70,4 +70,19 @@ Référentiels (lecture : session ; écriture : `catalog:manage` ; suppression r
 | POST / DELETE | `/api/v1/ai-systems/:id/vendors[/:vendorId/:relation]` | section `responsibility` |
 | GET | `/api/v1/ai-systems?vendorId=…&modelId=…` | `vendorId` couvre le fournisseur déclaré **et** l’éditeur d’un modèle utilisé |
 
+## Routes livrées (S5 — qualification AI Act)
+
+| Méthode | Route | Contrôle |
+|---|---|---|
+| GET | `/api/v1/regulatory-frameworks[/:id]` | `aiSystem:read` ; contenu complet d’une version |
+| GET | `/api/v1/assessments?status=NONE\|DRAFT\|COMPLETED\|VALIDATED` | portefeuille du périmètre |
+| GET | `/api/v1/ai-systems/:id/assessments[/:aid]` | détail : réponses, `computedResult`, `effectiveResult`, surcharges, `preview` (brouillon), `suggestions` |
+| POST | `/api/v1/ai-systems/:id/assessments` | `assessment:run` (qualificatif `own`) ; un seul brouillon (409) |
+| PATCH | `/api/v1/ai-systems/:id/assessments/:aid` | brouillon uniquement ; réponses validées contre le référentiel ; `null` efface |
+| POST | `…/:aid/complete` | calcul, remplacement de la qualification précédente, mise à jour du SIA, obligations |
+| POST | `…/:aid/overrides` | `assessment:override` ; `{ dimension, value, justification ≥ 20 }` |
+| POST | `…/:aid/validate` | `assessment:validate` ; validateur ≠ auteur du calcul (403) |
+| GET | `/api/v1/ai-systems/:id/obligations` | liste + `canUpdate` + `complianceStatus` |
+| PATCH | `/api/v1/obligations/:id` | `obligation:update` (qualificatif `own`) ; commentaire requis si non applicable |
+
 Webhooks et intégrations Microsoft 365 : non implémentés (phase 3).

@@ -6,6 +6,7 @@ import type { RoleKey } from '@chandelier/shared';
 import { buildApp } from '../src/app.js';
 import { loadConfig } from '../src/config.js';
 import { seedBase } from '../src/seed/base.js';
+import { importFrameworks } from '../src/referentials/loader.js';
 import { hashPassword } from '../src/auth/password.js';
 
 const envFile = resolve(import.meta.dirname, '../../../.env');
@@ -32,6 +33,7 @@ export async function setupApp(): Promise<TestCtx> {
   });
   const prisma = new PrismaClient({ datasources: { db: { url } } });
   await seedBase(prisma);
+  await importFrameworks(prisma);
   const app = await buildApp({ config, prisma });
   await app.ready();
   return {
