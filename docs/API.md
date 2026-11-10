@@ -85,4 +85,25 @@ Référentiels (lecture : session ; écriture : `catalog:manage` ; suppression r
 | GET | `/api/v1/ai-systems/:id/obligations` | liste + `canUpdate` + `complianceStatus` |
 | PATCH | `/api/v1/obligations/:id` | `obligation:update` (qualificatif `own`) ; commentaire requis si non applicable |
 
+## Routes livrées (S6 — risques, mesures, plans d’action)
+
+| Méthode | Route | Contrôle |
+|---|---|---|
+| GET | `/api/v1/risk-methodologies` | `aiSystem:read` ; versions, configuration, nombre de risques cotés |
+| POST | `/api/v1/risk-methodologies` | `settings:manage` ; nouvelle version **inactive**, configuration validée (échelles 2–10 niveaux contiguës, seuils croissants) |
+| PATCH | `/api/v1/risk-methodologies/:id` | `settings:manage` ; uniquement une version jamais activée et non utilisée (409 sinon) |
+| POST | `/api/v1/risk-methodologies/:id/activate` | `settings:manage` ; motif ≥ 10 ; les risques existants gardent leur version |
+| GET | `/api/v1/risks?q&category&status&level&warning&cell&includeClosed&demo&sort&dir&page&pageSize` | portefeuille du périmètre (SIA non archivés) + `heatmap`, `levelCounts`, méthodologie active ; filtrage par niveau après calcul (plafond 5 000, signalé par `truncated`) |
+| GET / POST | `/api/v1/ai-systems/:id/risks` | lecture ; création `risk:manage` (qualificatif `own`), méthodologie active, référence `RSK-####` |
+| GET | `/api/v1/risks/:id`, `/api/v1/risks/:id/history` | 404 hors périmètre ; historique = journal d’audit du risque |
+| PATCH | `/api/v1/risks/:id` | `risk:manage` ; `version` (verrou optimiste, 409) ; règles : cotation dans l’échelle, résiduel ≤ inhérent, acceptation motivée (≥ 20) et réservée à `assessment:validate` pour le niveau le plus élevé, clôture refusée si action liée ouverte (409) |
+| POST | `/api/v1/risks/:id/rescore` | passage à la méthodologie active ; motif ≥ 10 ; invalide une acceptation antérieure |
+| GET / POST | `/api/v1/ai-systems/:id/measures` | mesures du SIA ; création avec rattachement optionnel `riskId` |
+| PATCH | `/api/v1/measures/:id` | `risk:manage` |
+| POST / DELETE | `/api/v1/risks/:id/measures[/:measureId]` | rattacher / détacher une mesure **du même SIA** |
+| GET | `/api/v1/actions?q&aiSystemId&riskId&obligationId&status&priority&assigneeId&mine&overdue&demo&sort&dir&page&pageSize` | actions du périmètre + `overdueCount` ; droits par ligne |
+| GET | `/api/v1/ai-systems/:id/actions`, `/api/v1/actions/:id` | lecture |
+| POST | `/api/v1/actions` | `action:manage` (qualificatif `own`) ; `aiSystemId` obligatoire ; risque / obligation / mesure du même SIA (400 sinon) ; référence `ACT-####` |
+| PATCH | `/api/v1/actions/:id` | `action:manage`, ou responsable de l’action limité à `status` / `closureComment` ; annulation motivée |
+
 Webhooks et intégrations Microsoft 365 : non implémentés (phase 3).

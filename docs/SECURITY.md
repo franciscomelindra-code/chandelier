@@ -66,6 +66,13 @@ Permissions qualifiées : `:own` = uniquement les SIA dont l'utilisateur est pro
 
 La matrice exécutable est `packages/shared/src/permissions.ts` ; ce tableau en est la documentation et un test vérifie leur cohérence sur les points critiques.
 
+Règles complémentaires (S6), vérifiées côté serveur et couvertes par des tests d’intégration :
+
+- **Acceptation d’un risque** du niveau le plus élevé de la méthodologie : `risk:manage` **et** `assessment:validate` (DPO, LEGAL, AI_GOVERNANCE, SUPER_ADMIN) ; justification de 20 caractères minimum, auteur et date conservés.
+- **Responsable d’une action** : peut en modifier le statut (et le motif de clôture) sans `action:manage` ; toute autre modification lui est refusée (403).
+- **Liens** risque ↔ mesure et action ↔ risque / obligation / mesure : uniquement au sein du même SIA (400), ce qui empêche de lier un objet hors périmètre.
+- **Méthodologie de cotation** : création et activation réservées à `settings:manage` ; une version utilisée n’est plus modifiable.
+
 ## 4. Points de vigilance connus
 
 - Le mode `AUTH_MODE=oidc` n'est pas encore implémenté (S10/phase 3) : la valeur est refusée au démarrage avec un message explicite.

@@ -13,7 +13,8 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       '@typescript-eslint/consistent-type-imports': 'error',
       'no-console': ['error', { allow: ['warn', 'error', 'log'] }],
-      eqeqeq: ['error', 'always'],
+      // `x == null` reste admis : test simultané de null et undefined.
+      eqeqeq: ['error', 'always', { null: 'ignore' }],
       'no-eval': 'error',
       'no-implied-eval': 'error',
     },

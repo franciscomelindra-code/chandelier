@@ -8,8 +8,20 @@ import type { AiSystemDetail } from '../../lib/types';
 import { Alert, Badge, Button, Card, EmptyState, SelectField, Spinner, TextField } from '../../components/ui';
 import { ComplianceBadge } from '../ai-systems/badges';
 import type { ObligationView } from './types';
+import { NewActionModal } from '../actions/ActionForm';
 
-function ObligationRow({ o, editable, systemId }: { o: ObligationView; editable: boolean; systemId: string }) {
+function ObligationRow({
+  o,
+  editable,
+  canAct,
+  systemId,
+}: {
+  o: ObligationView;
+  editable: boolean;
+  canAct: boolean;
+  systemId: string;
+}) {
+  const [actionOpen, setActionOpen] = useState(false);
   const qc = useQueryClient();
   const users = useActiveUsers();
   const [open, setOpen] = useState(false);
@@ -70,10 +82,26 @@ function ObligationRow({ o, editable, systemId }: { o: ObligationView; editable:
           </p>
           {o.comment && <p className="mt-1 whitespace-pre-line text-xs text-grey-700">{o.comment}</p>}
         </div>
-        {editable && (
-          <Button size="sm" variant="ghost" onClick={() => setOpen(!open)}>
-            {open ? 'Fermer' : 'Mettre à jour'}
-          </Button>
+        <div className="flex gap-1">
+          {canAct && (
+            <Button size="sm" variant="ghost" onClick={() => setActionOpen(true)}>
+              Créer une action
+            </Button>
+          )}
+          {editable && (
+            <Button size="sm" variant="ghost" onClick={() => setOpen(!open)}>
+              {open ? 'Fermer' : 'Mettre à jour'}
+            </Button>
+          )}
+        </div>
+        {actionOpen && (
+          <NewActionModal
+            open
+            onClose={() => setActionOpen(false)}
+            aiSystemId={systemId}
+            preset={{ obligationId: o.id, title: o.title }}
+            obligations={[{ id: o.id, label: o.title }]}
+          />
         )}
       </div>
       {open && (
@@ -150,6 +178,10 @@ export function ObligationsPanel({ s }: { s: AiSystemDetail }) {
         `/api/v1/ai-systems/${s.id}/obligations`,
       ),
   });
+  const actions = useQuery({
+    queryKey: ['actions', 'system', s.id],
+    queryFn: () => get<{ permissions: { canManage: boolean } }>(`/api/v1/ai-systems/${s.id}/actions`),
+  });
   if (list.isPending) return <Spinner />;
   if (list.isError) return <Alert tone="red">{errorMessage(list.error)}</Alert>;
   const groups = new Map<string, ObligationView[]>();
@@ -170,7 +202,13 @@ export function ObligationsPanel({ s }: { s: AiSystemDetail }) {
             <h4 className="text-sm font-bold text-gls-blue">{OBLIGATION_CATEGORY_LABELS[cat] ?? cat}</h4>
             <ul className="divide-y divide-grey-100">
               {items.map((o) => (
-                <ObligationRow key={o.id} o={o} editable={list.data.canUpdate} systemId={s.id} />
+                <ObligationRow
+                  key={o.id}
+                  o={o}
+                  editable={list.data.canUpdate}
+                  canAct={!!actions.data?.permissions.canManage}
+                  systemId={s.id}
+                />
               ))}
             </ul>
           </section>

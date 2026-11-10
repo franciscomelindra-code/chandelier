@@ -10,6 +10,7 @@ export function AdminPage() {
     { to: 'unites', label: 'Unités organisationnelles', show: true },
     { to: 'roles', label: 'Rôles et permissions', show: can('user:read') },
     { to: 'journal', label: 'Journal d’audit', show: can('audit:read') },
+    { to: 'methodologie', label: 'Méthodologie de risque', show: true },
   ].filter((t) => t.show);
   return (
     <>

@@ -587,6 +587,7 @@ model AiSystem {
   assessments       AiActAssessment[]
   obligations       Obligation[]
   risks             Risk[]
+  measures          Measure[]
   actions           Action[]
   frias             Fria[]
   dpias             Dpia[]
@@ -1156,9 +1157,15 @@ model Risk {
   residualScore       Int?
   treatment           RiskTreatment?
   treatmentPlan       String          @default("")
+  /// Décision d'acceptation (traitement ACCEPT) : motif, auteur, date.
+  acceptanceJustification String      @default("")
+  acceptedAt          DateTime?
+  acceptedById        String?         @db.Uuid
   status              RiskStatus      @default(IDENTIFIED)
   ownerId             String?         @db.Uuid
   dueDate             DateTime?       @db.Date
+  /// Verrou optimiste.
+  version             Int             @default(1)
   createdAt           DateTime        @default(now())
   createdById         String?         @db.Uuid
   updatedAt           DateTime        @updatedAt
@@ -1171,16 +1178,22 @@ model Risk {
   @@index([aiSystemId])
   @@index([residualScore])
   @@index([status])
+  @@index([ownerId])
   @@map("risk")
 }
 
+/// Mesure de traitement propre à un SIA, rattachable à plusieurs de ses risques.
 model Measure {
   id          String        @id @default(uuid()) @db.Uuid
+  aiSystemId  String        @db.Uuid
+  aiSystem    AiSystem      @relation(fields: [aiSystemId], references: [id], onDelete: Cascade)
   title       String
   description String        @default("")
   type        MeasureType
+  /// IMPLEMENTED / VERIFIED = mesure existante, prise en compte dans le risque résiduel.
   status      MeasureStatus @default(PLANNED)
   ownerId     String?       @db.Uuid
+  dueDate     DateTime?     @db.Date
   controlId   String?       @db.Uuid
   control     Control?      @relation(fields: [controlId], references: [id], onDelete: SetNull)
   createdAt   DateTime      @default(now())
@@ -1191,43 +1204,49 @@ model Measure {
   risks   RiskMeasure[]
   actions Action[]
 
+  @@index([aiSystemId])
   @@map("measure")
 }
 
+/// Le caractère « existant » d'une mesure découle de son statut (voir Measure.status).
 model RiskMeasure {
-  riskId     String  @db.Uuid
-  risk       Risk    @relation(fields: [riskId], references: [id], onDelete: Cascade)
-  measureId  String  @db.Uuid
-  measure    Measure @relation(fields: [measureId], references: [id], onDelete: Cascade)
-  /// true = mesure existante prise en compte dans le résiduel ; false = mesure planifiée.
-  isExisting Boolean @default(false)
+  riskId    String   @db.Uuid
+  risk      Risk     @relation(fields: [riskId], references: [id], onDelete: Cascade)
+  measureId String   @db.Uuid
+  measure   Measure  @relation(fields: [measureId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 
   @@id([riskId, measureId])
   @@map("risk_measure")
 }
 
 model Action {
-  id           String       @id @default(uuid()) @db.Uuid
-  title        String
-  description  String       @default("")
-  status       ActionStatus @default(OPEN)
-  priority     Priority     @default(MEDIUM)
-  assigneeId   String?      @db.Uuid
-  dueDate      DateTime?    @db.Date
-  completedAt  DateTime?
-  aiSystemId   String?      @db.Uuid
-  aiSystem     AiSystem?    @relation(fields: [aiSystemId], references: [id], onDelete: Cascade)
-  riskId       String?      @db.Uuid
-  risk         Risk?        @relation(fields: [riskId], references: [id], onDelete: SetNull)
-  obligationId String?      @db.Uuid
-  obligation   Obligation?  @relation(fields: [obligationId], references: [id], onDelete: SetNull)
-  measureId    String?      @db.Uuid
-  measure      Measure?     @relation(fields: [measureId], references: [id], onDelete: SetNull)
-  origin       Origin       @default(USER)
-  createdAt    DateTime     @default(now())
-  createdById  String?      @db.Uuid
-  updatedAt    DateTime     @updatedAt
-  updatedById  String?      @db.Uuid
+  id             String       @id @default(uuid()) @db.Uuid
+  reference      String       @unique
+  title          String
+  description    String       @default("")
+  /// Motif d'annulation ou commentaire de clôture.
+  closureComment String       @default("")
+  version        Int          @default(1)
+  status         ActionStatus @default(OPEN)
+  priority       Priority     @default(MEDIUM)
+  assigneeId     String?      @db.Uuid
+  dueDate        DateTime?    @db.Date
+  completedAt    DateTime?
+  /// Toute action est rattachée à un SIA (contrôle de périmètre).
+  aiSystemId     String       @db.Uuid
+  aiSystem       AiSystem     @relation(fields: [aiSystemId], references: [id], onDelete: Cascade)
+  riskId         String?      @db.Uuid
+  risk           Risk?        @relation(fields: [riskId], references: [id], onDelete: SetNull)
+  obligationId   String?      @db.Uuid
+  obligation     Obligation?  @relation(fields: [obligationId], references: [id], onDelete: SetNull)
+  measureId      String?      @db.Uuid
+  measure        Measure?     @relation(fields: [measureId], references: [id], onDelete: SetNull)
+  origin         Origin       @default(USER)
+  createdAt      DateTime     @default(now())
+  createdById    String?      @db.Uuid
+  updatedAt      DateTime     @updatedAt
+  updatedById    String?      @db.Uuid
 
   @@index([aiSystemId])
   @@index([assigneeId])

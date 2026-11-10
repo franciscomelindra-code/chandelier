@@ -85,8 +85,8 @@ erDiagram
 | `Obligation` | Obligation applicable | Instance d'un modèle du référentiel : base légale, applicabilité, statut, responsable, dates, preuves |
 | `Control` / `ObligationControl` | Contrôles | Bibliothèque de contrôles réutilisables |
 | `RiskMethodology` | Méthode de cotation | Échelles et seuils en JSON, versionnés |
-| `Risk`, `Measure`, `RiskMeasure` | Registre des risques | Scores inhérent / résiduel calculés par la méthodologie, mesures existantes vs planifiées |
-| `Action` | Plan d'action | Rattachable à SIA, risque, obligation, mesure |
+| `Risk`, `Measure`, `RiskMeasure` | Registre des risques | Référence `RSK-####`, scores inhérent / résiduel = vraisemblance × gravité calculés côté serveur, rattachés à la version de méthodologie utilisée ; acceptation (motif, auteur, date) ; verrou optimiste `version`. Une `Measure` appartient à un SIA (S6) ; elle est « existante » si son statut est `IMPLEMENTED` ou `VERIFIED` (la colonne `RiskMeasure.isExisting` a été supprimée en S6) |
+| `Action` | Plan d'action | Référence `ACT-####`, rattachement obligatoire à un SIA (S6), facultatif à un risque, une obligation, une mesure du même SIA ; motif de clôture ; verrou optimiste |
 | `Fria` | AIPD droits fondamentaux | Sections art. 27(1), lien `Dpia` et sections couvertes par la DPIA |
 | `Dpia` | AIPD RGPD | Interne ou externe (`externalUrl`) ; thèmes couverts réutilisables |
 | `TransparencyNotice` | Notice | Blocs conditionnels, Markdown, instantané des données source, versions par langue |

@@ -43,8 +43,8 @@ Slice = tranche verticale du plan (`IMPLEMENTATION_PLAN.md`). Le statut est tenu
 | F-032 | §5.7 | Référentiel modèles (nom, fournisseur, famille, version, type, capacités, limites, accès, hébergement, zones, URL, date de connaissance, statut, GPAI, licence, pièces) | S4 | — | Partiel (S4) — pièces justificatives du modèle en S7 ; préremplissage IA en S10 |
 | F-033 | §5.8 | Notice de transparence générée depuis les données structurées, blocs conditionnels, édition, versions, validation | S9 | — | À faire |
 | F-034 | §5.8 | Export notice MD, HTML, PDF, DOCX + ajout automatique aux pièces | S9/S10 | — | À faire |
-| F-035 | §5.9 | Registre des risques par SIA (13 catégories), scénario, cause, événement, conséquence, vraisemblance, gravité, scores inhérent/résiduel, mesures, propriétaire, traitement, échéance, preuve | S6 | — | À faire |
-| F-036 | §5.9 | Méthodologie de cotation paramétrable par l'administrateur | S6 | Changement de méthodologie versionné ; anciens scores conservés avec leur version | À faire |
+| F-035 | §5.9 | Registre des risques par SIA (13 catégories), scénario, cause, événement, conséquence, vraisemblance, gravité, scores inhérent/résiduel, mesures, propriétaire, traitement, échéance, preuve | S6 | Score et niveau calculés côté serveur ; résiduel ≤ inhérent ; acceptation motivée | Partiel (S6) — tout sauf la preuve (pièces justificatives en S7) |
+| F-036 | §5.9 | Méthodologie de cotation paramétrable par l'administrateur | S6 | Changement de méthodologie versionné ; anciens scores conservés avec leur version | Fait (S6) |
 | F-037 | §5.10 | Affectation de sections à un contributeur | S7 | Le contributeur ne peut modifier que les sections affectées (contrôle API) | Partiel (S3) — affectation et contrôle serveur faits ; notifications en S7 |
 | F-038 | §5.10 | Commentaires internes, mentions, notifications in-app | S7 | — | À faire |
 | F-039 | §5.10 | Validation par domaine (métier, DPO, RSSI, juridique, DSI), verrouillage de version validée | S7 | Une version validée n'est plus modifiable ; toute modification crée une nouvelle version | À faire |
@@ -67,6 +67,7 @@ Slice = tranche verticale du plan (`IMPLEMENTATION_PLAN.md`). Le statut est tenu
 | F-056 | §10 | Abstraction fournisseur LLM, désactivable, journalisée, minimisation, sources + incertitudes | S10 | `LLM_PROVIDER=disabled` par défaut ; aucun appel sortant dans ce mode | À faire |
 | F-057 | §3.4 | Statut « À vérifier » pour toute proposition IA jusqu'à validation humaine | S10 | Table `assistant_suggestion`, jamais d'écriture directe | À faire |
 | F-058 | §18 | Jeu de démonstration manifestement fictif, marqué DEMO, séparé | S1→ | `isDemo=true`, références `SIA-DEMO-*`, seed désactivable | Fait (S1) |
+| F-059 | §2 (obj. 11), §11 | Plans d'action : actions rattachées à un SIA et éventuellement à un risque, une obligation, une mesure ; responsable, priorité, échéance, statut ; actions échues ; « mes actions » | S6 | Annulation motivée ; le responsable peut changer le statut sans droit de gestion ; clôture d'un risque refusée tant qu'une action liée est ouverte | Fait (S6) |
 
 ## 2. Exigences d'habilitation
 
@@ -85,7 +86,7 @@ Slice = tranche verticale du plan (`IMPLEMENTATION_PLAN.md`). Le statut est tenu
 | N-001 | §8 | React + TS, Node TS, PostgreSQL, Prisma, Tailwind, REST + OpenAPI | S1 | Fait (S1) |
 | N-002 | §6 | `id`, `createdAt`, `createdById`, `updatedAt`, `updatedById` sur chaque entité ; objets sensibles versionnés | S1 | Fait (S1) |
 | N-003 | §15 | TypeScript strict, lint/format, migrations, `.env.example`, index BDD, transactions | S1 | Fait (S1) |
-| N-004 | §15 | Couverture des règles critiques (moteur AI Act, RBAC, scoring) | S1, S5, S6 | Fait (S5) — moteur AI Act : chaque règle testée ; RBAC ; complétude |
+| N-004 | §15 | Couverture des règles critiques (moteur AI Act, RBAC, scoring) | S1, S5, S6 | Fait (S6) — moteur AI Act : chaque règle testée ; RBAC ; complétude ; cotation des risques (seuils, cohérence, avertissements) |
 | N-005 | §7 | WCAG 2.1 AA, responsive desktop/tablette | S1→ | Partiel (S1) |
 | N-006 | §9 | Sécurité (voir `SECURITY.md`) : OIDC-ready, MFA via IdP, CSRF/XSS/SQLi/SSRF, CSP, validation serveur, upload contrôlé, sessions, secrets, pas de télémétrie | S1→ | Partiel (S1) |
 | N-007 | §8, ajout 3 | Docker multi-stage, non-root, healthchecks, arm64 + amd64 | S1 | Écrit, non exécuté localement (pas de Docker) — vérifié par CI |
@@ -114,4 +115,7 @@ Aucune ambiguïté n'a été jugée bloquante. Hypothèses retenues (révisables
 | H-09 | Langue | Interface en français ; libellés centralisés pour une i18n ultérieure (phase 3). |
 | H-10 | Auth dev | Authentification locale (e-mail + mot de passe argon2id) ; aucun compte par défaut : le premier SUPER_ADMIN est créé par commande CLI ou via variables `BOOTSTRAP_ADMIN_*` à usage unique. |
 | H-11 | Police | La police GLS propriétaire n'est pas disponible ; substitution Hanken Grotesk **auto-hébergée** (paquet npm `@fontsource-variable`) pour éviter tout appel à Google Fonts (pas de télémétrie externe). |
+| H-13 | Acceptation d'un risque | Justification obligatoire (20 caractères min.). L'acceptation d'un risque du niveau le plus élevé de la méthodologie est réservée aux détenteurs de `assessment:validate` (DPO, LEGAL, AI_GOVERNANCE, SUPER_ADMIN). Toute modification de cotation d'un risque accepté impose de renouveler la justification. |
+| H-14 | Risque résiduel | Le résiduel est une cotation experte saisie, jamais calculée automatiquement à partir des mesures (une réduction automatique serait arbitraire). Il ne peut dépasser l'inhérent sur aucun axe ; une réduction sans mesure « en place » est signalée, non bloquée. |
+| H-15 | Mesures | Une mesure appartient à un SIA et peut couvrir plusieurs de ses risques ; son caractère « existant » découle de son statut (en place / vérifiée). Pas de bibliothèque de mesures transverse (évite qu'une modification dans un périmètre affecte un autre). |
 | H-12 | Base locale Windows | En développement sur poste sans Docker, PostgreSQL réel embarqué via `embedded-postgres` (binaires officiels distribués par npm). Jamais utilisé en production. |

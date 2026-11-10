@@ -15,6 +15,10 @@ import { SystemPage } from '../features/ai-systems/SystemPage';
 import { ReferentialsPage } from '../features/referentials/ReferentialsPage';
 import { ModelPage, ModelsPage } from '../features/models/ModelsPage';
 import { EvaluationsPage } from '../features/assessments/EvaluationsPage';
+import { RisksPage } from '../features/risks/RisksPage';
+import { RiskPage } from '../features/risks/RiskPage';
+import { ActionsPage } from '../features/actions/ActionsPage';
+import { MethodologyPanel } from '../features/admin/MethodologyPanel';
 
 function RequireAuth() {
   const { me, loading } = useAuth();
@@ -55,21 +59,9 @@ export const router = createBrowserRouter([
           { path: '/modeles', element: <ModelsPage /> },
           { path: '/modeles/:id', element: <ModelPage /> },
           { path: '/evaluations', element: <EvaluationsPage /> },
-          {
-            path: '/risques',
-            element: planned('Risques', 'S6', [
-              'Registre des risques par SIA',
-              'Méthodologie paramétrable, risques inhérent et résiduel',
-              'Mesures',
-            ]),
-          },
-          {
-            path: '/actions',
-            element: planned('Actions', 'S6', [
-              'Plans d’action, échéances, responsables',
-              'Rattachement aux risques et obligations',
-            ]),
-          },
+          { path: '/risques', element: <RisksPage /> },
+          { path: '/risques/:id', element: <RiskPage /> },
+          { path: '/actions', element: <ActionsPage /> },
           {
             path: '/documentation',
             element: planned('Documentation', 'S7 / S9', [
@@ -94,6 +86,7 @@ export const router = createBrowserRouter([
               { path: 'unites', element: <OrgUnitsPanel /> },
               { path: 'roles', element: <RolesPanel /> },
               { path: 'journal', element: <AuditPanel /> },
+              { path: 'methodologie', element: <MethodologyPanel /> },
             ],
           },
           {

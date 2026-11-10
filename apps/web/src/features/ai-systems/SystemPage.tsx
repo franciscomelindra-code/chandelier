@@ -23,6 +23,7 @@ import {
   ValueStep,
   type StepProps,
 } from './wizard/steps';
+import { SystemActions, SystemRisks } from '../risks/RisksPage';
 
 /** Étapes dont le contenu dépend d'une tranche ultérieure. */
 const PLANNED: Partial<Record<SectionKey, string>> = { documentation: 'S7' };
@@ -139,9 +140,18 @@ export function SystemPage() {
   const { id = '' } = useParams();
   const [sp, setSp] = useSearchParams();
   const qc = useQueryClient();
-  const [tab, setTab] = useState<'fiche' | 'historique'>('fiche');
   const [reasonFor, setReasonFor] = useState<'archive' | 'restore' | null>(null);
   const [reasonError, setReasonError] = useState<string | null>(null);
+  const TABS = ['fiche', 'risques', 'actions', 'historique'] as const;
+  const tab: (typeof TABS)[number] = (TABS as readonly string[]).includes(sp.get('onglet') ?? '')
+    ? (sp.get('onglet') as (typeof TABS)[number])
+    : 'fiche';
+  const setTab = (k: (typeof TABS)[number]) => {
+    const next = new URLSearchParams(sp);
+    if (k === 'fiche') next.delete('onglet');
+    else next.set('onglet', k);
+    setSp(next, { replace: true });
+  };
   const step = (SECTION_ORDER as readonly string[]).includes(sp.get('etape') ?? '')
     ? (sp.get('etape') as SectionKey)
     : 'general';
@@ -216,8 +226,10 @@ export function SystemPage() {
             <Button
               variant="secondary"
               onClick={() => {
-                go('summary');
-                setTab('fiche');
+                const next = new URLSearchParams(sp);
+                next.set('etape', 'summary');
+                next.delete('onglet');
+                setSp(next, { replace: true });
                 setTimeout(() => window.print(), 300);
               }}
             >
@@ -249,6 +261,8 @@ export function SystemPage() {
         {(
           [
             ['fiche', 'Fiche (12 étapes)'],
+            ['risques', 'Risques'],
+            ['actions', 'Actions'],
             ['historique', 'Historique'],
           ] as const
         ).map(([k, l]) => (
@@ -267,7 +281,11 @@ export function SystemPage() {
         ))}
       </nav>
 
-      {tab === 'historique' ? (
+      {tab === 'risques' ? (
+        <SystemRisks systemId={s.id} />
+      ) : tab === 'actions' ? (
+        <SystemActions systemId={s.id} />
+      ) : tab === 'historique' ? (
         <Card>
           <History id={s.id} />
         </Card>

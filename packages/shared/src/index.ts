@@ -3,4 +3,5 @@ export * from './labels.js';
 export * from './schemas.js';
 export * from './ai-system.js';
 export * from './catalog.js';
+export * from './risk.js';
 export * from './ai-act/index.js';

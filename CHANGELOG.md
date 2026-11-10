@@ -2,6 +2,25 @@
 
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versionnement sémantique.
 
+## [0.6.0] — 2026-11-10 — Slice S6 : risques, mesures, plans d’action
+
+### Ajouté
+- Migration `s6_risks` : mesures rattachées à un SIA (avec échéance), acceptation motivée des risques (motif, auteur, date), références `ACT-####`, verrou optimiste sur risques et actions, action obligatoirement rattachée à un SIA.
+- Méthodologie de cotation versionnée, paramétrable par le super administrateur (échelles, seuils, couleurs) avec aperçu ; activation motivée ; les risques cotés avec une version remplacée sont signalés et se recotent explicitement.
+- Registre des risques par SIA (13 catégories) : scénario, cause, événement, conséquences, cotation inhérente et résiduelle calculée côté serveur, traitement, plan, propriétaire, échéance, statut avec transitions automatiques, historique.
+- Règles : résiduel ≤ inhérent sur chaque axe, acceptation motivée et réservée aux rôles de validation pour le niveau le plus élevé, clôture refusée si une action liée est ouverte ; six points d’attention calculés.
+- Mesures (types, statuts ; « existante » = en place ou vérifiée), rattachables à plusieurs risques du même SIA.
+- Plans d’action : liens risque / obligation / mesure du même SIA, priorité, responsable, échéance, actions échues, « mes actions », annulation motivée, le responsable peut changer le statut.
+- Interface : pages « Risques » (filtres dans l’URL, carte de chaleur cliquable, répartition par niveau) et « Actions », fiche risque, onglets « Risques » et « Actions » de la fiche SIA, bouton « Créer une action » sur les obligations, Administration › Méthodologie de risque.
+- Documentation `docs/RISK_METHOD.md`.
+- 9 tests unitaires de cotation, 9 tests d’intégration, 1 test d’interface (143 tests au total).
+
+### Modifié
+- ESLint : `eqeqeq` admet `== null` (test simultané de null et undefined).
+
+### Explicitement non livré
+- Preuves rattachées aux risques et mesures (S7) ; matrice risque × valeur du tableau de bord (S8).
+
 ## [0.5.0] — 2026-11-10 — Slice S5 : moteur de qualification AI Act
 
 ### Ajouté
