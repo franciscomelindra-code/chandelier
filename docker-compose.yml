@@ -70,8 +70,9 @@ services:
       OIDC_ISSUER: ${OIDC_ISSUER:-}
       # Secrets : de préférence en fichiers dans le volume des secrets (entra_client_secret, anthropic_api_key).
       ENTRA_CLIENT_SECRET: ${ENTRA_CLIENT_SECRET:-}
-      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
-      BOOTSTRAP_ADMIN_NAME: ${BOOTSTRAP_ADMIN_NAME:-}
+      # Valeurs par défaut identiques à .env.example : `docker compose up` fonctionne aussi sans .env.
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-admin@chandelier.local}
+      BOOTSTRAP_ADMIN_NAME: ${BOOTSTRAP_ADMIN_NAME:-Administrateur Chandelier}
       SEED_DEMO: ${SEED_DEMO:-false}
       LLM_PROVIDER: ${LLM_PROVIDER:-disabled}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-}

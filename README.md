@@ -187,7 +187,8 @@ docs            Architecture, données, AI Act, sécurité, déploiement…
 Honnêtement, à ce stade :
 
 - **Non implémenté** : exports et rapports PDF / DOCX ; import XLSX ; préremplissage IA dès la création d'une fiche et extraction depuis un PDF ; analyse antivirus des pièces ; stockage S3 / Azure Blob ; notifications par e-mail / Teams ; webhooks ; intégrations Microsoft 365 ; Trust Center (phase 3) ; mapping des groupes Entra ID vers les rôles.
-- **Jamais exécuté sur le poste de développement** : docker compose (Docker indisponible ; couvert par la CI docker-build.yml), connexion à un tenant Entra ID réel, appel réel au fournisseur d'IA.
+- **Docker** : `docker compose up -d --build` vérifié en CI sur Linux amd64 (workflow docker-build.yml, job compose-smoke : santé, accès anonyme refusé, persistance après `down`/`up`) ; images construites aussi pour arm64. Pas encore vérifié sur un Mac OrbStack.
+- **Jamais exécuté** : connexion à un tenant Entra ID réel, appel réel au fournisseur d'IA.
 - **À valider par la Direction juridique** : référentiel AI Act v1.0.0 (projet), grille de cotation par défaut, mentions des notices.
 
 Détail par exigence : [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md).

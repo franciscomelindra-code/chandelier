@@ -79,4 +79,15 @@ et dans `.env` : `LLM_PROVIDER=anthropic` (modèle `ANTHROPIC_MODEL`, par défau
 
 - Vérifié sur le poste de développement Windows (sans Docker) : build, lint, typecheck, tests unitaires et d'intégration sur PostgreSQL 17 réelle (178 à la tranche S10), parcours navigateur de chaque tranche.
 - Simulé localement : installation des dépendances de production de l'image API.
-- **Non exécuté à ce jour** : `docker compose build/up` (Docker indisponible sur le poste de développement). Le workflow `docker-build.yml` exécute ce scénario en CI (build amd64 + arm64, démarrage, santé, persistance après `down`/`up`). À valider sur le Mac OrbStack avant tout usage.
+- **Vérifié en CI (GitHub Actions, Linux amd64)** : `cp .env.example .env && docker compose up -d --build`, santé des quatre services, `/api/v1/users` anonyme refusé (401), mot de passe admin initial généré, persistance après `down`/`up`. Images `api` et `web` construites pour amd64 et arm64.
+- **Non vérifié** : exécution sur un Mac OrbStack (Apple Silicon). Les commandes de la § 6 et § 7 (écriture d'un secret dans le volume) n'ont pas été exécutées.
+
+### Dépannage du premier démarrage
+
+| Symptôme | Cause probable | Action |
+|---|---|---|
+| `no configuration file provided` / `unable to prepare context` / `secrets-init.sh: not found` | Le fichier compose est lancé seul, hors du dossier du dépôt : il **construit** les images à partir du code | Cloner le dépôt et lancer la commande à sa racine |
+| `npm ci`, `apt-get` ou téléchargement Prisma en échec pendant le build (`SELF_SIGNED_CERT_IN_CHAIN`, `ETIMEDOUT`) | Proxy ou inspection TLS du réseau d'entreprise | Construire hors VPN / réseau filtré, ou configurer le proxy de Docker |
+| `Bind for 127.0.0.1:8080 failed: port is already allocated` | Port 8080 déjà utilisé | `WEB_PORT=8081` dans `.env` (et `APP_URL=http://localhost:8081`) |
+| `./scripts/wait-healthy.sh: Permission denied` | Clone antérieur au correctif des droits d'exécution | `bash ./scripts/wait-healthy.sh` ou `git pull` |
+| `api` redémarre en boucle | Migration ou configuration invalide | `docker compose logs api` (le message indique la variable en cause) |
