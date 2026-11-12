@@ -2,6 +2,17 @@
 
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versionnement sémantique.
 
+## [0.10.1] — 2026-11-12 — Correctifs de sécurité des dépendances
+
+### Sécurité
+- Vitest 3.2.7 → 4.1.12 (outil de test, absent de l’image de production) : corrige les avis tinypool (critiques, GHSA-5gmw-xhrv-c9v3, GHSA-85c8-ppgw-ccpr, tinypool n’est plus utilisé) et @vitest/mocker (modérés, GHSA-82fw-gwwq-j7x9, GHSA-qxg6-89mg-rqv8 ; la 4.1.11 reste concernée).
+- deepmerge-ts 7.1.5 → 8.0.2 par `overrides` (dépendance de la CLI Prisma, présente dans l’image API pour les migrations) : corrige GHSA-ggr8-5vv4-36mx (élevé). Prisma 6.19.3 conservé ; remplacement à retirer lors du passage à une version de Prisma qui l’intègre.
+- minimatch 10.2.6 → 11.0.8 par `overrides` pour typescript-eslint (outil de développement) : corrige GHSA-g3hv-75wg-m249 (modéré). La copie utilisée en production (11.0.5, via @fastify/static) n’était pas concernée.
+- `npm audit` : 0 vulnérabilité.
+
+### Corrigé
+- Docker : scripts shell exécutables dans Git, compose utilisable sans `.env`, guide de dépannage (docs/DEPLOYMENT.md).
+
 ## [0.10.0] — 2026-11-10 — Slice S10 : rapports, import, assistant IA, Entra ID
 
 ### Ajouté
